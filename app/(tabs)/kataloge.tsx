@@ -10,8 +10,8 @@ import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
 import { api } from '../../services/api'
 import { formatDate } from '../../utils/formatters'
-import FavButton from '../../components/FavButton'
 import SearchButton from '../../components/SearchButton'
+import SettingsButton from '../../components/SettingsButton'
 import { Colors } from '../../constants/colors'
 import { Spacing, Radius } from '../../constants/spacing'
 import { StoreLogos } from '../../constants/stores'
@@ -68,7 +68,7 @@ export default function KatalogeScreen() {
         <Text style={styles.title}>Prospekte</Text>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <SearchButton />
-          <FavButton />
+          <SettingsButton />
         </View>
       </View>
 

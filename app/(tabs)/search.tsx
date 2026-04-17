@@ -9,8 +9,8 @@ import { Ionicons } from '@expo/vector-icons'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { api } from '../../services/api'
 import OfferCard from '../../components/OfferCard'
-import FavButton from '../../components/FavButton'
 import SearchButton from '../../components/SearchButton'
+import SettingsButton from '../../components/SettingsButton'
 import { Colors } from '../../constants/colors'
 import { Spacing, Radius } from '../../constants/spacing'
 import { StoreLogos } from '../../constants/stores'
@@ -108,7 +108,7 @@ export default function SearchScreen() {
         </Animated.Text>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <SearchButton />
-          <FavButton />
+          <SettingsButton />
         </View>
       </Animated.View>
 

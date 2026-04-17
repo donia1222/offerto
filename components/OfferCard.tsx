@@ -7,7 +7,7 @@ import { Spacing, Radius } from '../constants/spacing'
 import { StoreLogos } from '../constants/stores'
 import type { Offer } from '../types'
 import { formatDate } from '../utils/formatters'
-import { useFavoritesStore } from '../store/favoritesStore'
+import { useListStore } from '../store/listStore'
 
 interface Props { offer: Offer }
 
@@ -15,8 +15,8 @@ const fmt = (v: unknown) => parseFloat(String(v)).toFixed(2)
 
 export default function OfferCard({ offer }: Props) {
   const router = useRouter()
-  const { toggle, isFav } = useFavoritesStore()
-  const fav = isFav(offer.id)
+  const { add, remove, isInList } = useListStore()
+  const inList = isInList(offer.id)
 
   const discount       = Number(offer.descuento) || 0
   const discountColor  = discount >= 30 ? Colors.success : Colors.accent
@@ -75,11 +75,11 @@ export default function OfferCard({ offer }: Props) {
           </Text>
         </View>
 
-        {/* Name + fav */}
+        {/* Name + cart */}
         <View style={styles.nameRow}>
           <Text style={styles.name} numberOfLines={2}>{offer.nombre}</Text>
-          <TouchableOpacity onPress={() => toggle(offer)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-            <Ionicons name={fav ? 'heart' : 'heart-outline'} size={20} color={fav ? Colors.error : Colors.textLight} />
+          <TouchableOpacity onPress={() => inList ? remove(offer.id) : add(offer)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+            <Ionicons name={inList ? 'cart' : 'cart-outline'} size={20} color={inList ? Colors.primary : Colors.textLight} />
           </TouchableOpacity>
         </View>
 

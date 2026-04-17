@@ -91,8 +91,15 @@ export default function TabLayout() {
         }}
       />
 
+      <Tabs.Screen
+        name="list"
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <TabIcon name={focused ? 'cart' : 'cart-outline'} focused={focused} label="Liste" />
+          ),
+        }}
+      />
       <Tabs.Screen name="stores"   options={{ href: null }} />
-      <Tabs.Screen name="list"     options={{ href: null }} />
       <Tabs.Screen name="settings" options={{ href: null }} />
     </Tabs>
   )

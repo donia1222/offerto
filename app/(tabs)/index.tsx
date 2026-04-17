@@ -10,8 +10,8 @@ import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import { offersService } from '../../services/offersService'
 import OfferCard from '../../components/OfferCard'
-import FavButton from '../../components/FavButton'
 import SearchButton from '../../components/SearchButton'
+import SettingsButton from '../../components/SettingsButton'
 import { Colors } from '../../constants/colors'
 import { Spacing, Radius } from '../../constants/spacing'
 import { StoreLogos } from '../../constants/stores'
@@ -204,7 +204,7 @@ export default function HomeScreen() {
           <Animated.Text style={[styles.title, { fontSize: titleSize }]}>{t('home.title')}</Animated.Text>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <SearchButton />
-            <FavButton />
+            <SettingsButton />
           </View>
         </Animated.View>
 

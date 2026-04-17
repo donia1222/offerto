@@ -64,6 +64,13 @@ export default function RootLayout() {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen
+          name="settings"
+          options={{
+            headerShown:  false,
+            presentation: 'modal',
+          }}
+        />
+        <Stack.Screen
           name="favorites"
           options={{
             headerShown:      true,

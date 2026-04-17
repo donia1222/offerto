@@ -7,7 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { api } from '../../services/api'
-import { useFavoritesStore } from '../../store/favoritesStore'
+import { useListStore } from '../../store/listStore'
 import { Colors } from '../../constants/colors'
 import { Spacing, Radius } from '../../constants/spacing'
 import { StoreLogos } from '../../constants/stores'
@@ -22,7 +22,7 @@ export default function OfferDetailScreen() {
   const [loading, setLoading]   = useState(true)
   const [error, setError]       = useState(false)
   const [imgError, setImgError] = useState(false)
-  const { toggle, isFav } = useFavoritesStore()
+  const { add, remove, isInList } = useListStore()
 
   useEffect(() => {
     api.get(`/ofertas.php?id=${id}`)
@@ -85,9 +85,6 @@ export default function OfferDetailScreen() {
 
         {/* Imagen */}
         <View style={[styles.imageWrap, { backgroundColor: offer.tienda.color + '12', marginTop: 10 }]}>
-          <TouchableOpacity style={styles.favBtn} onPress={() => toggle(offer)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-            <Ionicons name={isFav(offer.id) ? 'heart' : 'heart-outline'} size={24} color={isFav(offer.id) ? Colors.error : Colors.textMedium} />
-          </TouchableOpacity>
           {offer.imagen && !imgError ? (
             <Image
               source={{ uri: offer.imagen }}
@@ -139,6 +136,18 @@ export default function OfferDetailScreen() {
               </View>
             )}
           </View>
+
+          {/* Zur Liste */}
+          <TouchableOpacity
+            style={[styles.listBtn, isInList(offer.id) && styles.listBtnActive]}
+            onPress={() => isInList(offer.id) ? remove(offer.id) : add(offer)}
+            activeOpacity={0.85}
+          >
+            <Ionicons name={isInList(offer.id) ? 'cart' : 'cart-outline'} size={20} color={isInList(offer.id) ? '#fff' : Colors.primary} />
+            <Text style={[styles.listBtnText, isInList(offer.id) && { color: '#fff' }]}>
+              {isInList(offer.id) ? 'Von Liste entfernen' : 'Zur Einkaufsliste'}
+            </Text>
+          </TouchableOpacity>
 
           {/* Ahorro */}
           {savings && savings > 0 && (
@@ -274,6 +283,14 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Regular', fontSize: 20, color: Colors.textLight,
     textDecorationLine: 'line-through',
   },
+
+  listBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    borderWidth: 2, borderColor: Colors.primary, borderRadius: Radius.full,
+    paddingVertical: 12, paddingHorizontal: 24,
+  },
+  listBtnActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
+  listBtnText:   { fontFamily: 'PlusJakartaSans-SemiBold', fontSize: 16, color: Colors.primary },
 
   savingsBanner: {
     flexDirection:  'row',
