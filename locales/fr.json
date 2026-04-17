@@ -1,0 +1,77 @@
+{
+  "common": {
+    "loading": "Chargement...",
+    "error": "Une erreur s'est produite",
+    "retry": "Réessayer",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "search": "Rechercher",
+    "all": "Tous",
+    "noResults": "Aucune offre trouvée"
+  },
+  "tabs": {
+    "home": "Offres",
+    "search": "Recherche",
+    "stores": "Magasins",
+    "kataloge": "Prospectus",
+    "list": "Liste",
+    "settings": "Paramètres"
+  },
+  "home": {
+    "title": "Cette semaine",
+    "featured": "Meilleures offres",
+    "expiringSoon": "Expire bientôt",
+    "validUntil": "Valable jusqu'au {{date}}",
+    "expiresIn": "Encore {{days}} jours",
+    "expiresToday": "Dernier jour!"
+  },
+  "offer": {
+    "originalPrice": "Prix normal",
+    "discount": "-{{pct}}%",
+    "addToList": "Ajouter",
+    "removeFromList": "Supprimer",
+    "unit": "par {{unit}}",
+    "store": "Chez {{store}}"
+  },
+  "search": {
+    "placeholder": "Rechercher un produit...",
+    "filters": "Filtres",
+    "minDiscount": "Rabais min.",
+    "category": "Catégorie",
+    "foundIn": "Trouvé dans {{count}} magasins",
+    "bestPrice": "Meilleur prix"
+  },
+  "list": {
+    "title": "Ma liste de courses",
+    "empty": "Liste vide",
+    "emptyHint": "Appuyez sur une offre pour l'ajouter",
+    "totalSaving": "Économies: CHF {{amount}}",
+    "totalCost": "Total: CHF {{amount}}",
+    "clearAll": "Vider la liste",
+    "share": "Partager la liste"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "language": "Langue",
+    "canton": "Canton",
+    "notifications": "Notifications",
+    "notifyNewOffers": "Nouvelles offres (lundi)",
+    "notifyExpiring": "Offres qui expirent"
+  },
+  "stores": {
+    "title": "Par magasin",
+    "offers": "{{count}} offres"
+  },
+  "categories": {
+    "fleisch": "Viande",
+    "gemuese": "Légumes & Fruits",
+    "milch": "Lait & Fromage",
+    "bakery": "Boulangerie",
+    "getraenke": "Boissons",
+    "snacks": "Snacks",
+    "haushalt": "Ménage",
+    "hygiene": "Hygiène",
+    "tierfutter": "Animaux",
+    "other": "Divers"
+  }
+}

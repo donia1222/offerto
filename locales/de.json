@@ -1,0 +1,77 @@
+{
+  "common": {
+    "loading": "Lädt...",
+    "error": "Fehler aufgetreten",
+    "retry": "Erneut versuchen",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "search": "Suchen",
+    "all": "Alle",
+    "noResults": "Keine Angebote gefunden"
+  },
+  "tabs": {
+    "home": "Angebote",
+    "search": "Suchen",
+    "stores": "Läden",
+    "kataloge": "Prospekte",
+    "list": "Einkauf",
+    "settings": "Einstellungen"
+  },
+  "home": {
+    "title": "Diese Woche",
+    "featured": "Top-Angebote",
+    "expiringSoon": "Läuft bald ab",
+    "validUntil": "Gültig bis {{date}}",
+    "expiresIn": "Noch {{days}} Tage",
+    "expiresToday": "Heute letzter Tag!"
+  },
+  "offer": {
+    "originalPrice": "Normalpreis",
+    "discount": "-{{pct}}%",
+    "addToList": "Zur Liste",
+    "removeFromList": "Entfernen",
+    "unit": "pro {{unit}}",
+    "store": "Bei {{store}}"
+  },
+  "search": {
+    "placeholder": "Produkt suchen...",
+    "filters": "Filter",
+    "minDiscount": "Mind. Rabatt",
+    "category": "Kategorie",
+    "foundIn": "In {{count}} Läden gefunden",
+    "bestPrice": "Bester Preis"
+  },
+  "list": {
+    "title": "Meine Einkaufsliste",
+    "empty": "Liste ist leer",
+    "emptyHint": "Tippe auf ein Angebot und füge es hinzu",
+    "totalSaving": "Ersparnis: CHF {{amount}}",
+    "totalCost": "Gesamt: CHF {{amount}}",
+    "clearAll": "Liste leeren",
+    "share": "Liste teilen"
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "language": "Sprache",
+    "canton": "Kanton",
+    "notifications": "Benachrichtigungen",
+    "notifyNewOffers": "Neue Angebote (Montags)",
+    "notifyExpiring": "Ablaufende Angebote"
+  },
+  "stores": {
+    "title": "Nach Laden",
+    "offers": "{{count}} Angebote"
+  },
+  "categories": {
+    "fleisch": "Fleisch",
+    "gemuese": "Gemüse & Früchte",
+    "milch": "Milch & Käse",
+    "bakery": "Brot & Backwaren",
+    "getraenke": "Getränke",
+    "snacks": "Snacks",
+    "haushalt": "Haushalt",
+    "hygiene": "Körperpflege",
+    "tierfutter": "Tierfutter",
+    "other": "Sonstiges"
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "common": {
+    "loading": "Caricamento...",
+    "error": "Si è verificato un errore",
+    "retry": "Riprova",
+    "save": "Salva",
+    "cancel": "Annulla",
+    "search": "Cerca",
+    "all": "Tutti",
+    "noResults": "Nessuna offerta trovata"
+  },
+  "tabs": {
+    "home": "Offerte",
+    "search": "Cerca",
+    "stores": "Negozi",
+    "kataloge": "Volantini",
+    "list": "Lista",
+    "settings": "Impostazioni"
+  },
+  "home": {
+    "title": "Questa settimana",
+    "featured": "Offerte top",
+    "expiringSoon": "In scadenza",
+    "validUntil": "Valido fino al {{date}}",
+    "expiresIn": "Ancora {{days}} giorni",
+    "expiresToday": "Ultimo giorno!"
+  },
+  "offer": {
+    "originalPrice": "Prezzo normale",
+    "discount": "-{{pct}}%",
+    "addToList": "Aggiungi",
+    "removeFromList": "Rimuovi",
+    "unit": "per {{unit}}",
+    "store": "Da {{store}}"
+  },
+  "search": {
+    "placeholder": "Cerca prodotto...",
+    "filters": "Filtri",
+    "minDiscount": "Sconto min.",
+    "category": "Categoria",
+    "foundIn": "Trovato in {{count}} negozi",
+    "bestPrice": "Prezzo migliore"
+  },
+  "list": {
+    "title": "La mia lista della spesa",
+    "empty": "Lista vuota",
+    "emptyHint": "Tocca un'offerta per aggiungerla",
+    "totalSaving": "Risparmio: CHF {{amount}}",
+    "totalCost": "Totale: CHF {{amount}}",
+    "clearAll": "Svuota lista",
+    "share": "Condividi lista"
+  },
+  "settings": {
+    "title": "Impostazioni",
+    "language": "Lingua",
+    "canton": "Cantone",
+    "notifications": "Notifiche",
+    "notifyNewOffers": "Nuove offerte (lunedì)",
+    "notifyExpiring": "Offerte in scadenza"
+  },
+  "stores": {
+    "title": "Per negozio",
+    "offers": "{{count}} offerte"
+  },
+  "categories": {
+    "fleisch": "Carne",
+    "gemuese": "Verdure & Frutta",
+    "milch": "Latte & Formaggio",
+    "bakery": "Pane & Pasticceria",
+    "getraenke": "Bevande",
+    "snacks": "Snack",
+    "haushalt": "Casa",
+    "hygiene": "Igiene",
+    "tierfutter": "Animali",
+    "other": "Altro"
+  }
+}

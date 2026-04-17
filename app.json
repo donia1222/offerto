@@ -1,0 +1,58 @@
+{
+  "expo": {
+    "name": "Offerto",
+    "slug": "offerto",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/images/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#F5F3FF"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "ch.offerto.app",
+      "buildNumber": "3"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/icon.png",
+        "backgroundColor": "#F5F3FF"
+      },
+      "package": "ch.offerto.app",
+      "versionCode": 1
+    },
+    "runtimeVersion": "1.0.0",
+    "updates": {
+      "url": "https://u.expo.dev/15ed0244-e590-4bad-a905-2fd1231191b1",
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0
+    },
+    "plugins": [
+      "expo-updates",
+      "expo-router",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/icon.png",
+          "color": "#7C6FCD"
+        }
+      ],
+      "expo-font",
+      "expo-sqlite",
+      "expo-localization",
+      "expo-web-browser"
+    ],
+    "scheme": "offerto",
+    "extra": {
+      "eas": {
+        "projectId": "15ed0244-e590-4bad-a905-2fd1231191b1"
+      },
+      "router": {}
+    },
+    "owner": "lwebch"
+  }
+}
