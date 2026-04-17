@@ -8,6 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { WebView } from 'react-native-webview'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
+
 import { api } from '../../services/api'
 import { formatDate } from '../../utils/formatters'
 import SearchButton from '../../components/SearchButton'
@@ -65,7 +66,7 @@ export default function KatalogeScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.title}>Prospekte</Text>
+        <Text style={styles.title}>{t('kataloge.title')}</Text>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <SearchButton />
           <SettingsButton />
@@ -80,7 +81,7 @@ export default function KatalogeScreen() {
         ) : items.length === 0 ? (
           <View style={styles.centerBox}>
             <Ionicons name="document-text-outline" size={40} color={Colors.textLight} />
-            <Text style={styles.emptyText}>Keine Kataloge verfügbar</Text>
+            <Text style={styles.emptyText}>{t('kataloge.empty')}</Text>
             <TouchableOpacity style={styles.retryBtn} onPress={load}>
               <Text style={styles.retryText}>{t('common.retry')}</Text>
             </TouchableOpacity>
@@ -140,7 +141,7 @@ export default function KatalogeScreen() {
           {webLoading && (
             <View style={styles.webviewLoading}>
               <ActivityIndicator size="large" color={Colors.primary} />
-              <Text style={styles.webviewLoadingText}>Katalog wird geladen...</Text>
+              <Text style={styles.webviewLoadingText}>{t('kataloge.loading')}</Text>
             </View>
           )}
         </SafeAreaView>

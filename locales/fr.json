@@ -7,11 +7,13 @@
     "cancel": "Annuler",
     "search": "Rechercher",
     "all": "Tous",
-    "noResults": "Aucune offre trouvée"
+    "noResults": "Aucune offre trouvée",
+    "back": "Retour",
+    "close": "Fermer"
   },
   "tabs": {
     "home": "Offres",
-    "search": "Recherche",
+    "search": "Découvrir",
     "stores": "Magasins",
     "kataloge": "Prospectus",
     "list": "Liste",
@@ -20,18 +22,28 @@
   "home": {
     "title": "Cette semaine",
     "featured": "Meilleures offres",
+    "allOffers": "Toutes les offres",
     "expiringSoon": "Expire bientôt",
     "validUntil": "Valable jusqu'au {{date}}",
     "expiresIn": "Encore {{days}} jours",
     "expiresToday": "Dernier jour!"
   },
   "offer": {
+    "salePrice": "Prix promotionnel",
     "originalPrice": "Prix normal",
     "discount": "-{{pct}}%",
-    "addToList": "Ajouter",
-    "removeFromList": "Supprimer",
+    "savings": "Vous économisez CHF {{amount}} ({{pct}}% de rabais)",
+    "validPeriod": "Période de validité",
+    "from": "Du",
+    "until": "Au",
+    "store": "Magasin",
+    "storeType": "Cash & Carry · Suisse",
+    "addToList": "Ajouter à la liste",
+    "removeFromList": "Retirer de la liste",
     "unit": "par {{unit}}",
-    "store": "Chez {{store}}"
+    "notFound": "Offre introuvable",
+    "lastDay": "Dernier jour!",
+    "daysLeft": "Encore {{days}} jours"
   },
   "search": {
     "placeholder": "Rechercher un produit...",
@@ -39,24 +51,66 @@
     "minDiscount": "Rabais min.",
     "category": "Catégorie",
     "foundIn": "Trouvé dans {{count}} magasins",
-    "bestPrice": "Meilleur prix"
+    "bestPrice": "Meilleur prix",
+    "results": "{{count}} offres",
+    "noOffers": "Aucune offre",
+    "noOffersHint": "Il n'y a pas d'offres\ndans cette catégorie",
+    "minChars": "Saisir au moins 2 caractères",
+    "noResults": "Aucun résultat pour «{{query}}»",
+    "cancel": "Annuler"
   },
   "list": {
-    "title": "Ma liste de courses",
+    "title": "Liste de courses",
     "empty": "Liste vide",
-    "emptyHint": "Appuyez sur une offre pour l'ajouter",
-    "totalSaving": "Économies: CHF {{amount}}",
-    "totalCost": "Total: CHF {{amount}}",
+    "emptyHint": "Appuyez sur 🛒 sur une offre\npour l'ajouter ici",
+    "totalSaving": "Économies CHF {{amount}}",
+    "totalCost": "CHF {{amount}}",
+    "items": "{{count}} articles",
     "clearAll": "Vider la liste",
-    "share": "Partager la liste"
+    "clearDone": "Supprimer les faits",
+    "share": "Partager la liste",
+    "confirmClear": "Vider la liste",
+    "confirmClearMsg": "Supprimer tous les articles?",
+    "lastDay": "Dernier jour!",
+    "daysLeft": "Encore {{days}} jours"
+  },
+  "kataloge": {
+    "title": "Prospectus",
+    "empty": "Aucun catalogue disponible",
+    "loading": "Chargement du catalogue..."
   },
   "settings": {
     "title": "Paramètres",
-    "language": "Langue",
+    "languageSection": "LANGUE",
+    "storesSection": "MAGASINS FAVORIS",
+    "cantonSection": "CANTON",
     "canton": "Canton",
+    "displaySection": "AFFICHAGE",
+    "compactMode": "Vue compacte",
+    "showMwst": "Prix TVA incluse (7.7%)",
+    "aboutSection": "À PROPOS",
+    "version": "Version",
+    "rateApp": "Évaluer l'app",
+    "feedback": "Envoyer des commentaires",
+    "privacy": "Confidentialité",
     "notifications": "Notifications",
     "notifyNewOffers": "Nouvelles offres (lundi)",
     "notifyExpiring": "Offres qui expirent"
+  },
+  "notif": {
+    "title":              "Notifications",
+    "masterLabel":        "Notifications",
+    "masterOn":           "Actif — vous serez notifié",
+    "masterOff":          "Désactivé",
+    "sectionAuto":        "AUTOMATIQUE",
+    "weekly":             "Nouvelles offres (lundi)",
+    "expiring":           "Offres qui expirent",
+    "sectionCategories":  "PAR CATÉGORIE",
+    "sectionStores":      "PAR MAGASIN",
+    "sectionWatch":       "SURVEILLER DES PRODUITS",
+    "watchPlaceholder":   "ex. Filet de bœuf, Entrecôte...",
+    "watchEmpty":         "Aucun produit surveillé",
+    "noStores":           "Aucun magasin sélectionné"
   },
   "stores": {
     "title": "Par magasin",
@@ -64,6 +118,7 @@
   },
   "categories": {
     "fleisch": "Viande",
+    "fisch": "Poisson",
     "gemuese": "Légumes & Fruits",
     "milch": "Lait & Fromage",
     "bakery": "Boulangerie",
@@ -72,6 +127,7 @@
     "haushalt": "Ménage",
     "hygiene": "Hygiène",
     "tierfutter": "Animaux",
-    "other": "Divers"
+    "other": "Divers",
+    "all": "Toutes les offres"
   }
 }

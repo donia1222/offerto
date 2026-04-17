@@ -2,26 +2,36 @@ import React, { useState, useEffect, useRef } from 'react'
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
+import { useTranslation } from 'react-i18next'
 import { Colors } from '../constants/colors'
 import { Spacing, Radius } from '../constants/spacing'
 import { StoreLogos } from '../constants/stores'
 import type { Offer } from '../types'
 import { formatDate } from '../utils/formatters'
 import { useListStore } from '../store/listStore'
+import { useSettingsStore } from '../store/settingsStore'
+import { getOfferName } from '../utils/getOfferName'
 
 interface Props { offer: Offer }
 
-const fmt = (v: unknown) => parseFloat(String(v)).toFixed(2)
+const MWST = 1.077
+const fmt  = (v: unknown) => parseFloat(String(v)).toFixed(2)
 
 export default function OfferCard({ offer }: Props) {
   const router = useRouter()
+  const { t }  = useTranslation()
   const { add, remove, isInList } = useListStore()
+  const { language, compactMode, showMwst } = useSettingsStore()
   const inList = isInList(offer.id)
+  const name   = getOfferName(offer, language)
 
   const discount       = Number(offer.descuento) || 0
   const discountColor  = discount >= 30 ? Colors.success : Colors.accent
   const isExpiringSoon = Number(offer.dias_restantes) <= 2
   const storeColor     = offer.tienda?.color ?? Colors.primary
+
+  const displayPrice    = showMwst ? Number(offer.precio_oferta) * MWST : Number(offer.precio_oferta)
+  const displayOriginal = offer.precio_original ? Number(offer.precio_original) * (showMwst ? MWST : 1) : null
 
   const [imgError, setImgError] = useState(false)
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -34,6 +44,10 @@ export default function OfferCard({ offer }: Props) {
     return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current) }
   }, [offer.imagen])
 
+  const imgSize   = compactMode ? 76  : 110
+  const innerSize = compactMode ? 60  : 94
+  const pad       = compactMode ? Spacing.sm : Spacing.md
+
   return (
     <TouchableOpacity
       style={[styles.card, { borderLeftColor: storeColor }, isExpiringSoon && styles.cardExpiring]}
@@ -41,11 +55,11 @@ export default function OfferCard({ offer }: Props) {
       activeOpacity={0.88}
     >
       {/* ── Imagen ── */}
-      <View style={[styles.imgBox, { backgroundColor: storeColor + '12' }]}>
+      <View style={[styles.imgBox, { width: imgSize, height: imgSize, backgroundColor: storeColor + '12' }]}>
         {offer.imagen && !imgError ? (
           <Image
             source={{ uri: offer.imagen }}
-            style={styles.img}
+            style={{ width: innerSize, height: innerSize }}
             resizeMode="contain"
             onLoad={() => { if (timeoutRef.current) clearTimeout(timeoutRef.current) }}
             onError={() => setImgError(true)}
@@ -64,20 +78,22 @@ export default function OfferCard({ offer }: Props) {
       </View>
 
       {/* ── Info ── */}
-      <View style={styles.info}>
+      <View style={[styles.info, { padding: pad }]}>
         {/* Store pill */}
-        <View style={[styles.storePill, { backgroundColor: storeColor + '15' }]}>
-          {StoreLogos[offer.tienda?.slug] && (
-            <Image source={StoreLogos[offer.tienda.slug]} style={styles.storeLogo} resizeMode="contain" />
-          )}
-          <Text style={[styles.storeText, { color: storeColor }]} numberOfLines={1}>
-            {offer.tienda?.nombre ?? ''}
-          </Text>
-        </View>
+        {!compactMode && (
+          <View style={[styles.storePill, { backgroundColor: storeColor + '15' }]}>
+            {StoreLogos[offer.tienda?.slug] && (
+              <Image source={StoreLogos[offer.tienda.slug]} style={styles.storeLogo} resizeMode="contain" />
+            )}
+            <Text style={[styles.storeText, { color: storeColor }]} numberOfLines={1}>
+              {offer.tienda?.nombre ?? ''}
+            </Text>
+          </View>
+        )}
 
         {/* Name + cart */}
         <View style={styles.nameRow}>
-          <Text style={styles.name} numberOfLines={2}>{offer.nombre}</Text>
+          <Text style={[styles.name, compactMode && styles.nameCompact]} numberOfLines={compactMode ? 1 : 2}>{name}</Text>
           <TouchableOpacity onPress={() => inList ? remove(offer.id) : add(offer)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
             <Ionicons name={inList ? 'cart' : 'cart-outline'} size={20} color={inList ? Colors.primary : Colors.textLight} />
           </TouchableOpacity>
@@ -85,23 +101,24 @@ export default function OfferCard({ offer }: Props) {
 
         {/* Prices */}
         <View style={styles.priceRow}>
-          <Text style={styles.price}>CHF {fmt(offer.precio_oferta)}</Text>
-          {offer.precio_original ? (
-            <Text style={styles.priceOld}>CHF {fmt(offer.precio_original)}</Text>
+          <Text style={[styles.price, compactMode && styles.priceCompact]}>CHF {fmt(displayPrice)}</Text>
+          {displayOriginal ? (
+            <Text style={styles.priceOld}>CHF {fmt(displayOriginal)}</Text>
           ) : null}
+          {showMwst && <Text style={styles.mwstLabel}>inkl. MwSt</Text>}
         </View>
 
-        {offer.unidad ? <Text style={styles.unit}>pro {offer.unidad}</Text> : null}
+        {offer.unidad && !compactMode ? <Text style={styles.unit}>{t('offer.unit', { unit: offer.unidad })}</Text> : null}
 
         {/* Expiry */}
         <View style={styles.expiryRow}>
           <Ionicons name="time-outline" size={12} color={isExpiringSoon ? Colors.warning : Colors.textLight} />
           <Text style={[styles.expiry, isExpiringSoon && styles.expiryUrgent]}>
             {Number(offer.dias_restantes) === 0
-              ? 'Heute letzter Tag!'
+              ? t('offer.lastDay')
               : isExpiringSoon
-              ? `Noch ${offer.dias_restantes} Tage`
-              : `bis ${formatDate(offer.valido_hasta)}`}
+              ? t('offer.daysLeft', { days: offer.dias_restantes })
+              : formatDate(offer.valido_hasta)}
           </Text>
         </View>
       </View>
@@ -144,11 +161,14 @@ const styles = StyleSheet.create({
   storeText: { fontSize: 12, fontFamily: 'Inter-SemiBold' },
 
   nameRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 6, marginBottom: 4 },
-  name: { flex: 1, fontSize: 14, fontFamily: 'PlusJakartaSans-SemiBold', color: Colors.textDark, lineHeight: 20 },
+  name:        { flex: 1, fontSize: 14, fontFamily: 'PlusJakartaSans-SemiBold', color: Colors.textDark, lineHeight: 20 },
+  nameCompact: { fontSize: 13, lineHeight: 18 },
 
-  priceRow: { flexDirection: 'row', alignItems: 'baseline', gap: 8, marginBottom: 2 },
-  price:    { fontSize: 20, fontFamily: 'PlusJakartaSans-Bold', color: Colors.primary },
-  priceOld: { fontSize: 13, fontFamily: 'Inter-Regular', color: Colors.textLight, textDecorationLine: 'line-through' },
+  priceRow:     { flexDirection: 'row', alignItems: 'baseline', gap: 8, marginBottom: 2 },
+  price:        { fontSize: 20, fontFamily: 'PlusJakartaSans-Bold', color: Colors.primary },
+  priceCompact: { fontSize: 16 },
+  priceOld:     { fontSize: 13, fontFamily: 'Inter-Regular', color: Colors.textLight, textDecorationLine: 'line-through' },
+  mwstLabel:    { fontSize: 11, fontFamily: 'Inter-Regular', color: Colors.textLight },
 
   unit: { fontSize: 12, fontFamily: 'Inter-Regular', color: Colors.textMedium, marginBottom: 2 },
 

@@ -18,7 +18,9 @@ import { NativeModules, Platform } from 'react-native'
 import de from '../locales/de.json'
 import fr from '../locales/fr.json'
 import it from '../locales/it.json'
+import en from '../locales/en.json'
 import { Colors } from '../constants/colors'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 SplashScreen.preventAutoHideAsync()
 
@@ -37,6 +39,7 @@ if (!i18n.isInitialized) {
       de: { translation: de },
       fr: { translation: fr },
       it: { translation: it },
+      en: { translation: en },
     },
     lng:          supportedLang,
     fallbackLng:  'de',
@@ -51,6 +54,17 @@ export default function RootLayout() {
     'Inter-Regular':            Inter_400Regular,
     'Inter-Medium':             Inter_500Medium,
   })
+
+  useEffect(() => {
+    AsyncStorage.getItem('offerto-settings').then(raw => {
+      if (!raw) return
+      try {
+        const stored = JSON.parse(raw)
+        const lang = stored?.state?.language
+        if (lang && ['de','fr','it','en'].includes(lang)) i18n.changeLanguage(lang)
+      } catch {}
+    })
+  }, [])
 
   useEffect(() => {
     if (fontsLoaded) SplashScreen.hideAsync()

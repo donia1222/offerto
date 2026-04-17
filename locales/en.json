@@ -1,0 +1,133 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Try again",
+    "save": "Save",
+    "cancel": "Cancel",
+    "search": "Search",
+    "all": "All",
+    "noResults": "No offers found",
+    "back": "Back",
+    "close": "Close"
+  },
+  "tabs": {
+    "home": "Offers",
+    "search": "Discover",
+    "stores": "Stores",
+    "kataloge": "Catalogues",
+    "list": "List",
+    "settings": "Settings"
+  },
+  "home": {
+    "title": "This week",
+    "featured": "Top offers",
+    "allOffers": "All offers",
+    "expiringSoon": "Expiring soon",
+    "validUntil": "Valid until {{date}}",
+    "expiresIn": "{{days}} days left",
+    "expiresToday": "Last day today!"
+  },
+  "offer": {
+    "salePrice": "Sale price",
+    "originalPrice": "Regular price",
+    "discount": "-{{pct}}%",
+    "savings": "You save CHF {{amount}} ({{pct}}% off)",
+    "validPeriod": "Validity period",
+    "from": "From",
+    "until": "Until",
+    "store": "Store",
+    "storeType": "Cash & Carry · Switzerland",
+    "addToList": "Add to shopping list",
+    "removeFromList": "Remove from list",
+    "unit": "per {{unit}}",
+    "notFound": "Offer not found",
+    "lastDay": "Last day today!",
+    "daysLeft": "{{days}} days left"
+  },
+  "search": {
+    "placeholder": "Search product...",
+    "filters": "Filters",
+    "minDiscount": "Min. discount",
+    "category": "Category",
+    "foundIn": "Found in {{count}} stores",
+    "bestPrice": "Best price",
+    "results": "{{count}} offers",
+    "noOffers": "No offers",
+    "noOffersHint": "There are no offers\nin this category",
+    "minChars": "Enter at least 2 characters",
+    "noResults": "No results for \"{{query}}\"",
+    "cancel": "Cancel"
+  },
+  "list": {
+    "title": "Shopping list",
+    "empty": "List is empty",
+    "emptyHint": "Tap 🛒 on any offer\nto add it here",
+    "totalSaving": "Savings CHF {{amount}}",
+    "totalCost": "CHF {{amount}}",
+    "items": "{{count}} items",
+    "clearAll": "Clear list",
+    "clearDone": "Remove completed",
+    "share": "Share list",
+    "confirmClear": "Clear list",
+    "confirmClearMsg": "Remove all items?",
+    "lastDay": "Last day today!",
+    "daysLeft": "{{days}} days left"
+  },
+  "kataloge": {
+    "title": "Catalogues",
+    "empty": "No catalogues available",
+    "loading": "Loading catalogue..."
+  },
+  "settings": {
+    "title": "Settings",
+    "languageSection": "LANGUAGE",
+    "storesSection": "FAVOURITE STORES",
+    "cantonSection": "CANTON",
+    "canton": "Canton",
+    "displaySection": "DISPLAY",
+    "compactMode": "Compact view",
+    "showMwst": "Prices incl. VAT (7.7%)",
+    "aboutSection": "ABOUT",
+    "version": "Version",
+    "rateApp": "Rate the app",
+    "feedback": "Send feedback",
+    "privacy": "Privacy",
+    "notifications": "Notifications",
+    "notifyNewOffers": "New offers (Mondays)",
+    "notifyExpiring": "Expiring offers"
+  },
+  "notif": {
+    "title":              "Notifications",
+    "masterLabel":        "Notifications",
+    "masterOn":           "Active — you will be notified",
+    "masterOff":          "Disabled",
+    "sectionAuto":        "AUTOMATIC",
+    "weekly":             "New offers (Monday)",
+    "expiring":           "Expiring offers",
+    "sectionCategories":  "BY CATEGORY",
+    "sectionStores":      "BY STORE",
+    "sectionWatch":       "WATCH PRODUCTS",
+    "watchPlaceholder":   "e.g. Beef tenderloin, Entrecôte...",
+    "watchEmpty":         "No products watched yet",
+    "noStores":           "No stores selected"
+  },
+  "stores": {
+    "title": "By store",
+    "offers": "{{count}} offers"
+  },
+  "categories": {
+    "fleisch": "Meat",
+    "fisch": "Fish",
+    "gemuese": "Vegetables & Fruits",
+    "milch": "Milk & Cheese",
+    "bakery": "Bakery",
+    "getraenke": "Beverages",
+    "snacks": "Snacks",
+    "haushalt": "Household",
+    "hygiene": "Personal care",
+    "tierfutter": "Pet food",
+    "other": "Other",
+    "all": "All offers"
+  }
+}

@@ -5,6 +5,7 @@ import {
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
+import { useTranslation } from 'react-i18next'
 import { api } from '../services/api'
 import OfferCard from './OfferCard'
 import { Colors } from '../constants/colors'
@@ -12,6 +13,7 @@ import { Spacing, Radius } from '../constants/spacing'
 import type { Offer } from '../types'
 
 export default function SearchButton() {
+  const { t } = useTranslation()
   const [open,    setOpen]    = useState(false)
   const [query,   setQuery]   = useState('')
   const [results, setResults] = useState<Offer[]>([])
@@ -58,7 +60,7 @@ export default function SearchButton() {
                 <TextInput
                   ref={inputRef}
                   style={styles.input}
-                  placeholder="Produkt suchen..."
+                  placeholder={t('search.placeholder')}
                   placeholderTextColor={Colors.textLight}
                   value={query}
                   onChangeText={onChangeText}
@@ -74,7 +76,7 @@ export default function SearchButton() {
                 )}
               </View>
               <TouchableOpacity onPress={onClose} style={styles.cancelBtn}>
-                <Text style={styles.cancelText}>Abbrechen</Text>
+                <Text style={styles.cancelText}>{t('search.cancel')}</Text>
               </TouchableOpacity>
             </View>
 
@@ -86,12 +88,12 @@ export default function SearchButton() {
             ) : query.length < 2 ? (
               <View style={styles.center}>
                 <Ionicons name="search-outline" size={48} color={Colors.textLight} />
-                <Text style={styles.hint}>Mindestens 2 Zeichen eingeben</Text>
+                <Text style={styles.hint}>{t('search.minChars')}</Text>
               </View>
             ) : results.length === 0 ? (
               <View style={styles.center}>
                 <Ionicons name="sad-outline" size={48} color={Colors.textLight} />
-                <Text style={styles.hint}>Keine Ergebnisse für „{query}"</Text>
+                <Text style={styles.hint}>{t('search.noResults', { query })}</Text>
               </View>
             ) : (
               <FlatList
@@ -101,7 +103,7 @@ export default function SearchButton() {
                 keyboardShouldPersistTaps="handled"
                 showsVerticalScrollIndicator={false}
                 ListHeaderComponent={
-                  <Text style={styles.count}>{results.length} Angebote</Text>
+                  <Text style={styles.count}>{t('search.results', { count: results.length })}</Text>
                 }
                 renderItem={({ item }) => (
                   <View style={styles.cardWrap}>

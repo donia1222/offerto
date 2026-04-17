@@ -7,11 +7,13 @@
     "cancel": "Abbrechen",
     "search": "Suchen",
     "all": "Alle",
-    "noResults": "Keine Angebote gefunden"
+    "noResults": "Keine Angebote gefunden",
+    "back": "Zurück",
+    "close": "Schliessen"
   },
   "tabs": {
     "home": "Angebote",
-    "search": "Suchen",
+    "search": "Entdecken",
     "stores": "Läden",
     "kataloge": "Prospekte",
     "list": "Einkauf",
@@ -20,18 +22,28 @@
   "home": {
     "title": "Diese Woche",
     "featured": "Top-Angebote",
+    "allOffers": "Alle Angebote",
     "expiringSoon": "Läuft bald ab",
     "validUntil": "Gültig bis {{date}}",
     "expiresIn": "Noch {{days}} Tage",
     "expiresToday": "Heute letzter Tag!"
   },
   "offer": {
+    "salePrice": "Angebotspreis",
     "originalPrice": "Normalpreis",
     "discount": "-{{pct}}%",
-    "addToList": "Zur Liste",
-    "removeFromList": "Entfernen",
+    "savings": "Sie sparen CHF {{amount}} ({{pct}}% Rabatt)",
+    "validPeriod": "Gültigkeitszeitraum",
+    "from": "Von",
+    "until": "Bis",
+    "store": "Laden",
+    "storeType": "Cash & Carry · Schweiz",
+    "addToList": "Zur Einkaufsliste",
+    "removeFromList": "Von Liste entfernen",
     "unit": "pro {{unit}}",
-    "store": "Bei {{store}}"
+    "notFound": "Angebot nicht gefunden",
+    "lastDay": "Heute letzter Tag!",
+    "daysLeft": "Noch {{days}} Tage"
   },
   "search": {
     "placeholder": "Produkt suchen...",
@@ -39,24 +51,66 @@
     "minDiscount": "Mind. Rabatt",
     "category": "Kategorie",
     "foundIn": "In {{count}} Läden gefunden",
-    "bestPrice": "Bester Preis"
+    "bestPrice": "Bester Preis",
+    "results": "{{count}} Angebote",
+    "noOffers": "Keine Angebote",
+    "noOffersHint": "In dieser Kategorie gibt es\ngerade keine Angebote",
+    "minChars": "Mindestens 2 Zeichen eingeben",
+    "noResults": "Keine Ergebnisse für «{{query}}»",
+    "cancel": "Abbrechen"
   },
   "list": {
-    "title": "Meine Einkaufsliste",
+    "title": "Einkaufsliste",
     "empty": "Liste ist leer",
-    "emptyHint": "Tippe auf ein Angebot und füge es hinzu",
-    "totalSaving": "Ersparnis: CHF {{amount}}",
-    "totalCost": "Gesamt: CHF {{amount}}",
+    "emptyHint": "Tippe auf 🛒 bei einem Angebot\num es hier hinzuzufügen",
+    "totalSaving": "Ersparnis CHF {{amount}}",
+    "totalCost": "CHF {{amount}}",
+    "items": "{{count}} Artikel",
     "clearAll": "Liste leeren",
-    "share": "Liste teilen"
+    "clearDone": "Erledigte entfernen",
+    "share": "Liste teilen",
+    "confirmClear": "Liste leeren",
+    "confirmClearMsg": "Alle Artikel entfernen?",
+    "lastDay": "Heute letzter Tag!",
+    "daysLeft": "Noch {{days}} Tage"
+  },
+  "kataloge": {
+    "title": "Prospekte",
+    "empty": "Keine Kataloge verfügbar",
+    "loading": "Katalog wird geladen..."
   },
   "settings": {
     "title": "Einstellungen",
-    "language": "Sprache",
+    "languageSection": "SPRACHE",
+    "storesSection": "LIEBLINGSLÄDEN",
+    "cantonSection": "KANTON",
     "canton": "Kanton",
+    "displaySection": "DARSTELLUNG",
+    "compactMode": "Kompakte Ansicht",
+    "showMwst": "Preise inkl. MwSt (7.7%)",
+    "aboutSection": "ÜBER DIE APP",
+    "version": "Version",
+    "rateApp": "App bewerten",
+    "feedback": "Feedback senden",
+    "privacy": "Datenschutz",
     "notifications": "Benachrichtigungen",
     "notifyNewOffers": "Neue Angebote (Montags)",
     "notifyExpiring": "Ablaufende Angebote"
+  },
+  "notif": {
+    "title":              "Benachrichtigungen",
+    "masterLabel":        "Benachrichtigungen",
+    "masterOn":           "Aktiv — du wirst benachrichtigt",
+    "masterOff":          "Deaktiviert",
+    "sectionAuto":        "AUTOMATISCH",
+    "weekly":             "Neue Angebote (Montag)",
+    "expiring":           "Ablaufende Angebote",
+    "sectionCategories":  "NACH KATEGORIE",
+    "sectionStores":      "NACH LADEN",
+    "sectionWatch":       "PRODUKTE BEOBACHTEN",
+    "watchPlaceholder":   "z.B. Rindsfilet, Entrecôte...",
+    "watchEmpty":         "Noch keine Produkte beobachtet",
+    "noStores":           "Keine Läden ausgewählt"
   },
   "stores": {
     "title": "Nach Laden",
@@ -64,14 +118,16 @@
   },
   "categories": {
     "fleisch": "Fleisch",
+    "fisch": "Fisch",
     "gemuese": "Gemüse & Früchte",
     "milch": "Milch & Käse",
-    "bakery": "Brot & Backwaren",
+    "bakery": "Backwaren",
     "getraenke": "Getränke",
     "snacks": "Snacks",
     "haushalt": "Haushalt",
     "hygiene": "Körperpflege",
     "tierfutter": "Tierfutter",
-    "other": "Sonstiges"
+    "other": "Sonstiges",
+    "all": "Alle Angebote"
   }
 }

@@ -99,6 +99,16 @@ export default function TabLayout() {
           ),
         }}
       />
+
+      <Tabs.Screen
+        name="notifications"
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <TabIcon name={focused ? 'notifications' : 'notifications-outline'} focused={focused} label={t('notif.title')} />
+          ),
+        }}
+      />
+
       <Tabs.Screen name="stores"   options={{ href: null }} />
       <Tabs.Screen name="settings" options={{ href: null }} />
     </Tabs>

@@ -6,8 +6,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
+import { useTranslation } from 'react-i18next'
 import { api } from '../../services/api'
 import { useListStore } from '../../store/listStore'
+import { useSettingsStore } from '../../store/settingsStore'
+import { getOfferName } from '../../utils/getOfferName'
 import { Colors } from '../../constants/colors'
 import { Spacing, Radius } from '../../constants/spacing'
 import { StoreLogos } from '../../constants/stores'
@@ -17,12 +20,14 @@ import { formatDate } from '../../utils/formatters'
 export default function OfferDetailScreen() {
   const { id }   = useLocalSearchParams<{ id: string }>()
   const router   = useRouter()
+  const { t }    = useTranslation()
 
   const [offer, setOffer]       = useState<Offer | null>(null)
   const [loading, setLoading]   = useState(true)
   const [error, setError]       = useState(false)
   const [imgError, setImgError] = useState(false)
   const { add, remove, isInList } = useListStore()
+  const { language } = useSettingsStore()
 
   useEffect(() => {
     api.get(`/ofertas.php?id=${id}`)
@@ -34,7 +39,7 @@ export default function OfferDetailScreen() {
   const onShare = async () => {
     if (!offer) return
     await Share.share({
-      message: `${offer.nombre} – CHF ${offer.precio_oferta.toFixed(2)} bei ${offer.tienda.nombre} (bis ${formatDate(offer.valido_hasta)})`,
+      message: `${getOfferName(offer, language)} – CHF ${offer.precio_oferta.toFixed(2)} bei ${offer.tienda.nombre} (bis ${formatDate(offer.valido_hasta)})`,
     })
   }
 
@@ -49,9 +54,9 @@ export default function OfferDetailScreen() {
     <SafeAreaView style={styles.center} edges={['bottom']}>
       <Stack.Screen options={{ headerTitle: '' }} />
       <Ionicons name="alert-circle-outline" size={48} color={Colors.error} />
-      <Text style={styles.errorText}>Angebot nicht gefunden</Text>
+      <Text style={styles.errorText}>{t('offer.notFound')}</Text>
       <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-        <Text style={styles.backBtnText}>Zurück</Text>
+        <Text style={styles.backBtnText}>{t('common.back')}</Text>
       </TouchableOpacity>
     </SafeAreaView>
   )
@@ -106,7 +111,7 @@ export default function OfferDetailScreen() {
             <View style={styles.urgencyBadge}>
               <Ionicons name="time" size={12} color={Colors.warning} />
               <Text style={styles.urgencyText}>
-                {offer.dias_restantes === 0 ? 'Heute letzter Tag!' : `Noch ${offer.dias_restantes} Tage`}
+                {offer.dias_restantes === 0 ? t('offer.lastDay') : t('offer.daysLeft', { days: offer.dias_restantes })}
               </Text>
             </View>
           )}
@@ -120,18 +125,18 @@ export default function OfferDetailScreen() {
           )}
 
           {/* Nombre */}
-          <Text style={styles.name}>{offer.nombre}</Text>
-          {offer.unidad && <Text style={styles.unit}>pro {offer.unidad}</Text>}
+          <Text style={styles.name}>{getOfferName(offer, language)}</Text>
+          {offer.unidad && <Text style={styles.unit}>{t('offer.unit', { unit: offer.unidad })}</Text>}
 
           {/* Precio */}
           <View style={styles.priceCard}>
             <View style={styles.priceMain}>
-              <Text style={styles.priceLabel}>Angebotspreis</Text>
+              <Text style={styles.priceLabel}>{t('offer.salePrice')}</Text>
               <Text style={styles.price}>CHF {offer.precio_oferta.toFixed(2)}</Text>
             </View>
             {offer.precio_original && (
               <View style={styles.priceSide}>
-                <Text style={styles.priceOldLabel}>Normalpreis</Text>
+                <Text style={styles.priceOldLabel}>{t('offer.originalPrice')}</Text>
                 <Text style={styles.priceOld}>CHF {offer.precio_original.toFixed(2)}</Text>
               </View>
             )}
@@ -145,7 +150,7 @@ export default function OfferDetailScreen() {
           >
             <Ionicons name={isInList(offer.id) ? 'cart' : 'cart-outline'} size={20} color={isInList(offer.id) ? '#fff' : Colors.primary} />
             <Text style={[styles.listBtnText, isInList(offer.id) && { color: '#fff' }]}>
-              {isInList(offer.id) ? 'Von Liste entfernen' : 'Zur Einkaufsliste'}
+              {isInList(offer.id) ? t('offer.removeFromList') : t('offer.addToList')}
             </Text>
           </TouchableOpacity>
 
@@ -154,19 +159,19 @@ export default function OfferDetailScreen() {
             <View style={styles.savingsBanner}>
               <Ionicons name="checkmark-circle" size={18} color={Colors.success} />
               <Text style={styles.savingsText}>
-                Sie sparen CHF {savings.toFixed(2)} ({offer.descuento}% Rabatt)
+                {t('offer.savings', { amount: savings.toFixed(2), pct: offer.descuento })}
               </Text>
             </View>
           )}
 
           {/* Validez */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Gültigkeitszeitraum</Text>
+            <Text style={styles.sectionTitle}>{t('offer.validPeriod')}</Text>
             <View style={styles.dateRow}>
               <View style={styles.dateItem}>
                 <Ionicons name="calendar-outline" size={16} color={Colors.textMedium} />
                 <View>
-                  <Text style={styles.dateLabel}>Von</Text>
+                  <Text style={styles.dateLabel}>{t('offer.from')}</Text>
                   <Text style={styles.dateValue}>{formatDate(offer.valido_desde)}</Text>
                 </View>
               </View>
@@ -174,7 +179,7 @@ export default function OfferDetailScreen() {
               <View style={styles.dateItem}>
                 <Ionicons name="calendar" size={16} color={isExpiringSoon ? Colors.warning : Colors.textMedium} />
                 <View>
-                  <Text style={styles.dateLabel}>Bis</Text>
+                  <Text style={styles.dateLabel}>{t('offer.until')}</Text>
                   <Text style={[styles.dateValue, isExpiringSoon && { color: Colors.warning }]}>
                     {formatDate(offer.valido_hasta)}
                   </Text>
@@ -185,14 +190,14 @@ export default function OfferDetailScreen() {
 
           {/* Tienda info */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Laden</Text>
+            <Text style={styles.sectionTitle}>{t('offer.store')}</Text>
             <View style={[styles.storeCard, { borderLeftColor: offer.tienda.color }]}>
               {StoreLogos[offer.tienda.slug] && (
                 <Image source={StoreLogos[offer.tienda.slug]} style={styles.storeCardLogo} resizeMode="contain" />
               )}
               <View>
                 <Text style={styles.storeCardName}>{offer.tienda.nombre}</Text>
-                <Text style={styles.storeCardType}>Cash &amp; Carry · Schweiz</Text>
+                <Text style={styles.storeCardType}>{t('offer.storeType')}</Text>
               </View>
             </View>
           </View>

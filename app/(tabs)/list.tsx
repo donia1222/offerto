@@ -5,7 +5,10 @@ import {
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
+import { useTranslation } from 'react-i18next'
 import { useListStore } from '../../store/listStore'
+import { useSettingsStore } from '../../store/settingsStore'
+import { getOfferName } from '../../utils/getOfferName'
 import { Colors } from '../../constants/colors'
 import { Spacing, Radius } from '../../constants/spacing'
 import { StoreLogos } from '../../constants/stores'
@@ -14,6 +17,8 @@ import type { ListItem } from '../../store/listStore'
 const fmt = (v: number) => v.toFixed(2)
 
 export default function ListScreen() {
+  const { t } = useTranslation()
+  const { language } = useSettingsStore()
   const { items, remove, toggleComprado, setCantidad, clearAll, clearComprado } = useListStore()
 
   const totalCost    = items.reduce((s, i) => s + i.offer.precio_oferta * i.cantidad, 0)
@@ -26,28 +31,28 @@ export default function ListScreen() {
   const onShare = async () => {
     if (items.length === 0) return
     const lines = items.map(i =>
-      `${i.comprado ? '✓' : '○'} ${i.offer.nombre} x${i.cantidad} — CHF ${fmt(i.offer.precio_oferta * i.cantidad)} (${i.offer.tienda.nombre})`
+      `${i.comprado ? '✓' : '○'} ${getOfferName(i.offer, language)} x${i.cantidad} — CHF ${fmt(i.offer.precio_oferta * i.cantidad)} (${i.offer.tienda.nombre})`
     )
-    lines.push(`\nGesamt: CHF ${fmt(totalCost)}`)
-    if (totalSavings > 0) lines.push(`Ersparnis: CHF ${fmt(totalSavings)}`)
+    lines.push(`\n${t('list.totalCost', { amount: fmt(totalCost) })}`)
+    if (totalSavings > 0) lines.push(t('list.totalSaving', { amount: fmt(totalSavings) }))
     await Share.share({ message: lines.join('\n') })
   }
 
   const onClearAll = () =>
-    Alert.alert('Liste leeren', 'Alle Artikel entfernen?', [
-      { text: 'Abbrechen', style: 'cancel' },
-      { text: 'Leeren', style: 'destructive', onPress: clearAll },
+    Alert.alert(t('list.confirmClear'), t('list.confirmClearMsg'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('list.clearAll'), style: 'destructive', onPress: clearAll },
     ])
 
   if (items.length === 0) return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.title}>Einkaufsliste</Text>
+        <Text style={styles.title}>{t('list.title')}</Text>
       </View>
       <View style={styles.empty}>
         <Ionicons name="cart-outline" size={64} color={Colors.textLight} />
-        <Text style={styles.emptyTitle}>Liste ist leer</Text>
-        <Text style={styles.emptySub}>Tippe auf 🛒 bei einem Angebot{'\n'}um es hier hinzuzufügen</Text>
+        <Text style={styles.emptyTitle}>{t('list.empty')}</Text>
+        <Text style={styles.emptySub}>{t('list.emptyHint')}</Text>
       </View>
     </SafeAreaView>
   )
@@ -77,7 +82,7 @@ export default function ListScreen() {
           <View style={[styles.storePill, { backgroundColor: storeColor + '15' }]}>
             <Text style={[styles.storeText, { color: storeColor }]}>{offer.tienda.nombre}</Text>
           </View>
-          <Text style={[styles.name, comprado && styles.nameStrike]} numberOfLines={2}>{offer.nombre}</Text>
+          <Text style={[styles.name, comprado && styles.nameStrike]} numberOfLines={2}>{getOfferName(offer, language)}</Text>
           <Text style={styles.price}>CHF {fmt(offer.precio_oferta * cantidad)}</Text>
         </View>
 
@@ -102,7 +107,7 @@ export default function ListScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.title}>Einkaufsliste</Text>
+        <Text style={styles.title}>{t('list.title')}</Text>
         <View style={{ flexDirection: 'row', gap: 4 }}>
           {doneCount > 0 && (
             <TouchableOpacity style={styles.headerBtn} onPress={clearComprado}>
@@ -129,12 +134,12 @@ export default function ListScreen() {
             {totalSavings > 0 && (
               <View style={styles.savingsRow}>
                 <Ionicons name="checkmark-circle" size={16} color={Colors.success} />
-                <Text style={styles.savingsText}>Ersparnis CHF {fmt(totalSavings)}</Text>
+                <Text style={styles.savingsText}>{t('list.totalSaving', { amount: fmt(totalSavings) })}</Text>
               </View>
             )}
             <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>{items.length} Artikel</Text>
-              <Text style={styles.totalPrice}>CHF {fmt(totalCost)}</Text>
+              <Text style={styles.totalLabel}>{t('list.items', { count: items.length })}</Text>
+              <Text style={styles.totalPrice}>{t('list.totalCost', { amount: fmt(totalCost) })}</Text>
             </View>
             <View style={{ height: 100 }} />
           </View>

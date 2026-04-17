@@ -12,6 +12,8 @@ import { offersService } from '../../services/offersService'
 import OfferCard from '../../components/OfferCard'
 import SearchButton from '../../components/SearchButton'
 import SettingsButton from '../../components/SettingsButton'
+import { useSettingsStore } from '../../store/settingsStore'
+import { getOfferName } from '../../utils/getOfferName'
 import { Colors } from '../../constants/colors'
 import { Spacing, Radius } from '../../constants/spacing'
 import { StoreLogos } from '../../constants/stores'
@@ -28,6 +30,7 @@ const STORE_COLORS: Record<string, string> = {
 export default function HomeScreen() {
   const { t }  = useTranslation()
   const router = useRouter()
+  const { language, activeStores } = useSettingsStore()
 
   const [featured, setFeatured]       = useState<Offer[]>([])
   const [offers, setOffers]           = useState<Offer[]>([])
@@ -71,7 +74,15 @@ export default function HomeScreen() {
 
   const load = useCallback(async (store: string, pg: number, append = false) => {
     try {
-      const filters = store !== 'all' ? { stores: [store] } : {}
+      let storeFilter: string[]
+      if (store !== 'all') {
+        storeFilter = [store]
+      } else if (activeStores.length < 3) {
+        storeFilter = activeStores
+      } else {
+        storeFilter = []
+      }
+      const filters = storeFilter.length ? { stores: storeFilter } : {}
       const [feat, result] = await Promise.all([
         pg === 1 ? offersService.getFeatured() : Promise.resolve(featured),
         offersService.getOffers(filters, pg),
@@ -85,9 +96,10 @@ export default function HomeScreen() {
   }, [featured])
 
   useEffect(() => {
+    setActiveStore('all')
     setLoading(true)
     load('all', 1).finally(() => setLoading(false))
-  }, [])
+  }, [activeStores.join(',')])
 
   const onRefresh = async () => { setRefreshing(true); await load(activeStore, 1); setRefreshing(false) }
   const onStoreFilter = (slug: string) => { setActiveStore(slug); setFiltering(true); load(slug, 1).finally(() => setFiltering(false)) }
@@ -99,7 +111,7 @@ export default function HomeScreen() {
   if (loading) return (
     <SafeAreaView style={styles.center} edges={['top']}>
       <ActivityIndicator size="large" color={Colors.primary} />
-      <Text style={styles.loadingText}>Lädt Angebote...</Text>
+      <Text style={styles.loadingText}>{t('common.loading')}</Text>
     </SafeAreaView>
   )
 
@@ -164,7 +176,7 @@ export default function HomeScreen() {
                           : <Text style={{ fontSize: 30 }}>🛒</Text>
                         }
                       </View>
-                      <Text style={styles.featName} numberOfLines={2}>{o.nombre}</Text>
+                      <Text style={styles.featName} numberOfLines={2}>{getOfferName(o, language)}</Text>
                       <Text style={[styles.featPrice, { color: o.tienda.color }]}>CHF {o.precio_oferta.toFixed(2)}</Text>
                       <Text style={styles.featStore}>{o.tienda.nombre}</Text>
                     </TouchableOpacity>
@@ -176,7 +188,7 @@ export default function HomeScreen() {
             {/* Count */}
             <View style={styles.sectionRow2}>
               <Text style={styles.sectionTitle}>
-                {activeStore === 'all' ? 'Alle Angebote' : STORE_LABELS[activeStore]}
+                {activeStore === 'all' ? t('home.allOffers') : STORE_LABELS[activeStore]}
               </Text>
               <View style={styles.countPill}>
                 <Text style={styles.countText}>{total}</Text>
@@ -226,7 +238,7 @@ export default function HomeScreen() {
           </TouchableOpacity>
 
           {/* Store banners */}
-          {STORES.map(slug => {
+          {STORES.filter(slug => activeStores.includes(slug)).map(slug => {
             const isActive = activeStore === slug
             const color    = STORE_COLORS[slug] ?? Colors.primary
             return (

@@ -9,8 +9,10 @@ import { Ionicons } from '@expo/vector-icons'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { api } from '../../services/api'
 import OfferCard from '../../components/OfferCard'
+import { useTranslation } from 'react-i18next'
 import SearchButton from '../../components/SearchButton'
 import SettingsButton from '../../components/SettingsButton'
+import { useSettingsStore } from '../../store/settingsStore'
 import { Colors } from '../../constants/colors'
 import { Spacing, Radius } from '../../constants/spacing'
 import { StoreLogos } from '../../constants/stores'
@@ -23,32 +25,50 @@ interface Category {
   color: string
 }
 
-const CATEGORIES: Category[] = [
-  { slug: 'fleisch',    img: require('../../assets/images/categorias/carne.png'),           label: 'Fleisch',          color: '#E05252' },
-  { slug: 'fisch',     img: require('../../assets/images/categorias/pescado.png'),          label: 'Fisch',            color: '#2196B0' },
-  { slug: 'gemuese',   img: require('../../assets/images/categorias/frutaverdura.png'),     label: 'Gemüse & Früchte', color: '#3D9970' },
-  { slug: 'milch',     img: require('../../assets/images/categorias/leche-queso.png'),      label: 'Milch & Käse',     color: '#D4A017' },
-  { slug: 'bakery',    img: require('../../assets/images/categorias/panaderia.png'),        label: 'Backwaren',        color: '#C07038' },
-  { slug: 'getraenke', img: require('../../assets/images/categorias/bebidas.png'),          label: 'Getränke',         color: '#3A6CC8' },
-  { slug: 'snacks',    img: require('../../assets/images/categorias/snacks.png'),           label: 'Snacks',           color: '#7C6FCD' },
-  { slug: 'haushalt',  img: require('../../assets/images/categorias/prodeuctsocasa.png'),   label: 'Haushalt',         color: '#2A9D8F' },
-  { slug: 'hygiene',   img: require('../../assets/images/categorias/korperpflege.png'),     label: 'Körperpflege',     color: '#C2185B' },
-  { slug: 'tierfutter',img: require('../../assets/images/categorias/comida-animales.png'),  label: 'Tierfutter',       color: '#7B5EA7' },
-  { slug: '',          img: null,                                                           label: 'Alle Angebote',    color: Colors.primary },
+const CATEGORY_IMAGES: Record<string, any> = {
+  fleisch:    require('../../assets/images/categorias/carne.png'),
+  fisch:      require('../../assets/images/categorias/pescado.png'),
+  gemuese:    require('../../assets/images/categorias/frutaverdura.png'),
+  milch:      require('../../assets/images/categorias/leche-queso.png'),
+  bakery:     require('../../assets/images/categorias/panaderia.png'),
+  getraenke:  require('../../assets/images/categorias/bebidas.png'),
+  snacks:     require('../../assets/images/categorias/snacks.png'),
+  haushalt:   require('../../assets/images/categorias/prodeuctsocasa.png'),
+  hygiene:    require('../../assets/images/categorias/korperpflege.png'),
+  tierfutter: require('../../assets/images/categorias/comida-animales.png'),
+}
+const CATEGORY_SLUGS = [
+  { slug: 'fleisch',    color: '#E05252' },
+  { slug: 'fisch',      color: '#2196B0' },
+  { slug: 'gemuese',    color: '#3D9970' },
+  { slug: 'milch',      color: '#D4A017' },
+  { slug: 'bakery',     color: '#C07038' },
+  { slug: 'getraenke',  color: '#3A6CC8' },
+  { slug: 'snacks',     color: '#7C6FCD' },
+  { slug: 'haushalt',   color: '#2A9D8F' },
+  { slug: 'hygiene',    color: '#C2185B' },
+  { slug: 'tierfutter', color: '#7B5EA7' },
 ]
 
 const STORES = [
-  { slug: 'all',          label: 'Alle',         color: Colors.primary,  logo: null },
-  { slug: 'aligro',       label: 'Aligro',       color: '#FF6600',       logo: StoreLogos.aligro },
-  { slug: 'topcc',        label: 'TopCC',        color: '#0050AA',       logo: StoreLogos.topcc },
-  { slug: 'transgourmet', label: 'Transgourmet', color: '#E2001A',       logo: StoreLogos.transgourmet },
+  { slug: 'all',          color: Colors.primary,  logo: null },
+  { slug: 'aligro',       color: '#FF6600',       logo: StoreLogos.aligro },
+  { slug: 'topcc',        color: '#0050AA',       logo: StoreLogos.topcc },
+  { slug: 'transgourmet', color: '#E2001A',       logo: StoreLogos.transgourmet },
 ]
 
 export default function SearchScreen() {
   const { width } = useWindowDimensions()
+  const { t }     = useTranslation()
+  const { activeStores } = useSettingsStore()
   const GAP       = Spacing.md
   const PADDING   = Spacing.lg * 2
   const tileSize  = (width - PADDING - GAP) / 2
+
+  const CATEGORIES: Category[] = [
+    ...CATEGORY_SLUGS.map(c => ({ ...c, img: CATEGORY_IMAGES[c.slug], label: t(`categories.${c.slug}`) })),
+    { slug: '', img: null, label: t('categories.all'), color: Colors.primary },
+  ]
 
   const [screen,   setScreen]   = useState<'grid' | 'results'>('grid')
   const [store,    setStore]    = useState('all')
@@ -65,16 +85,19 @@ export default function SearchScreen() {
     setScreen('results')
     setLoading(true)
     try {
+      const effectiveStore = storeSlug !== 'all'
+        ? storeSlug
+        : activeStores.length < 3 ? activeStores.join(',') : ''
       let datos: Offer[] = []
       if (cat.searchQuery) {
         const params: Record<string, string> = { q: cat.searchQuery, limite: '200' }
-        if (storeSlug !== 'all') params.tienda = storeSlug
+        if (effectiveStore) params.tienda = effectiveStore
         const res = await api.get('/buscar.php', { params })
         datos = res.data.datos ?? []
       } else {
         const params: Record<string, string> = { orden: 'descuento', pagina: '1', limite: '200' }
         if (cat.slug) params.categoria = cat.slug
-        if (storeSlug !== 'all') params.tienda = storeSlug
+        if (effectiveStore) params.tienda = effectiveStore
         const res = await api.get('/ofertas.php', { params })
         datos = res.data.datos ?? []
       }
@@ -84,7 +107,7 @@ export default function SearchScreen() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [activeStores])
 
   const onStorePress = (slug: string) => {
     setStore(slug)
@@ -104,7 +127,7 @@ export default function SearchScreen() {
           </TouchableOpacity>
         )}
         <Animated.Text style={[styles.title, { fontSize: titleSize }]} numberOfLines={1}>
-          {screen === 'results' && category ? category.label : 'Entdecken'}
+          {screen === 'results' && category ? category.label : t('tabs.search')}
         </Animated.Text>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <SearchButton />
@@ -119,7 +142,7 @@ export default function SearchScreen() {
         contentContainerStyle={styles.chipBar}
         style={styles.chipScroll}
       >
-        {STORES.map(s => {
+        {STORES.filter(s => s.slug === 'all' || activeStores.includes(s.slug)).map(s => {
           const active = store === s.slug
           return (
             <TouchableOpacity
@@ -133,7 +156,9 @@ export default function SearchScreen() {
               ) : (
                 <Ionicons name="apps" size={14} color={active ? '#fff' : Colors.textMedium} />
               )}
-              <Text style={[styles.chipText, active && styles.chipTextActive]}>{s.label}</Text>
+              <Text style={[styles.chipText, active && styles.chipTextActive]}>
+                {s.slug === 'all' ? t('common.all') : s.slug === 'aligro' ? 'Aligro' : s.slug === 'topcc' ? 'TopCC' : 'Transgourmet'}
+              </Text>
             </TouchableOpacity>
           )
         })}
@@ -202,8 +227,8 @@ export default function SearchScreen() {
         ) : results.length === 0 ? (
           <View style={styles.center}>
             <MaterialCommunityIcons name="cart-off" size={56} color={Colors.textLight} />
-            <Text style={styles.emptyTitle}>Keine Angebote</Text>
-            <Text style={styles.emptySub}>In dieser Kategorie gibt es{'\n'}gerade keine Angebote</Text>
+            <Text style={styles.emptyTitle}>{t('search.noOffers')}</Text>
+            <Text style={styles.emptySub}>{t('search.noOffersHint')}</Text>
           </View>
         ) : (
           <FlatList
@@ -217,7 +242,7 @@ export default function SearchScreen() {
             windowSize={10}
             ListHeaderComponent={
               <View style={styles.resultsHeader}>
-                <Text style={styles.resultsCount}>{results.length} Angebote</Text>
+                <Text style={styles.resultsCount}>{t('search.results', { count: results.length })}</Text>
               </View>
             }
             renderItem={({ item }) => (
