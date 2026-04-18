@@ -63,6 +63,7 @@ export default function NotificationsScreen() {
     setSending(false)
   }
 
+
   const onAddWatch = () => {
     if (input.trim().length < 2) return
     addWatch(input.trim())
@@ -280,7 +281,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.sm,
   },
   masterLeft:  { flexDirection: 'row', alignItems: 'center', gap: Spacing.md, flex: 1 },
-  testLinkRow: { alignItems: 'flex-end', marginTop: 6, marginBottom: 4, paddingHorizontal: 4 },
+  testLinkRow: { alignItems: 'flex-end', marginTop: 6, marginBottom: 4, paddingHorizontal: 4, gap: 8 },
   testLink: {
     fontFamily: 'Inter-Medium', fontSize: 13,
     color: Colors.primary, textDecorationLine: 'underline',

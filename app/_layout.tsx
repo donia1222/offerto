@@ -97,6 +97,13 @@ export default function RootLayout() {
         if (!granted || state.enabled === false) return
         if (state.weekly   !== false) scheduleWeekly('Offerto 🛒', 'Neue Angebote diese Woche — jetzt entdecken!')
         if (state.expiring !== false) scheduleExpiringReminder('Offerto ⏰', 'Einige Angebote laufen morgen ab!')
+
+        // Solo verificar watchlist/stores una vez al día
+        const lastCheck = await AsyncStorage.getItem('offerto-last-check')
+        const today = new Date().toISOString().slice(0, 10)
+        if (lastCheck === today) return
+        await AsyncStorage.setItem('offerto-last-check', today)
+
         if (state.watchlist?.length) {
           checkWatchlist(
             state.watchlist,
