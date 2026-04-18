@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Stack } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import { useFonts } from 'expo-font'
@@ -20,6 +20,7 @@ import fr from '../locales/fr.json'
 import it from '../locales/it.json'
 import en from '../locales/en.json'
 import { Colors } from '../constants/colors'
+import AppLoader from '../components/AppLoader'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { requestPermissions, registerToken, scheduleWeekly, scheduleExpiringReminder, checkWatchlist, checkStores } from '../services/notificationsService'
 import * as Updates from 'expo-updates'
@@ -50,6 +51,7 @@ if (!i18n.isInitialized) {
 }
 
 export default function RootLayout() {
+  const [loaderDone, setLoaderDone] = useState(false)
   const [fontsLoaded] = useFonts({
     'PlusJakartaSans-Bold':     PlusJakartaSans_700Bold,
     'PlusJakartaSans-SemiBold': PlusJakartaSans_600SemiBold,
@@ -80,6 +82,7 @@ export default function RootLayout() {
       } catch {}
     })
 
+    if (!loaderDone) return
     AsyncStorage.getItem('offerto-notifications').then(async raw => {
       try {
         const state   = JSON.parse(raw ?? '{}')?.state ?? {}
@@ -127,7 +130,7 @@ export default function RootLayout() {
         }
       } catch {}
     })
-  }, [])
+  }, [loaderDone])
 
   useEffect(() => {
     if (fontsLoaded) SplashScreen.hideAsync()
@@ -138,6 +141,7 @@ export default function RootLayout() {
   return (
     <>
       <StatusBar style="dark" backgroundColor={Colors.background} />
+      {!loaderDone && <AppLoader onDone={() => setLoaderDone(true)} />}
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen

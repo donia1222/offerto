@@ -59,7 +59,7 @@ export default function OfferCard({ offer }: Props) {
       activeOpacity={0.88}
     >
       {/* ── Imagen ── */}
-      <View style={[styles.imgBox, { width: imgSize, height: imgSize, backgroundColor: storeColor + '12' }]}>
+      <View style={[styles.imgBox, { width: imgSize, backgroundColor: storeColor + '12' }]}>
         {offer.imagen && !imgError ? (
           <Image
             source={{ uri: offer.imagen }}
@@ -100,10 +100,10 @@ export default function OfferCard({ offer }: Props) {
           <Text style={[styles.name, compactMode && styles.nameCompact]} numberOfLines={compactMode ? 1 : 2}>{name}</Text>
           <View style={styles.actionIcons}>
             <TouchableOpacity onPress={() => inList ? remove(offer.id) : add(offer)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-              <Ionicons name={inList ? 'cart' : 'cart-outline'} size={20} color={inList ? Colors.primary : Colors.textLight} />
+              <Ionicons name={inList ? 'cart' : 'cart-outline'} size={26} color={inList ? Colors.primary : Colors.textLight} />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => watched ? removeWatch(watchTerm) : addWatch(watchTerm)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-              <Ionicons name={watched ? 'notifications' : 'notifications-outline'} size={18} color={watched ? Colors.primary : Colors.textLight} />
+              <Ionicons name={watched ? 'notifications' : 'notifications-outline'} size={24} color={watched ? Colors.primary : Colors.textLight} />
             </TouchableOpacity>
           </View>
         </View>
@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
   },
   cardExpiring: { borderColor: Colors.warning, borderWidth: 1.5, borderLeftWidth: 3 },
 
-  imgBox: { width: 110, height: 110, alignItems: 'center', justifyContent: 'center' },
+  imgBox: { alignSelf: 'stretch', alignItems: 'center', justifyContent: 'center' },
   img:    { width: 94, height: 94 },
   logoFallback: { width: 70, height: 70, opacity: 0.4 },
   emoji:  { fontSize: 32 },
@@ -171,8 +171,8 @@ const styles = StyleSheet.create({
 
   nameRow:     { flexDirection: 'row', alignItems: 'flex-start', gap: 6, marginBottom: 4 },
   actionIcons: { flexDirection: 'column', alignItems: 'center', gap: 8 },
-  name:        { flex: 1, fontSize: 14, fontFamily: 'PlusJakartaSans-SemiBold', color: Colors.textDark, lineHeight: 20 },
-  nameCompact: { fontSize: 13, lineHeight: 18 },
+  name:        { flex: 1, fontSize: 18, fontFamily: 'PlusJakartaSans-SemiBold', color: Colors.textDark, lineHeight: 24 },
+  nameCompact: { fontSize: 15, lineHeight: 20 },
 
   priceRow:     { flexDirection: 'row', alignItems: 'baseline', gap: 8, marginBottom: 2 },
   price:        { fontSize: 20, fontFamily: 'PlusJakartaSans-Bold', color: Colors.primary },

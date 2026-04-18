@@ -160,25 +160,28 @@ export default function HomeScreen() {
                   </View>
                 </View>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.featuredScroll}>
-                  {featured.slice(0, 10).map(o => (
+                  {featured.filter(o => activeStores.includes(o.tienda?.slug)).slice(0, 10).map(o => (
                     <TouchableOpacity
                       key={o.id}
-                      style={[styles.featuredCard, { borderTopColor: o.tienda.color }]}
+                      style={styles.featuredCard}
                       onPress={() => router.push(`/offer/${o.id}`)}
                       activeOpacity={0.88}
                     >
+                      <View style={[styles.featImg, { backgroundColor: '#fff' }]}>
+                        {o.imagen
+                          ? <Image source={{ uri: o.imagen }} style={{ width: 160, height: 210 }} resizeMode="contain" />
+                          : <Text style={{ fontSize: 40 }}>🛒</Text>
+                        }
+                      </View>
+                      <View style={styles.featOverlay} />
                       <View style={[styles.featBadge, { backgroundColor: o.descuento >= 30 ? Colors.success : Colors.accent }]}>
                         <Text style={styles.featBadgeText}>-{o.descuento}%</Text>
                       </View>
-                      <View style={[styles.featImgWrap, { backgroundColor: o.tienda.color + '12' }]}>
-                        {o.imagen
-                          ? <Image source={{ uri: o.imagen }} style={styles.featImg} resizeMode="contain" />
-                          : <Text style={{ fontSize: 30 }}>🛒</Text>
-                        }
+                      <View style={styles.featBottom}>
+                        <Text style={styles.featName} numberOfLines={2}>{getOfferName(o, language)}</Text>
+                        <Text style={styles.featPrice}>CHF {o.precio_oferta.toFixed(2)}</Text>
+                        <Text style={styles.featStore}>{o.tienda.nombre}</Text>
                       </View>
-                      <Text style={styles.featName} numberOfLines={2}>{getOfferName(o, language)}</Text>
-                      <Text style={[styles.featPrice, { color: o.tienda.color }]}>CHF {o.precio_oferta.toFixed(2)}</Text>
-                      <Text style={styles.featStore}>{o.tienda.nombre}</Text>
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
@@ -320,25 +323,24 @@ const styles = StyleSheet.create({
   // Featured cards
   featuredScroll:  { paddingLeft: Spacing.lg, paddingRight: Spacing.sm, gap: 12, paddingBottom: 4 },
   featuredCard: {
-    width:           148,
-    backgroundColor: Colors.surface,
-    borderRadius:    Radius.lg,
-    padding:         Spacing.md,
-    alignItems:      'center',
-    borderTopWidth:  3,
-    shadowColor:     '#000',
-    shadowOpacity:   0.07,
-    shadowRadius:    10,
-    shadowOffset:    { width: 0, height: 3 },
-    elevation:       3,
+    width:        160,
+    height:       210,
+    borderRadius: Radius.lg,
+    overflow:     'hidden',
+    shadowColor:  '#000',
+    shadowOpacity: 0.14,
+    shadowRadius:  10,
+    shadowOffset:  { width: 0, height: 3 },
+    elevation:     4,
   },
-  featBadge:       { position: 'absolute', top: 10, right: 10, borderRadius: Radius.full, paddingHorizontal: 7, paddingVertical: 3, zIndex: 1 },
-  featBadgeText:   { color: '#fff', fontSize: 12, fontFamily: 'PlusJakartaSans-Bold' },
-  featImgWrap:     { width: 84, height: 84, borderRadius: Radius.md, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', marginBottom: 10, marginTop: 4 },
-  featImg:         { width: '100%', height: '100%' },
-  featName:        { fontFamily: 'Inter-Medium', fontSize: 13, color: Colors.textDark, textAlign: 'center', lineHeight: 18, marginBottom: 6 },
-  featPrice:       { fontFamily: 'PlusJakartaSans-Bold', fontSize: 18, marginBottom: 2 },
-  featStore:       { fontFamily: 'Inter-Regular', fontSize: 12, color: Colors.textLight },
+  featImg:     { position: 'absolute', top: 0, left: 0, width: 160, height: 210 },
+  featOverlay: { position: 'absolute', bottom: 0, left: 0, width: 160, height: 90, backgroundColor: 'rgba(0,0,0,0.55)' },
+  featBadge:   { position: 'absolute', top: 10, right: 10, borderRadius: Radius.full, paddingHorizontal: 7, paddingVertical: 3, zIndex: 1 },
+  featBadgeText: { color: '#fff', fontSize: 12, fontFamily: 'PlusJakartaSans-Bold' },
+  featBottom:  { position: 'absolute', bottom: 0, left: 0, right: 0, padding: Spacing.sm },
+  featName:    { fontFamily: 'Inter-Medium', fontSize: 13, color: '#fff', lineHeight: 18, marginBottom: 3 },
+  featPrice:   { fontFamily: 'PlusJakartaSans-Bold', fontSize: 14, color: '#fff', marginBottom: 2 },
+  featStore:   { fontFamily: 'Inter-Regular', fontSize: 11, color: 'rgba(255,255,255,0.75)' },
 
   filterOverlay: { position: 'absolute', top: 180, left: 0, right: 0, alignItems: 'center', zIndex: 20 },
   loadingText:  { fontFamily: 'Inter-Regular', fontSize: 16, color: Colors.textMedium },

@@ -8,7 +8,7 @@ export default function SettingsButton() {
   const router = useRouter()
   return (
     <TouchableOpacity style={styles.btn} onPress={() => router.push('/settings')}>
-      <Ionicons name="settings-outline" size={22} color={Colors.primary} />
+      <Ionicons name="settings-outline" size={24} color={Colors.primary} />
     </TouchableOpacity>
   )
 }
