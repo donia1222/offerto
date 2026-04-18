@@ -40,6 +40,8 @@
     "storeType": "Cash & Carry · Suisse",
     "addToList": "Ajouter à la liste",
     "removeFromList": "Retirer de la liste",
+    "watchProduct": "Me notifier quand en promo",
+    "watchingProduct": "Surveillé",
     "unit": "par {{unit}}",
     "notFound": "Offre introuvable",
     "lastDay": "Dernier jour!",
@@ -110,7 +112,10 @@
     "sectionWatch":       "SURVEILLER DES PRODUITS",
     "watchPlaceholder":   "ex. Filet de bœuf, Entrecôte...",
     "watchEmpty":         "Aucun produit surveillé",
-    "noStores":           "Aucun magasin sélectionné"
+    "noStores":           "Aucun magasin sélectionné",
+    "testBtn":            "Envoyer une notification test",
+    "testSending":        "Envoi en cours...",
+    "testBody":           "Les notifications fonctionnent! 🎉"
   },
   "stores": {
     "title": "Par magasin",

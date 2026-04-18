@@ -1,28 +1,29 @@
 import React, { useState } from 'react'
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  Switch, TextInput, Image, FlatList,
+  Switch, TextInput, Image, FlatList, KeyboardAvoidingView, Platform,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
 import { useNotificationsStore } from '../../store/notificationsStore'
 import { useSettingsStore } from '../../store/settingsStore'
+import * as Notifications from 'expo-notifications'
 import { Colors } from '../../constants/colors'
 import { Spacing, Radius } from '../../constants/spacing'
 import { StoreLogos } from '../../constants/stores'
 
 const CATEGORY_ICONS: Record<string, string> = {
-  fleisch:    '🥩',
-  fisch:      '🐟',
-  gemuese:    '🥦',
-  milch:      '🧀',
-  bakery:     '🥖',
-  getraenke:  '🥤',
-  snacks:     '🍫',
-  haushalt:   '🧹',
-  hygiene:    '🧴',
-  tierfutter: '🐾',
+  fleisch:    'restaurant-outline',
+  fisch:      'fish-outline',
+  gemuese:    'leaf-outline',
+  milch:      'cafe-outline',
+  bakery:     'pizza-outline',
+  getraenke:  'wine-outline',
+  snacks:     'ice-cream-outline',
+  haushalt:   'home-outline',
+  hygiene:    'water-outline',
+  tierfutter: 'paw-outline',
 }
 
 const STORE_COLORS: Record<string, string> = {
@@ -42,9 +43,25 @@ export default function NotificationsScreen() {
     addWatch, removeWatch,
   } = useNotificationsStore()
 
-  const [input, setInput] = useState('')
+  const [input,   setInput]   = useState('')
+  const [sending, setSending] = useState(false)
 
   const visibleStores = ['aligro', 'topcc', 'transgourmet'].filter(s => activeStores.includes(s))
+
+  const sendTest = async () => {
+    setSending(true)
+    try {
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: 'Offerto 🛒',
+          body:  t('notif.testBody'),
+          sound: true,
+        },
+        trigger: { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: 3 },
+      })
+    } catch {}
+    setSending(false)
+  }
 
   const onAddWatch = () => {
     if (input.trim().length < 2) return
@@ -85,7 +102,8 @@ export default function NotificationsScreen() {
         <Text style={styles.title}>{t('notif.title')}</Text>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
 
         {/* Master toggle */}
         <View style={styles.masterCard}>
@@ -105,6 +123,12 @@ export default function NotificationsScreen() {
             thumbColor="#fff"
           />
         </View>
+
+        {enabled && (
+          <TouchableOpacity onPress={sendTest} disabled={sending} activeOpacity={0.6} style={styles.testLinkRow}>
+            <Text style={styles.testLink}>{sending ? t('notif.testSending') : t('notif.testBtn')}</Text>
+          </TouchableOpacity>
+        )}
 
         {/* Automático */}
         <SectionHeader label={t('notif.sectionAuto')} />
@@ -130,7 +154,7 @@ export default function NotificationsScreen() {
         <SectionHeader label={t('notif.sectionCategories')} />
         <View style={[styles.card, styles.chipCard, !enabled && styles.cardDisabled]}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
-            {Object.entries(CATEGORY_ICONS).map(([slug, emoji]) => {
+            {Object.entries(CATEGORY_ICONS).map(([slug, icon]) => {
               const active = categories.includes(slug) && enabled
               return (
                 <TouchableOpacity
@@ -139,7 +163,7 @@ export default function NotificationsScreen() {
                   onPress={() => enabled && toggleCategory(slug)}
                   activeOpacity={0.75}
                 >
-                  <Text style={styles.catChipEmoji}>{emoji}</Text>
+                  <Ionicons name={icon as any} size={22} color={active ? Colors.primary : Colors.textMedium} />
                   <Text style={[styles.catChipLabel, active && styles.catChipLabelActive]} numberOfLines={1}>
                     {t(`categories.${slug}`)}
                   </Text>
@@ -230,6 +254,7 @@ export default function NotificationsScreen() {
 
         <View style={{ height: 110 }} />
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   )
 }
@@ -255,6 +280,11 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.sm,
   },
   masterLeft:  { flexDirection: 'row', alignItems: 'center', gap: Spacing.md, flex: 1 },
+  testLinkRow: { alignItems: 'flex-end', marginTop: 6, marginBottom: 4, paddingHorizontal: 4 },
+  testLink: {
+    fontFamily: 'Inter-Medium', fontSize: 13,
+    color: Colors.primary, textDecorationLine: 'underline',
+  },
   masterIcon:  { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   masterLabel: { fontFamily: 'PlusJakartaSans-SemiBold', fontSize: 16, color: Colors.textDark },
   masterSub:   { fontFamily: 'Inter-Regular', fontSize: 13, color: Colors.textMedium, marginTop: 2 },
@@ -316,6 +346,16 @@ const styles = StyleSheet.create({
   },
   watchChipText: { fontFamily: 'Inter-Medium', fontSize: 13, color: Colors.primary },
   watchEmpty:    { fontFamily: 'Inter-Regular', fontSize: 14, color: Colors.textLight, padding: Spacing.md },
+
+  testBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    backgroundColor: Colors.primary, borderRadius: Radius.full,
+    paddingVertical: 13, marginBottom: Spacing.sm, marginTop: 20,
+    shadowColor: Colors.primary, shadowOpacity: 0.35, shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 }, elevation: 4,
+  },
+  testBtnDisabled: { backgroundColor: Colors.border, shadowOpacity: 0 },
+  testBtnText: { fontFamily: 'PlusJakartaSans-SemiBold', fontSize: 16, color: '#fff' },
 
   chipCard: { overflow: 'visible' },
   chipRow:  { paddingHorizontal: Spacing.md, paddingVertical: Spacing.md, gap: 8 },

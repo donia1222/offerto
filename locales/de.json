@@ -40,6 +40,8 @@
     "storeType": "Cash & Carry · Schweiz",
     "addToList": "Zur Einkaufsliste",
     "removeFromList": "Von Liste entfernen",
+    "watchProduct": "Benachrichtigen wenn wieder im Angebot",
+    "watchingProduct": "Wird beobachtet",
     "unit": "pro {{unit}}",
     "notFound": "Angebot nicht gefunden",
     "lastDay": "Heute letzter Tag!",
@@ -110,7 +112,10 @@
     "sectionWatch":       "PRODUKTE BEOBACHTEN",
     "watchPlaceholder":   "z.B. Rindsfilet, Entrecôte...",
     "watchEmpty":         "Noch keine Produkte beobachtet",
-    "noStores":           "Keine Läden ausgewählt"
+    "noStores":           "Keine Läden ausgewählt",
+    "testBtn":            "Testbenachrichtigung senden",
+    "testSending":        "Wird gesendet...",
+    "testBody":           "Benachrichtigungen funktionieren! 🎉"
   },
   "stores": {
     "title": "Nach Laden",

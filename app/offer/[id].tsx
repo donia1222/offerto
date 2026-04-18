@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next'
 import { api } from '../../services/api'
 import { useListStore } from '../../store/listStore'
 import { useSettingsStore } from '../../store/settingsStore'
+import { useNotificationsStore } from '../../store/notificationsStore'
 import { getOfferName } from '../../utils/getOfferName'
 import { Colors } from '../../constants/colors'
 import { Spacing, Radius } from '../../constants/spacing'
@@ -28,6 +29,7 @@ export default function OfferDetailScreen() {
   const [imgError, setImgError] = useState(false)
   const { add, remove, isInList } = useListStore()
   const { language } = useSettingsStore()
+  const { watchlist, addWatch, removeWatch } = useNotificationsStore()
 
   useEffect(() => {
     api.get(`/ofertas.php?id=${id}`)
@@ -142,17 +144,37 @@ export default function OfferDetailScreen() {
             )}
           </View>
 
-          {/* Zur Liste */}
-          <TouchableOpacity
-            style={[styles.listBtn, isInList(offer.id) && styles.listBtnActive]}
-            onPress={() => isInList(offer.id) ? remove(offer.id) : add(offer)}
-            activeOpacity={0.85}
-          >
-            <Ionicons name={isInList(offer.id) ? 'cart' : 'cart-outline'} size={20} color={isInList(offer.id) ? '#fff' : Colors.primary} />
-            <Text style={[styles.listBtnText, isInList(offer.id) && { color: '#fff' }]}>
-              {isInList(offer.id) ? t('offer.removeFromList') : t('offer.addToList')}
-            </Text>
-          </TouchableOpacity>
+          {/* Botones acción */}
+          <View style={styles.actionCol}>
+            <TouchableOpacity
+              style={[styles.listBtn, isInList(offer.id) && styles.listBtnActive]}
+              onPress={() => isInList(offer.id) ? remove(offer.id) : add(offer)}
+              activeOpacity={0.85}
+            >
+              <Ionicons name={isInList(offer.id) ? 'cart' : 'cart-outline'} size={20} color={isInList(offer.id) ? '#fff' : Colors.primary} />
+              <Text style={[styles.listBtnText, isInList(offer.id) && { color: '#fff' }]}>
+                {isInList(offer.id) ? t('offer.removeFromList') : t('offer.addToList')}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Notificación watchlist */}
+            {(() => {
+              const term    = (offer.nombre ?? '').trim().toLowerCase()
+              const watched = watchlist.includes(term)
+              return (
+                <TouchableOpacity
+                  style={[styles.watchBtn, watched && styles.watchBtnActive]}
+                  onPress={() => watched ? removeWatch(term) : addWatch(term)}
+                  activeOpacity={0.85}
+                >
+                  <Ionicons name={watched ? 'notifications' : 'notifications-outline'} size={20} color={watched ? Colors.primary : Colors.textLight} />
+                  <Text style={[styles.watchBtnText, watched && { color: Colors.primary }]}>
+                    {watched ? t('offer.watchingProduct') : t('offer.watchProduct')}
+                  </Text>
+                </TouchableOpacity>
+              )
+            })()}
+          </View>
 
           {/* Ahorro */}
           {savings && savings > 0 && (
@@ -289,6 +311,7 @@ const styles = StyleSheet.create({
     textDecorationLine: 'line-through',
   },
 
+  actionCol:  { flexDirection: 'column', gap: Spacing.sm },
   listBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
     borderWidth: 2, borderColor: Colors.primary, borderRadius: Radius.full,
@@ -296,6 +319,13 @@ const styles = StyleSheet.create({
   },
   listBtnActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
   listBtnText:   { fontFamily: 'PlusJakartaSans-SemiBold', fontSize: 16, color: Colors.primary },
+  watchBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    borderWidth: 1.5, borderColor: Colors.border, borderRadius: Radius.full,
+    paddingVertical: 10, paddingHorizontal: 24,
+  },
+  watchBtnActive:  { borderColor: Colors.primary, backgroundColor: Colors.primaryLight },
+  watchBtnText:    { fontFamily: 'Inter-Medium', fontSize: 15, color: Colors.textLight },
 
   savingsBanner: {
     flexDirection:  'row',

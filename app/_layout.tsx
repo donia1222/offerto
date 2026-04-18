@@ -21,6 +21,8 @@ import it from '../locales/it.json'
 import en from '../locales/en.json'
 import { Colors } from '../constants/colors'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { requestPermissions, registerToken, scheduleWeekly, scheduleExpiringReminder, checkWatchlist, checkStores } from '../services/notificationsService'
+import * as Updates from 'expo-updates'
 
 SplashScreen.preventAutoHideAsync()
 
@@ -56,12 +58,61 @@ export default function RootLayout() {
   })
 
   useEffect(() => {
+    async function checkForUpdates() {
+      try {
+        const update = await Updates.checkForUpdateAsync()
+        if (update.isAvailable) {
+          await Updates.fetchUpdateAsync()
+          await Updates.reloadAsync()
+        }
+      } catch {}
+    }
+    if (!__DEV__) checkForUpdates()
+  }, [])
+
+  useEffect(() => {
     AsyncStorage.getItem('offerto-settings').then(raw => {
       if (!raw) return
       try {
         const stored = JSON.parse(raw)
         const lang = stored?.state?.language
         if (lang && ['de','fr','it','en'].includes(lang)) i18n.changeLanguage(lang)
+      } catch {}
+    })
+
+    AsyncStorage.getItem('offerto-notifications').then(async raw => {
+      try {
+        const state   = JSON.parse(raw ?? '{}')?.state ?? {}
+        const granted = await requestPermissions()
+
+        // Siempre registrar el token si hay permiso
+        if (granted) {
+          registerToken(
+            state.stores     ?? [],
+            state.categories ?? [],
+            state.watchlist  ?? [],
+          )
+        }
+
+        if (!granted || state.enabled === false) return
+        if (state.weekly   !== false) scheduleWeekly('Offerto 🛒', 'Neue Angebote diese Woche — jetzt entdecken!')
+        if (state.expiring !== false) scheduleExpiringReminder('Offerto ⏰', 'Einige Angebote laufen morgen ab!')
+        if (state.watchlist?.length) {
+          checkWatchlist(
+            state.watchlist,
+            'Offerto 👀',
+            (m) => `${m.join(', ')} ${m.length === 1 ? 'ist' : 'sind'} gerade im Angebot!`,
+          )
+        }
+        if (state.stores?.length) {
+          checkStores(
+            state.stores,
+            'Offerto 🏪',
+            (s) => `Neue Angebote bei ${s.map((slug: string) =>
+              slug === 'aligro' ? 'Aligro' : slug === 'topcc' ? 'TopCC' : 'Transgourmet'
+            ).join(', ')}!`,
+          )
+        }
       } catch {}
     })
   }, [])

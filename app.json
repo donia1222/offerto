@@ -12,9 +12,12 @@
       "backgroundColor": "#F5F3FF"
     },
     "ios": {
-      "supportsTablet": false,
+      "supportsTablet": true,
       "bundleIdentifier": "ch.offerto.app",
-      "buildNumber": "3"
+      "buildNumber": "5",
+      "entitlements": {
+        "aps-environment": "production"
+      }
     },
     "android": {
       "adaptiveIcon": {

@@ -10,6 +10,7 @@ import type { Offer } from '../types'
 import { formatDate } from '../utils/formatters'
 import { useListStore } from '../store/listStore'
 import { useSettingsStore } from '../store/settingsStore'
+import { useNotificationsStore } from '../store/notificationsStore'
 import { getOfferName } from '../utils/getOfferName'
 
 interface Props { offer: Offer }
@@ -22,8 +23,11 @@ export default function OfferCard({ offer }: Props) {
   const { t }  = useTranslation()
   const { add, remove, isInList } = useListStore()
   const { language, compactMode, showMwst } = useSettingsStore()
-  const inList = isInList(offer.id)
-  const name   = getOfferName(offer, language)
+  const { watchlist, addWatch, removeWatch } = useNotificationsStore()
+  const inList    = isInList(offer.id)
+  const name      = getOfferName(offer, language)
+  const watchTerm = (offer.nombre ?? '').trim().toLowerCase()
+  const watched   = watchlist.includes(watchTerm)
 
   const discount       = Number(offer.descuento) || 0
   const discountColor  = discount >= 30 ? Colors.success : Colors.accent
@@ -91,12 +95,17 @@ export default function OfferCard({ offer }: Props) {
           </View>
         )}
 
-        {/* Name + cart */}
+        {/* Name + acciones */}
         <View style={styles.nameRow}>
           <Text style={[styles.name, compactMode && styles.nameCompact]} numberOfLines={compactMode ? 1 : 2}>{name}</Text>
-          <TouchableOpacity onPress={() => inList ? remove(offer.id) : add(offer)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-            <Ionicons name={inList ? 'cart' : 'cart-outline'} size={20} color={inList ? Colors.primary : Colors.textLight} />
-          </TouchableOpacity>
+          <View style={styles.actionIcons}>
+            <TouchableOpacity onPress={() => inList ? remove(offer.id) : add(offer)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <Ionicons name={inList ? 'cart' : 'cart-outline'} size={20} color={inList ? Colors.primary : Colors.textLight} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => watched ? removeWatch(watchTerm) : addWatch(watchTerm)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <Ionicons name={watched ? 'notifications' : 'notifications-outline'} size={18} color={watched ? Colors.primary : Colors.textLight} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Prices */}
@@ -160,7 +169,8 @@ const styles = StyleSheet.create({
   storeLogo: { width: 13, height: 13, borderRadius: 2 },
   storeText: { fontSize: 12, fontFamily: 'Inter-SemiBold' },
 
-  nameRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 6, marginBottom: 4 },
+  nameRow:     { flexDirection: 'row', alignItems: 'flex-start', gap: 6, marginBottom: 4 },
+  actionIcons: { flexDirection: 'column', alignItems: 'center', gap: 8 },
   name:        { flex: 1, fontSize: 14, fontFamily: 'PlusJakartaSans-SemiBold', color: Colors.textDark, lineHeight: 20 },
   nameCompact: { fontSize: 13, lineHeight: 18 },
 

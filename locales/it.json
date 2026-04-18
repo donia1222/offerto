@@ -40,6 +40,8 @@
     "storeType": "Cash & Carry · Svizzera",
     "addToList": "Aggiungi alla lista",
     "removeFromList": "Rimuovi dalla lista",
+    "watchProduct": "Avvisami quando in offerta",
+    "watchingProduct": "Monitorato",
     "unit": "per {{unit}}",
     "notFound": "Offerta non trovata",
     "lastDay": "Ultimo giorno!",
@@ -110,7 +112,10 @@
     "sectionWatch":       "OSSERVA PRODOTTI",
     "watchPlaceholder":   "es. Filetto di manzo, Entrecôte...",
     "watchEmpty":         "Nessun prodotto osservato",
-    "noStores":           "Nessun negozio selezionato"
+    "noStores":           "Nessun negozio selezionato",
+    "testBtn":            "Invia notifica di prova",
+    "testSending":        "Invio in corso...",
+    "testBody":           "Le notifiche funzionano! 🎉"
   },
   "stores": {
     "title": "Per negozio",

@@ -40,6 +40,8 @@
     "storeType": "Cash & Carry · Switzerland",
     "addToList": "Add to shopping list",
     "removeFromList": "Remove from list",
+    "watchProduct": "Notify me when on offer again",
+    "watchingProduct": "Watching",
     "unit": "per {{unit}}",
     "notFound": "Offer not found",
     "lastDay": "Last day today!",
@@ -110,7 +112,10 @@
     "sectionWatch":       "WATCH PRODUCTS",
     "watchPlaceholder":   "e.g. Beef tenderloin, Entrecôte...",
     "watchEmpty":         "No products watched yet",
-    "noStores":           "No stores selected"
+    "noStores":           "No stores selected",
+    "testBtn":            "Send test notification",
+    "testSending":        "Sending...",
+    "testBody":           "Notifications are working! 🎉"
   },
   "stores": {
     "title": "By store",
