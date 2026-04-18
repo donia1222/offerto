@@ -98,26 +98,31 @@ export default function RootLayout() {
         if (state.weekly   !== false) scheduleWeekly('Offerto 🛒', 'Neue Angebote diese Woche — jetzt entdecken!')
         if (state.expiring !== false) scheduleExpiringReminder('Offerto ⏰', 'Einige Angebote laufen morgen ab!')
 
-        // Solo verificar watchlist/stores una vez al día
-        const lastCheck = await AsyncStorage.getItem('offerto-last-check')
         const today = new Date().toISOString().slice(0, 10)
-        if (lastCheck === today) return
-        await AsyncStorage.setItem('offerto-last-check', today)
+        const notifiedRaw = await AsyncStorage.getItem('offerto-notified-' + today)
+        const notifiedToday: string[] = notifiedRaw ? JSON.parse(notifiedRaw) : []
 
-        if (state.watchlist?.length) {
-          checkWatchlist(
-            state.watchlist,
-            'Offerto 👀',
-            (m) => `${m.join(', ')} ${m.length === 1 ? 'ist' : 'sind'} gerade im Angebot!`,
-          )
-        }
-        if (state.stores?.length) {
+        // Solo notificar tiendas que no hayan sido notificadas hoy
+        const pendingStores = (state.stores ?? []).filter((s: string) => !notifiedToday.includes(s))
+        if (pendingStores.length) {
+          await AsyncStorage.setItem('offerto-notified-' + today, JSON.stringify([...notifiedToday, ...pendingStores]))
           checkStores(
-            state.stores,
+            pendingStores,
             'Offerto 🏪',
             (s) => `Neue Angebote bei ${s.map((slug: string) =>
               slug === 'aligro' ? 'Aligro' : slug === 'topcc' ? 'TopCC' : 'Transgourmet'
             ).join(', ')}!`,
+          )
+        }
+
+        // Solo notificar términos watchlist no notificados hoy
+        const pendingWatch = (state.watchlist ?? []).filter((w: string) => !notifiedToday.includes('w:' + w))
+        if (pendingWatch.length) {
+          await AsyncStorage.setItem('offerto-notified-' + today, JSON.stringify([...notifiedToday, ...pendingStores, ...pendingWatch.map((w: string) => 'w:' + w)]))
+          checkWatchlist(
+            pendingWatch,
+            'Offerto 👀',
+            (m) => `${m.join(', ')} ${m.length === 1 ? 'ist' : 'sind'} gerade im Angebot!`,
           )
         }
       } catch {}
