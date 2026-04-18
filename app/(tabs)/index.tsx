@@ -241,20 +241,22 @@ export default function HomeScreen() {
           </TouchableOpacity>
 
           {/* Store banners */}
-          {STORES.filter(slug => activeStores.includes(slug)).map(slug => {
-            const isActive = activeStore === slug
-            const color    = STORE_COLORS[slug] ?? Colors.primary
+          {STORES.map(slug => {
+            const isActive  = activeStore === slug
+            const isEnabled = activeStores.includes(slug)
+            const color     = STORE_COLORS[slug] ?? Colors.primary
             return (
               <TouchableOpacity
                 key={slug}
                 style={[
                   styles.filterBanner,
-                  isActive
+                  isActive && isEnabled
                     ? { backgroundColor: color, borderColor: color }
                     : { backgroundColor: Colors.surface, borderColor: Colors.border },
+                  !isEnabled && { opacity: 0.4 },
                 ]}
-                onPress={() => onStoreFilter(slug)}
-                activeOpacity={0.82}
+                onPress={() => isEnabled && onStoreFilter(slug)}
+                activeOpacity={isEnabled ? 0.82 : 1}
               >
                 {StoreLogos[slug] && (
                   <Image
@@ -262,6 +264,12 @@ export default function HomeScreen() {
                     style={[styles.bannerLogo, slug === 'transgourmet' && styles.bannerLogoLarge]}
                     resizeMode="contain"
                   />
+                )}
+                {!isEnabled && (
+                  <View style={styles.baldChip}>
+                    <Ionicons name="time-outline" size={11} color="#fff" />
+                    <Text style={styles.baldChipText}>Bald</Text>
+                  </View>
                 )}
               </TouchableOpacity>
             )
@@ -309,6 +317,9 @@ const styles = StyleSheet.create({
   filterBannerTextActive: { color: '#fff' },
   bannerLogo:             { width: 68, height: 38, borderRadius: 4 },
   bannerLogoLarge:        { width: 80, height: 48 },
+  baldLabel:              { fontFamily: 'Inter-Medium', fontSize: 10, color: Colors.textLight, marginTop: 2 },
+  baldChip:               { position: 'absolute', bottom: 5, right: 5, flexDirection: 'row', alignItems: 'center', gap: 2, backgroundColor: Colors.textLight, borderRadius: Radius.full, paddingHorizontal: 5, paddingVertical: 2 },
+  baldChipText:           { fontFamily: 'Inter-Medium', fontSize: 9, color: '#fff' },
 
   // Section headers
   section:      { marginBottom: 4 },

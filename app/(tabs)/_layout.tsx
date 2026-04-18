@@ -68,7 +68,7 @@ export default function TabLayout() {
         name="index"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon name="compass" focused={focused} label={t('tabs.home')} size={26} />
+            <TabIcon name="compass" focused={focused} label={t('tabs.home')} size={28} />
           ),
         }}
       />
@@ -95,7 +95,7 @@ export default function TabLayout() {
         name="list"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon name={focused ? 'cart' : 'cart-outline'} focused={focused} label="Liste" />
+            <TabIcon name={focused ? 'cart' : 'cart-outline'} focused={focused} label="Liste" size={24} />
           ),
         }}
       />
@@ -104,7 +104,7 @@ export default function TabLayout() {
         name="notifications"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon name={focused ? 'notifications' : 'notifications-outline'} focused={focused} label={t('notif.title')} />
+            <TabIcon name={focused ? 'notifications' : 'notifications-outline'} focused={focused} label={t('notif.title')} size={24} />
           ),
         }}
       />

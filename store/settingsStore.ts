@@ -23,7 +23,7 @@ export const useSettingsStore = create<SettingsState>()(
     (set, get) => ({
       language:     'de',
       canton:       'Alle',
-      activeStores: ['aligro', 'topcc', 'transgourmet'],
+      activeStores: ['aligro', 'topcc'],
       compactMode:  false,
       showMwst:     false,
 
@@ -41,6 +41,15 @@ export const useSettingsStore = create<SettingsState>()(
     {
       name:    'offerto-settings',
       storage: createJSONStorage(() => AsyncStorage),
+      version: 2,
+      migrate: (state: any, version: number) => {
+        if (version < 2) {
+          // Quitar transgourmet de activeStores hasta tener imágenes
+          state.activeStores = (state.activeStores ?? ['aligro', 'topcc'])
+            .filter((s: string) => s !== 'transgourmet')
+        }
+        return state
+      },
     }
   )
 )

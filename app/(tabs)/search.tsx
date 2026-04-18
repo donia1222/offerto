@@ -142,21 +142,22 @@ export default function SearchScreen() {
         contentContainerStyle={styles.chipBar}
         style={styles.chipScroll}
       >
-        {STORES.filter(s => s.slug === 'all' || activeStores.includes(s.slug)).map(s => {
-          const active = store === s.slug
+        {STORES.map(s => {
+          const active    = store === s.slug
+          const isEnabled = s.slug === 'all' || activeStores.includes(s.slug)
           return (
             <TouchableOpacity
               key={s.slug}
-              style={[styles.chip, active && { backgroundColor: s.color, borderColor: s.color }]}
-              onPress={() => onStorePress(s.slug)}
-              activeOpacity={0.8}
+              style={[styles.chip, active && isEnabled && { backgroundColor: s.color, borderColor: s.color }, !isEnabled && { opacity: 0.35 }]}
+              onPress={() => isEnabled && onStorePress(s.slug)}
+              activeOpacity={isEnabled ? 0.8 : 1}
             >
               {s.logo ? (
                 <Image source={s.logo} style={[styles.chipLogo, active && { opacity: 0.95 }]} resizeMode="contain" />
               ) : (
                 <Ionicons name="apps" size={14} color={active ? '#fff' : Colors.textMedium} />
               )}
-              <Text style={[styles.chipText, active && styles.chipTextActive]}>
+              <Text style={[styles.chipText, active && isEnabled && styles.chipTextActive]}>
                 {s.slug === 'all' ? t('common.all') : s.slug === 'aligro' ? 'Aligro' : s.slug === 'topcc' ? 'TopCC' : 'Transgourmet'}
               </Text>
             </TouchableOpacity>

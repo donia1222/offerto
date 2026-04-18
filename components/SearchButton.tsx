@@ -46,7 +46,7 @@ export default function SearchButton() {
   return (
     <>
       <TouchableOpacity style={styles.btn} onPress={() => setOpen(true)}>
-        <Ionicons name="search" size={24} color={Colors.primary} />
+        <Ionicons name="search" size={26} color={Colors.primary} />
       </TouchableOpacity>
 
       <Modal visible={open} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>

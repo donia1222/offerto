@@ -24,9 +24,10 @@ const CANTONS = [
 ]
 
 const STORES = [
-  { slug: 'aligro',       color: '#FF6600' },
-  { slug: 'topcc',        color: '#0050AA' },
-  { slug: 'transgourmet', color: '#E2001A' },
+  { slug: 'aligro',       color: '#FF6600', enabled: true },
+  { slug: 'topcc',        color: '#0050AA', enabled: true },
+  // TODO: activar cuando Transgourmet proporcione API de imágenes — cambiar enabled: false → true
+  { slug: 'transgourmet', color: '#E2001A', enabled: false },
 ]
 
 export default function SettingsScreen() {
@@ -90,14 +91,20 @@ export default function SettingsScreen() {
               return (
                 <TouchableOpacity
                   key={s.slug}
-                  style={styles.storeBanner}
-                  onPress={() => toggleStore(s.slug)}
-                  activeOpacity={0.8}
+                  style={[styles.storeBanner, !s.enabled && styles.storeBannerDisabled]}
+                  onPress={() => s.enabled && toggleStore(s.slug)}
+                  activeOpacity={s.enabled ? 0.8 : 1}
                 >
                   {StoreLogos[s.slug] && (
-                    <Image source={StoreLogos[s.slug]} style={styles.storeBannerLogo} resizeMode="contain" />
+                    <Image source={StoreLogos[s.slug]} style={[styles.storeBannerLogo, !s.enabled && { opacity: 0.3 }]} resizeMode="contain" />
                   )}
-                  {active && (
+                  {!s.enabled && (
+                    <View style={styles.baldChip}>
+                      <Ionicons name="time-outline" size={11} color="#fff" />
+                      <Text style={styles.baldChipText}>Bald</Text>
+                    </View>
+                  )}
+                  {active && s.enabled && (
                     <View style={[styles.storeBannerCheck, { backgroundColor: s.color }]}>
                       <Ionicons name="checkmark" size={11} color="#fff" />
                     </View>
@@ -257,7 +264,10 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
     alignItems: 'center', justifyContent: 'center', position: 'relative',
   },
+  storeBannerDisabled: { backgroundColor: Colors.divider },
   storeBannerLogo:  { width: '80%', height: 36 },
+  baldChip:         { position: 'absolute', bottom: 5, right: 5, flexDirection: 'row', alignItems: 'center', gap: 2, backgroundColor: Colors.textLight, borderRadius: 99, paddingHorizontal: 5, paddingVertical: 2 },
+  baldChipText:     { fontFamily: 'Inter-Medium', fontSize: 9, color: '#fff' },
   storeBannerCheck: {
     position: 'absolute', top: 4, right: 4, width: 18, height: 18, borderRadius: 9,
     alignItems: 'center', justifyContent: 'center',

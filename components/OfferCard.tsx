@@ -82,7 +82,7 @@ export default function OfferCard({ offer }: Props) {
       </View>
 
       {/* ── Info ── */}
-      <View style={[styles.info, { padding: pad }]}>
+      <View style={[styles.info, { padding: pad }, compactMode && { justifyContent: 'flex-start' }]}>
         {/* Store pill */}
         {!compactMode && (
           <View style={[styles.storePill, { backgroundColor: storeColor + '15' }]}>
@@ -120,7 +120,7 @@ export default function OfferCard({ offer }: Props) {
         {offer.unidad && !compactMode ? <Text style={styles.unit}>{t('offer.unit', { unit: offer.unidad })}</Text> : null}
 
         {/* Expiry */}
-        <View style={styles.expiryRow}>
+        {(!compactMode || isExpiringSoon) && <View style={styles.expiryRow}>
           <Ionicons name="time-outline" size={12} color={isExpiringSoon ? Colors.warning : Colors.textLight} />
           <Text style={[styles.expiry, isExpiringSoon && styles.expiryUrgent]}>
             {Number(offer.dias_restantes) === 0
@@ -129,7 +129,7 @@ export default function OfferCard({ offer }: Props) {
               ? t('offer.daysLeft', { days: offer.dias_restantes })
               : formatDate(offer.valido_hasta)}
           </Text>
-        </View>
+        </View>}
       </View>
     </TouchableOpacity>
   )

@@ -37,11 +37,24 @@ class TransgourmetScraper extends BaseScraper {
         }
         $this->log('PDF descargado: ' . round(strlen($pdfContent) / 1024) . ' KB');
 
-        // 3. Extraer texto con pdftotext
+        // 3. Guardar PDF en disco temporalmente
         $tmpFile = sys_get_temp_dir() . '/transgourmet_' . time() . '_' . getmypid() . '.pdf';
         file_put_contents($tmpFile, $pdfContent);
+
+        // 3a. Extraer texto con pdftotext
         $text = shell_exec('pdftotext -layout ' . escapeshellarg($tmpFile) . ' - 2>/dev/null');
+
         unlink($tmpFile);
+
+        // TODO (API Transgourmet): cuando tengas credenciales de su API, descomentar:
+        // $listOutput = shell_exec('pdfimages -list ' . escapeshellarg($tmpFile) . ' 2>/dev/null') ?? '';
+        // $tmpImgDir  = sys_get_temp_dir() . '/tg_imgs_' . time() . '_' . getmypid();
+        // @mkdir($tmpImgDir, 0755, true);
+        // $imgBase = $tmpImgDir . '/img';
+        // shell_exec('pdfimages -j ' . escapeshellarg($tmpFile) . ' ' . escapeshellarg($imgBase) . ' 2>/dev/null');
+        // $imgMeta   = $this->parsePdfImagesList($listOutput, $imgBase);
+        // $artToImage = $this->matchByPage($text, $imgMeta);
+        // → sustituir por: $imagenUrl = $this->fetchImageFromApi($product['art_nr'], $apiToken);
 
         if (!$text || strlen($text) < 100) {
             $this->log('ERROR: pdftotext no devolvió texto suficiente');
@@ -57,11 +70,15 @@ class TransgourmetScraper extends BaseScraper {
         $products = $this->parseProducts($text);
         $this->log('Productos con descuento encontrados: ' . count($products));
 
-        // 6. Guardar en DB
+        // 6. Guardar en DB — sin imagen hasta tener acceso API de Transgourmet
         $count = 0;
         foreach ($products as $product) {
             $catSlug     = $this->guessCategoryFromName($product['nombre']);
             $categoriaId = $this->getCategoriaId($catSlug);
+
+            // TODO (API Transgourmet): reemplazar null por:
+            // $this->fetchImageFromApi($product['art_nr'], $apiToken)
+            $imagenUrl = null;
 
             $ok = $this->upsertOferta([
                 ':tienda_id'       => $this->tiendaId,
@@ -73,7 +90,7 @@ class TransgourmetScraper extends BaseScraper {
                 ':precio_oferta'   => $product['precio_oferta'],
                 ':descuento_pct'   => $product['descuento'],
                 ':unidad'          => $product['unidad'],
-                ':imagen_url'      => null,
+                ':imagen_url'      => $imagenUrl,
                 ':valido_desde'    => $validoDesde,
                 ':valido_hasta'    => $validoHasta,
                 ':canton'          => 'all',
@@ -92,7 +109,12 @@ class TransgourmetScraper extends BaseScraper {
         $json = @file_get_contents(self::FOLLETO_API);
         if (!$json) return null;
         $data = json_decode($json, true);
-        return $data['datos']['pdf_url'] ?? null;
+        foreach ($data['datos'] ?? [] as $entry) {
+            if (($entry['tienda'] ?? '') === 'transgourmet' && !empty($entry['pdf_url'])) {
+                return $entry['pdf_url'];
+            }
+        }
+        return null;
     }
 
     /**
@@ -258,6 +280,80 @@ class TransgourmetScraper extends BaseScraper {
             'descuento'       => $descuento,
             'unidad'          => $unidad ? mb_substr($unidad, 0, 50) : null,
         ];
+    }
+
+    /**
+     * Parsea el HTML generado por pdftohtml -c y empareja cada Art.-Nr. con
+     * la imagen que aparece más cercana encima de él en la misma columna.
+     * Retorna [ art_nr => ruta_absoluta_imagen ]
+     */
+    /**
+     * Parsea la salida de "pdfimages -list" y retorna array de imágenes con
+     * su página, número secuencial, encoding y tamaño estimado.
+     * Solo incluye imágenes JPEG de producto (enc=jpeg, size>8KB).
+     */
+    private function parsePdfImagesList(string $listOutput, string $imgBase): array {
+        $result = [];
+        foreach (explode("\n", $listOutput) as $line) {
+            $cols = preg_split('/\s+/', trim($line));
+            if (count($cols) < 2) continue;
+            if (!ctype_digit($cols[0])) continue;
+            $page = (int)$cols[0];
+            $num  = (int)$cols[1];
+
+            // Si pdfimages -j creó el archivo como .jpg, es JPEG de producto
+            $imgFile = $imgBase . '-' . sprintf('%03d', $num) . '.jpg';
+            if (!file_exists($imgFile)) continue;
+            $size = filesize($imgFile);
+            if ($size < 4096) continue; // descartar imágenes muy pequeñas
+
+            $result[] = ['page' => $page, 'num' => $num, 'file' => $imgFile, 'size' => $size];
+        }
+        $this->log('parsePdfImagesList: ' . count($result) . ' imágenes JPEG con página asignada');
+        return $result;
+    }
+
+    /**
+     * Divide texto por páginas (\f) y dentro de cada página empareja
+     * imágenes con productos por índice. Retorna [art_nr => image_file].
+     */
+    private function matchByPage(string $text, array $imgMeta): array {
+        // Agrupar imágenes por página, ordenadas por num (secuencia en PDF)
+        $imgByPage = [];
+        foreach ($imgMeta as $img) {
+            $imgByPage[$img['page']][] = $img;
+        }
+
+        $result = [];
+        $pages  = explode("\f", $text);
+
+        foreach ($pages as $pageIdx => $pageText) {
+            $pageNum  = $pageIdx + 1;
+            $products = $this->parseProducts($pageText);
+            $imgs     = $imgByPage[$pageNum] ?? [];
+
+            // Si hay más imágenes que productos en la página, quedarse con las N más grandes
+            $n = count($products);
+            if (count($imgs) > $n && $n > 0) {
+                usort($imgs, fn($a, $b) => $b['size'] - $a['size']);
+                $imgs = array_slice($imgs, 0, $n);
+                // Restaurar orden secuencial
+                usort($imgs, fn($a, $b) => $a['num'] - $b['num']);
+            }
+
+            foreach ($products as $prodIdx => $product) {
+                if (isset($imgs[$prodIdx])) {
+                    $result[$product['art_nr']] = $imgs[$prodIdx]['file'];
+                }
+            }
+        }
+
+        return $result;
+    }
+
+    private function cleanupImgDir(string $dir): void {
+        foreach (glob($dir . '/*') ?: [] as $f) @unlink($f);
+        @rmdir($dir);
     }
 
     private function guessCategoryFromName(string $name): string {
