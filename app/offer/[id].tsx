@@ -27,7 +27,7 @@ export default function OfferDetailScreen() {
   const [loading, setLoading]   = useState(true)
   const [error, setError]       = useState(false)
   const [imgError, setImgError] = useState(false)
-  const { add, remove, isInList } = useListStore()
+  const { add, remove, isInList, items: listItems } = useListStore()
   const { language } = useSettingsStore()
   const { watchlist, addWatch, removeWatch } = useNotificationsStore()
 
@@ -92,9 +92,19 @@ export default function OfferDetailScreen() {
             </TouchableOpacity>
           ),
           headerRight: () => (
-            <TouchableOpacity onPress={onShare} style={styles.headerIconBtn} activeOpacity={0.75}>
-              <Ionicons name="share-outline" size={24} color={Colors.textDark} />
-            </TouchableOpacity>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              <TouchableOpacity onPress={() => router.push('/list')} style={styles.headerIconBtn} activeOpacity={0.75}>
+                <Ionicons name="cart-outline" size={22} color={Colors.textDark} />
+                {listItems.length > 0 && (
+                  <View style={styles.headerBadge}>
+                    <Text style={styles.headerBadgeText}>{listItems.length > 99 ? '99' : listItems.length}</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity onPress={onShare} style={styles.headerIconBtn} activeOpacity={0.75}>
+                <Ionicons name="share-outline" size={24} color={Colors.textDark} />
+              </TouchableOpacity>
+            </View>
           ),
         }}
       />
@@ -242,6 +252,14 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
     backgroundColor: Colors.surfaceAlt,
   },
+  headerBadge: {
+    position: 'absolute', top: 1, right: 1,
+    minWidth: 16, height: 16, borderRadius: 8,
+    backgroundColor: '#E2001A',
+    alignItems: 'center', justifyContent: 'center',
+    paddingHorizontal: 3,
+  },
+  headerBadgeText: { fontSize: 9, fontFamily: 'Inter-Medium', color: '#fff', lineHeight: 12 },
   center:      { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 16, backgroundColor: Colors.background },
   errorText:   { fontFamily: 'Inter-Regular', fontSize: 17, color: Colors.textMedium },
   backBtn:     { backgroundColor: Colors.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: Radius.full },

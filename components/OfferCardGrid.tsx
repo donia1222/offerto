@@ -53,7 +53,7 @@ export default function OfferCardGrid({ offer }: Props) {
       activeOpacity={0.88}
     >
       {/* Image */}
-      <View style={[styles.imgBox, { backgroundColor: storeColor + '12' }]}>
+      <View style={[styles.imgBox, { backgroundColor: '#fff' }]}>
         {offer.imagen && !imgError ? (
           <Image
             source={{ uri: offer.imagen }}
@@ -71,6 +71,15 @@ export default function OfferCardGrid({ offer }: Props) {
         {discount > 0 && (
           <View style={[styles.badge, { backgroundColor: discountColor }]}>
             <Text style={styles.badgeText}>-{discount}%</Text>
+          </View>
+        )}
+
+        {offer.dias_restantes <= 2 && (
+          <View style={styles.urgencyBadge}>
+            <Ionicons name="time" size={10} color="#fff" />
+            <Text style={styles.urgencyText}>
+              {offer.dias_restantes === 0 ? 'Letzter Tag' : `Noch ${offer.dias_restantes}d`}
+            </Text>
           </View>
         )}
 
@@ -94,19 +103,19 @@ export default function OfferCardGrid({ offer }: Props) {
       {/* Footer */}
       <View style={styles.footer}>
         <TouchableOpacity
-          style={styles.footerBtn}
+          style={[styles.footerBtn, inList && { backgroundColor: '#FFF0F0' }]}
           onPress={() => inList ? remove(offer.id) : add(offer)}
           activeOpacity={0.75}
         >
-          <Ionicons name={inList ? 'cart' : 'cart-outline'} size={18} color={inList ? Colors.primary : Colors.textMedium} />
+          <Ionicons name={inList ? 'cart' : 'cart-outline'} size={inList ? 24 : 20} color={inList ? '#E2001A' : Colors.textMedium} />
         </TouchableOpacity>
         <View style={styles.footerDivider} />
         <TouchableOpacity
-          style={styles.footerBtn}
+          style={[styles.footerBtn, watched && { backgroundColor: Colors.successLight }]}
           onPress={() => watched ? removeWatch(watchTerm) : addWatch(watchTerm)}
           activeOpacity={0.75}
         >
-          <Ionicons name={watched ? 'notifications' : 'notifications-outline'} size={17} color={watched ? Colors.success : Colors.textMedium} />
+          <Ionicons name={watched ? 'notifications' : 'notifications-outline'} size={watched ? 22 : 19} color={watched ? Colors.success : Colors.textMedium} />
         </TouchableOpacity>
       </View>
     </TouchableOpacity>
@@ -118,6 +127,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface,
     borderRadius:    Radius.lg,
     overflow:        'hidden',
+    borderWidth:     1,
+    borderColor:     '#D8D5EE',
     shadowColor:     '#000',
     shadowOpacity:   0.07,
     shadowRadius:    8,
@@ -158,11 +169,18 @@ const styles = StyleSheet.create({
   },
 
   info:      { padding: Spacing.sm, gap: 3, flex: 1 },
-  storeLogo: { width: 40, height: 14, marginBottom: 2 },
-  name:      { fontFamily: 'Inter-SemiBold', fontSize: 13, color: Colors.textDark, lineHeight: 18 },
+  storeLogo: { width: 64, height: 24, marginBottom: 2 },
+  name:      { fontFamily: 'Inter-SemiBold', fontSize: 15, color: Colors.textDark, lineHeight: 20 },
 
   priceRow:  { flexDirection: 'row', alignItems: 'baseline', gap: 6, marginTop: 2 },
   price:     { fontFamily: 'PlusJakartaSans-Bold', fontSize: 16 },
   priceOld:  { fontFamily: 'Inter-Regular', fontSize: 12, color: Colors.textLight, textDecorationLine: 'line-through' },
   unit:      { fontFamily: 'Inter-Regular', fontSize: 11, color: Colors.textMedium },
+  urgencyBadge: {
+    position: 'absolute', bottom: 8, right: 8,
+    flexDirection: 'row', alignItems: 'center', gap: 3,
+    backgroundColor: Colors.warning, borderRadius: Radius.full,
+    paddingHorizontal: 7, paddingVertical: 3,
+  },
+  urgencyText: { fontFamily: 'Inter-Medium', fontSize: 10, color: '#fff' },
 })

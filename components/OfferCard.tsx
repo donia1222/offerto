@@ -13,12 +13,12 @@ import { useSettingsStore } from '../store/settingsStore'
 import { useNotificationsStore } from '../store/notificationsStore'
 import { getOfferName } from '../utils/getOfferName'
 
-interface Props { offer: Offer; compact?: boolean; fixedHeight?: boolean }
+interface Props { offer: Offer; compact?: boolean; fixedHeight?: boolean; hideFooter?: boolean; hideExpiry?: boolean }
 
 const MWST = 1.077
 const fmt  = (v: unknown) => parseFloat(String(v)).toFixed(2)
 
-export default function OfferCard({ offer, compact: compactProp, fixedHeight }: Props) {
+export default function OfferCard({ offer, compact: compactProp, fixedHeight, hideFooter, hideExpiry }: Props) {
   const router = useRouter()
   const { t }  = useTranslation()
   const { add, remove, isInList } = useListStore()
@@ -55,83 +55,69 @@ export default function OfferCard({ offer, compact: compactProp, fixedHeight }: 
 
   return (
     <TouchableOpacity
-      style={[styles.card, { borderLeftColor: storeColor }, isExpiringSoon && styles.cardExpiring]}
+      style={[styles.card, { borderLeftColor: storeColor }]}
       onPress={() => router.push(`/offer/${offer.id}`)}
       activeOpacity={0.88}
     >
-      {/* ── Imagen ── */}
-      <View style={[styles.imgBox, { width: imgSize, backgroundColor: storeColor + '12' }]}>
-        {offer.imagen && !imgError ? (
-          <Image
-            source={{ uri: offer.imagen }}
-            style={{ width: innerSize, height: innerSize }}
-            resizeMode="contain"
-            onLoad={() => { if (timeoutRef.current) clearTimeout(timeoutRef.current) }}
-            onError={() => setImgError(true)}
-          />
-        ) : StoreLogos[offer.tienda?.slug] ? (
-          <Image source={StoreLogos[offer.tienda.slug]} style={styles.logoFallback} resizeMode="contain" />
-        ) : (
-          <Text style={styles.emoji}>🛒</Text>
-        )}
+      {/* ── Top: imagen + info ── */}
+      <View style={styles.topRow}>
+        <View style={[styles.imgBox, { width: imgSize, backgroundColor: '#fff' }]}>
+          {offer.imagen && !imgError ? (
+            <Image
+              source={{ uri: offer.imagen }}
+              style={{ width: innerSize, height: innerSize }}
+              resizeMode="contain"
+              onLoad={() => { if (timeoutRef.current) clearTimeout(timeoutRef.current) }}
+              onError={() => setImgError(true)}
+            />
+          ) : StoreLogos[offer.tienda?.slug] ? (
+            <Image source={StoreLogos[offer.tienda.slug]} style={styles.logoFallback} resizeMode="contain" />
+          ) : (
+            <Text style={styles.emoji}>🛒</Text>
+          )}
+          {discount > 0 && (
+            <View style={[styles.badge, { backgroundColor: discountColor }]}>
+              <Text style={styles.badgeText}>-{discount}%</Text>
+            </View>
+          )}
+        </View>
 
-        {discount > 0 && (
-          <View style={[styles.badge, { backgroundColor: discountColor }]}>
-            <Text style={styles.badgeText}>-{discount}%</Text>
-          </View>
-        )}
-      </View>
-
-      {/* ── Info ── */}
-      <View style={[styles.info, { padding: pad }, compactMode && { justifyContent: 'flex-start' }]}>
-        {/* Store pill */}
-        {!compactMode && (
-          <View style={[styles.storePill, { backgroundColor: storeColor + '15' }]}>
-            {StoreLogos[offer.tienda?.slug] && (
-              <Image source={StoreLogos[offer.tienda.slug]} style={styles.storeLogo} resizeMode="contain" />
-            )}
-            <Text style={[styles.storeText, { color: storeColor }]} numberOfLines={1}>
-              {offer.tienda?.nombre ?? ''}
-            </Text>
-          </View>
-        )}
-
-        {/* Name + acciones */}
-        <View style={styles.nameRow}>
+        <View style={[styles.info, { padding: pad }]}>
+          {!compactMode && StoreLogos[offer.tienda?.slug] && (
+            <Image source={StoreLogos[offer.tienda.slug]} style={styles.storeLogo} resizeMode="contain" />
+          )}
           <Text style={[styles.name, compactMode && styles.nameCompact]} numberOfLines={2}>{name}</Text>
-          <View style={styles.actionIcons}>
-            <TouchableOpacity onPress={() => inList ? remove(offer.id) : add(offer)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-              <Ionicons name={inList ? 'cart' : 'cart-outline'} size={26} color={inList ? Colors.primary : Colors.textLight} />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => watched ? removeWatch(watchTerm) : addWatch(watchTerm)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-              <Ionicons name={watched ? 'notifications' : 'notifications-outline'} size={24} color={watched ? Colors.primary : Colors.textLight} />
-            </TouchableOpacity>
+          <View style={styles.priceRow}>
+            <Text style={[styles.price, compactMode && styles.priceCompact]}>CHF {fmt(displayPrice)}</Text>
+            {displayOriginal ? <Text style={styles.priceOld}>CHF {fmt(displayOriginal)}</Text> : null}
+            {showMwst && <Text style={styles.mwstLabel}>inkl. MwSt</Text>}
           </View>
+          {offer.unidad ? <Text style={styles.unit} numberOfLines={1}>{t('offer.unit', { unit: offer.unidad })}</Text> : null}
+          {!compactMode && !hideExpiry && <View style={styles.expiryRow}>
+            <Ionicons name="time-outline" size={12} color={isExpiringSoon ? Colors.warning : Colors.textLight} />
+            <Text style={[styles.expiry, isExpiringSoon && styles.expiryUrgent]}>
+              {Number(offer.dias_restantes) === 0
+                ? t('offer.lastDay')
+                : isExpiringSoon
+                ? t('offer.daysLeft', { days: offer.dias_restantes })
+                : formatDate(offer.valido_hasta)}
+            </Text>
+          </View>}
         </View>
-
-        {/* Prices */}
-        <View style={styles.priceRow}>
-          <Text style={[styles.price, compactMode && styles.priceCompact]}>CHF {fmt(displayPrice)}</Text>
-          {displayOriginal ? (
-            <Text style={styles.priceOld}>CHF {fmt(displayOriginal)}</Text>
-          ) : null}
-          {showMwst && <Text style={styles.mwstLabel}>inkl. MwSt</Text>}
-        </View>
-
-        {offer.unidad ? <Text style={styles.unit} numberOfLines={1}>{t('offer.unit', { unit: offer.unidad })}</Text> : null}
-
-        {/* Expiry */}
-        {!compactMode && <View style={styles.expiryRow}>
-          <Ionicons name="time-outline" size={12} color={isExpiringSoon ? Colors.warning : Colors.textLight} />
-          <Text style={[styles.expiry, isExpiringSoon && styles.expiryUrgent]}>
-            {Number(offer.dias_restantes) === 0
-              ? t('offer.lastDay')
-              : isExpiringSoon
-              ? t('offer.daysLeft', { days: offer.dias_restantes })
-              : formatDate(offer.valido_hasta)}
-          </Text>
-        </View>}
       </View>
+
+      {/* ── Footer: carrito | campana ── */}
+      {!hideFooter && (
+        <View style={styles.footer}>
+          <TouchableOpacity style={[styles.footerBtn, inList && { backgroundColor: '#FFF0F0' }]} onPress={() => inList ? remove(offer.id) : add(offer)} activeOpacity={0.75}>
+            <Ionicons name={inList ? 'cart' : 'cart-outline'} size={inList ? 26 : 22} color={inList ? '#E2001A' : Colors.textMedium} />
+          </TouchableOpacity>
+          <View style={styles.footerDivider} />
+          <TouchableOpacity style={[styles.footerBtn, watched && { backgroundColor: Colors.successLight }]} onPress={() => watched ? removeWatch(watchTerm) : addWatch(watchTerm)} activeOpacity={0.75}>
+            <Ionicons name={watched ? 'notifications' : 'notifications-outline'} size={watched ? 24 : 21} color={watched ? Colors.success : Colors.textMedium} />
+          </TouchableOpacity>
+        </View>
+      )}
     </TouchableOpacity>
   )
 }
@@ -141,9 +127,15 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface,
     borderRadius:    Radius.lg,
     marginBottom:    Spacing.md,
-    flexDirection:   'row',
+    flexDirection:   'column',
     overflow:        'hidden',
     borderLeftWidth: 3,
+    borderTopWidth:  1,
+    borderRightWidth:1,
+    borderBottomWidth:1,
+    borderTopColor:  '#D8D5EE',
+    borderRightColor:'#D8D5EE',
+    borderBottomColor:'#D8D5EE',
     shadowColor:     '#000',
     shadowOpacity:   0.07,
     shadowRadius:    10,
@@ -151,6 +143,7 @@ const styles = StyleSheet.create({
     elevation:       3,
   },
   cardExpiring: {},
+  topRow: { flexDirection: 'row' },
 
   imgBox: { alignSelf: 'stretch', alignItems: 'center', justifyContent: 'center' },
   img:    { width: 94, height: 94 },
@@ -167,12 +160,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8, paddingVertical: 3, borderRadius: Radius.full,
     gap: 4, marginBottom: 4,
   },
-  storeLogo: { width: 13, height: 13, borderRadius: 2 },
+  storeLogo: { width: 64, height: 24, borderRadius: 2 },
   storeText: { fontSize: 12, fontFamily: 'Inter-SemiBold' },
 
-  nameRow:     { flexDirection: 'row', alignItems: 'flex-start', gap: 6, marginBottom: 4 },
-  actionIcons: { flexDirection: 'column', alignItems: 'center', gap: 8 },
-  name:        { flex: 1, fontSize: 18, fontFamily: 'PlusJakartaSans-SemiBold', color: Colors.textDark, lineHeight: 24 },
+  footer: { flexDirection: 'row', borderTopWidth: 1, borderTopColor: Colors.divider },
+  footerBtn: { flex: 1, height: 42, alignItems: 'center', justifyContent: 'center' },
+  footerDivider: { width: 1, backgroundColor: Colors.divider },
+
+  name:        { fontSize: 18, fontFamily: 'PlusJakartaSans-SemiBold', color: Colors.textDark, lineHeight: 24, marginBottom: 4 },
   nameCompact: { fontSize: 15, lineHeight: 20 },
 
   priceRow:     { flexDirection: 'row', alignItems: 'baseline', gap: 8, marginBottom: 2 },

@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next'
 import { api } from '../../services/api'
 import { formatDate } from '../../utils/formatters'
 import SearchButton from '../../components/SearchButton'
-import SettingsButton from '../../components/SettingsButton'
+import ListButton from '../../components/ListButton'
 import { Colors } from '../../constants/colors'
 import { Spacing, Radius } from '../../constants/spacing'
 import { StoreLogos } from '../../constants/stores'
@@ -72,9 +72,9 @@ export default function KatalogeScreen() {
           <Text style={styles.title}>{t('kataloge.title')}</Text>
           <Text style={styles.subtitle}>{t('kataloge.thisWeek')}</Text>
         </View>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <SettingsButton />
-        </View>
+        {/* <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <ListButton />
+        </View> */}
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} contentInsetAdjustmentBehavior="never">

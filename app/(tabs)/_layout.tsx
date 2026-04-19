@@ -1,13 +1,44 @@
 import { Tabs } from 'expo-router'
-import { Platform, View, StyleSheet } from 'react-native'
+import { Platform, View, StyleSheet, Text } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { BlurView } from 'expo-blur'
 import { useTranslation } from 'react-i18next'
 import { Colors } from '../../constants/colors'
+import { useListStore } from '../../store/listStore'
+import { useNotificationsStore } from '../../store/notificationsStore'
+import { useSettingsStore } from '../../store/settingsStore'
 
 const TAB_HEIGHT = Platform.OS === 'ios' ? 82 : 64
 const TAB_BOTTOM = 0
 const TAB_SIDE   = 0
+
+function BellTabIcon({ focused }: { focused: boolean }) {
+  const count = useNotificationsStore(s => s.watchlist.length)
+  return (
+    <View style={[styles.iconWrap, focused && styles.iconWrapActive]}>
+      <Ionicons name={focused ? 'notifications' : 'notifications-outline'} size={24} color={focused ? '#fff' : Colors.textLight} />
+      {count > 0 && (
+        <View style={styles.bellBadge}>
+          <Text style={styles.cartBadgeText}>{count > 99 ? '99' : count}</Text>
+        </View>
+      )}
+    </View>
+  )
+}
+
+function CartTabIcon({ focused }: { focused: boolean }) {
+  const count = useListStore(s => s.items.length)
+  return (
+    <View style={[styles.iconWrap, focused && styles.iconWrapActive]}>
+      <Ionicons name={focused ? 'cart' : 'cart-outline'} size={24} color={focused ? '#fff' : Colors.textLight} />
+      {count > 0 && (
+        <View style={styles.cartBadge}>
+          <Text style={styles.cartBadgeText}>{count > 99 ? '99' : count}</Text>
+        </View>
+      )}
+    </View>
+  )
+}
 
 function TabIcon({ name, focused, label, size = 22 }: {
   name: React.ComponentProps<typeof Ionicons>['name']
@@ -24,6 +55,7 @@ function TabIcon({ name, focused, label, size = 22 }: {
 
 export default function TabLayout() {
   const { t } = useTranslation()
+  const cardLayout = useSettingsStore(s => s.cardLayout)
 
   return (
     <Tabs
@@ -68,8 +100,23 @@ export default function TabLayout() {
       <Tabs.Screen
         name="search"
         options={{
+          href: null, // descomentar para ocultar Entdecken del tab bar
           tabBarIcon: ({ focused }) => (
             <TabIcon name="compass" focused={focused} label="Entdecken" size={28} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="index"
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <TabIcon
+              name={cardLayout === 'grid' ? (focused ? 'grid' : 'grid-outline') : (focused ? 'list' : 'list-outline')}
+              focused={focused}
+              label={t('tabs.home')}
+              size={cardLayout === 'grid' ? 22 : 26}
+            />
           ),
         }}
       />
@@ -84,34 +131,28 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-        name="index"
-        options={{
-          tabBarIcon: ({ focused }) => (
-            <TabIcon name={focused ? 'grid' : 'grid-outline'} focused={focused} label={t('tabs.home')} />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
         name="list"
         options={{
-          tabBarIcon: ({ focused }) => (
-            <TabIcon name={focused ? 'cart' : 'cart-outline'} focused={focused} label="Liste" size={24} />
-          ),
+          tabBarIcon: ({ focused }) => <CartTabIcon focused={focused} />,
         }}
       />
 
       <Tabs.Screen
         name="notifications"
         options={{
-          tabBarIcon: ({ focused }) => (
-            <TabIcon name={focused ? 'notifications' : 'notifications-outline'} focused={focused} label={t('notif.title')} size={24} />
-          ),
+          tabBarIcon: ({ focused }) => <BellTabIcon focused={focused} />,
         }}
       />
 
-      <Tabs.Screen name="stores"   options={{ href: null }} />
-      <Tabs.Screen name="settings" options={{ href: null }} />
+      <Tabs.Screen
+        name="settings"
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <TabIcon name={focused ? 'settings' : 'settings-outline'} focused={focused} label={t('settings.title')} size={24} />
+          ),
+        }}
+      />
+      <Tabs.Screen name="stores" options={{ href: null }} />
     </Tabs>
   )
 }
@@ -127,4 +168,19 @@ const styles = StyleSheet.create({
   iconWrapActive: {
     backgroundColor: Colors.primary,
   },
+  cartBadge: {
+    position: 'absolute', top: 1, right: 1,
+    minWidth: 16, height: 16, borderRadius: 8,
+    backgroundColor: '#E2001A',
+    alignItems: 'center', justifyContent: 'center',
+    paddingHorizontal: 3,
+  },
+  bellBadge: {
+    position: 'absolute', top: 1, right: 1,
+    minWidth: 16, height: 16, borderRadius: 8,
+    backgroundColor: Colors.success,
+    alignItems: 'center', justifyContent: 'center',
+    paddingHorizontal: 3,
+  },
+  cartBadgeText: { fontSize: 9, fontFamily: 'Inter-Medium', color: '#fff', lineHeight: 12 },
 })

@@ -11,7 +11,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { offersService } from '../../services/offersService'
 import OfferCard from '../../components/OfferCard'
 import OfferCardGrid from '../../components/OfferCardGrid'
-import SettingsButton from '../../components/SettingsButton'
+import ListButton from '../../components/ListButton'
 import { useSettingsStore } from '../../store/settingsStore'
 import { getOfferName } from '../../utils/getOfferName'
 import { Colors } from '../../constants/colors'
@@ -177,7 +177,7 @@ export default function HomeScreen() {
         renderItem={({ item }) => (
           cardLayout === 'grid'
             ? <View style={styles.cardWrapperGrid}><OfferCardGrid offer={item} /></View>
-            : <View style={styles.cardWrapper}><OfferCard offer={item} compact={cardLayout === 'compact'} /></View>
+            : <View style={[styles.cardWrapper, cardLayout === 'compact' && { marginTop: 40 }]}><OfferCard offer={item} compact={cardLayout === 'compact'} /></View>
         )}
         extraData={cardLayout}
         contentContainerStyle={[styles.listContent, cardLayout === 'grid' && { paddingHorizontal: Spacing.sm }]}
@@ -198,7 +198,7 @@ export default function HomeScreen() {
 
             {/* Featured horizontal scroll */}
             {featured.length > 0 && activeStore === 'all' && (
-              <View style={styles.section}>
+              <View style={[styles.section, { marginTop: 30 }]}>
                 <View style={styles.sectionRow}>
                   <Text style={styles.sectionTitle}>{t('home.featured')}</Text>
                   <View style={styles.sectionBadge}>
@@ -232,7 +232,7 @@ export default function HomeScreen() {
                       </TouchableOpacity>
                     ) : (
                       <View key={o.id} style={styles.featuredListCard} pointerEvents="box-none">
-                        <OfferCard offer={o} compact={cardLayout === 'compact'} fixedHeight />
+                        <OfferCard offer={o} compact={cardLayout === 'compact'} fixedHeight hideFooter hideExpiry />
                       </View>
                     )
                   ))}
@@ -275,13 +275,11 @@ export default function HomeScreen() {
               <Text style={styles.subtitle}>{t('home.subtitle')}</Text>
             </View>
           </View>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <SettingsButton />
-          </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }} />
         </Animated.View>
 
         {/* Filter banners */}
-        <Animated.View style={{ height: bannerHeight, overflow: 'hidden' }}>
+        <Animated.View style={{ height: bannerHeight, overflow: 'hidden', marginTop: 0 }}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -290,11 +288,12 @@ export default function HomeScreen() {
         >
           {/* All banner */}
           <TouchableOpacity
-            style={[styles.filterBanner, { backgroundColor: Colors.surface, borderColor: Colors.border }]}
+            style={[styles.filterBanner, { backgroundColor: Colors.surface, borderColor: Colors.border, gap: 2 }]}
             onPress={() => onStoreFilter('all')}
             activeOpacity={0.82}
           >
-            <Ionicons name="apps" size={26} color={activeStore === 'all' ? Colors.primary : Colors.textLight} />
+            <Ionicons name="flame" size={26} color={activeStore === 'all' ? Colors.primary : Colors.textLight} />
+            <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 10, color: activeStore === 'all' ? Colors.primary : Colors.textLight }}>Top Angebote</Text>
           </TouchableOpacity>
 
           {/* Store banners */}
@@ -342,14 +341,11 @@ export default function HomeScreen() {
           style={styles.catScroll}
         >
           <TouchableOpacity
-            style={[styles.catChip, activeCategories.length === 0 && styles.catChipActive]}
+            style={[styles.catChip, { paddingLeft: 0, paddingRight: 0, width: 54, justifyContent: 'center' }, activeCategories.length === 0 && styles.catChipActiveAll]}
             onPress={() => { setActiveCategories([]); setFiltering(true); load(activeStore, [], 1).finally(() => setFiltering(false)) }}
             activeOpacity={0.8}
           >
-            <View style={[styles.catAvatar, { backgroundColor: Colors.surfaceAlt, alignItems: 'center', justifyContent: 'center' }]}>
-              <Ionicons name="apps" size={18} color={activeCategories.length === 0 ? Colors.primary : Colors.textMedium} />
-            </View>
-            <Text style={[styles.catLabel, activeCategories.length === 0 && styles.catLabelActive]}>{t('common.all')}</Text>
+            <Ionicons name="apps" size={20} color={activeCategories.length === 0 ? '#E2001A' : Colors.textMedium} />
           </TouchableOpacity>
 
           {CATEGORIES.filter(cat =>
@@ -387,7 +383,7 @@ const styles = StyleSheet.create({
   center:       { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.background, gap: 12 },
   listContent:  { paddingBottom: 110 },
   cardWrapper:      { paddingHorizontal: Spacing.lg },
-  cardWrapperGrid:  { flex: 1, margin: 6, height: 320 },
+  cardWrapperGrid:  { flex: 1, margin: 6, height: 335 },
   listHeader:   {},
 
   // Fixed header
@@ -402,7 +398,7 @@ const styles = StyleSheet.create({
   // Filter bar
 
   filterScroll: { flexGrow: 0 },
-  filterBar:    { paddingHorizontal: Spacing.lg, paddingBottom: 10, gap: 10 },
+  filterBar:    { paddingHorizontal: Spacing.lg, paddingBottom: 40, gap: 10 , marginTop: 10 },
   filterBanner: {
     flexDirection:   'column',
     alignItems:      'center',
@@ -444,6 +440,8 @@ const styles = StyleSheet.create({
     height:       210,
     borderRadius: Radius.lg,
     overflow:     'hidden',
+    borderWidth:  1,
+    borderColor:  '#D8D5EE',
     shadowColor:  '#000',
     shadowOpacity: 0.14,
     shadowRadius:  10,
@@ -461,7 +459,7 @@ const styles = StyleSheet.create({
 
   // Category chips
   catScroll:      { flexGrow: 0, backgroundColor: 'rgba(245,243,255,0.92)' },
-  catBar:         { paddingHorizontal: Spacing.lg, paddingTop: 6, paddingBottom: 12, gap: 8 },
+  catBar:         { paddingHorizontal: Spacing.lg, paddingTop: 16, paddingBottom: 12, gap: 8,  },
   catChip: {
     flexDirection:     'row',
     alignItems:        'center',
@@ -482,6 +480,10 @@ const styles = StyleSheet.create({
   catChipActive: {
     backgroundColor: Colors.primaryLight,
     borderColor:     Colors.primary,
+  },
+  catChipActiveAll: {
+    backgroundColor: '#fff',
+    borderColor:     Colors.border,
   },
   catAvatar:     { width: 34, height: 34, borderRadius: 17, overflow: 'hidden' },
   catAvatarAll:  { backgroundColor: Colors.primaryLight, alignItems: 'center', justifyContent: 'center' },

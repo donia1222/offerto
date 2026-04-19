@@ -3,18 +3,17 @@ import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
   Image, Share, Alert,
 } from 'react-native'
-
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
 import { useRouter } from 'expo-router'
-import { useListStore } from '../../store/listStore'
-import { useSettingsStore } from '../../store/settingsStore'
-import { getOfferName } from '../../utils/getOfferName'
-import { Colors } from '../../constants/colors'
-import { Spacing, Radius } from '../../constants/spacing'
-import { StoreLogos } from '../../constants/stores'
-import type { ListItem } from '../../store/listStore'
+import { useListStore } from '../store/listStore'
+import { useSettingsStore } from '../store/settingsStore'
+import { getOfferName } from '../utils/getOfferName'
+import { Colors } from '../constants/colors'
+import { Spacing, Radius } from '../constants/spacing'
+import { StoreLogos } from '../constants/stores'
+import type { ListItem } from '../store/listStore'
 
 const fmt = (v: number) => v.toFixed(2)
 
@@ -49,7 +48,9 @@ export default function ListScreen() {
 
   const Header = (
     <View style={styles.header}>
-      <Image source={require('../../assets/images/trasnparehte.png')} style={styles.titleLogo} resizeMode="contain" />
+      <TouchableOpacity style={styles.closeBtn} onPress={() => router.back()} activeOpacity={0.75}>
+        <Ionicons name="close" size={22} color={Colors.textDark} />
+      </TouchableOpacity>
       <View style={{ flex: 1 }}>
         <Text style={styles.title}>{t('list.title')}</Text>
         <Text style={styles.subtitle}>{t('list.subtitle')}</Text>
@@ -73,7 +74,9 @@ export default function ListScreen() {
   if (items.length === 0) return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
-        <Image source={require('../../assets/images/trasnparehte.png')} style={styles.titleLogo} resizeMode="contain" />
+        <TouchableOpacity style={styles.closeBtn} onPress={() => router.back()} activeOpacity={0.75}>
+          <Ionicons name="close" size={22} color={Colors.textDark} />
+        </TouchableOpacity>
         <View style={{ flex: 1 }}>
           <Text style={styles.title}>{t('list.title')}</Text>
           <Text style={styles.subtitle}>{t('list.subtitle')}</Text>
@@ -171,7 +174,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg, paddingTop: Spacing.md, paddingBottom: Spacing.sm,
     gap: Spacing.sm,
   },
-  titleLogo: { width: 44, height: 44 },
   closeBtn: {
     width: 40, height: 40, borderRadius: 20,
     alignItems: 'center', justifyContent: 'center',

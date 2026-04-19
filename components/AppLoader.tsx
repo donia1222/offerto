@@ -105,10 +105,10 @@ const styles = StyleSheet.create({
     marginTop:      32,
   },
   storeLogoWrap: {
-    width:           64,
-    height:          40,
+    width:           96,
+    height:          60,
     backgroundColor: '#fff',
-    borderRadius:    10,
+    borderRadius:    14,
     alignItems:      'center',
     justifyContent:  'center',
     shadowColor:     '#000',
@@ -116,10 +116,10 @@ const styles = StyleSheet.create({
     shadowRadius:    6,
     shadowOffset:    { width: 0, height: 2 },
     elevation:       2,
-    padding:         6,
+    padding:         8,
   },
   storeLogo: {
-    width:  52,
-    height: 28,
+    width:  80,
+    height: 44,
   },
 })

@@ -12,7 +12,7 @@ import OfferCard from '../../components/OfferCard'
 import OfferCardGrid from '../../components/OfferCardGrid'
 import { useTranslation } from 'react-i18next'
 import SearchButton from '../../components/SearchButton'
-import SettingsButton from '../../components/SettingsButton'
+import ListButton from '../../components/ListButton'
 import { useSettingsStore } from '../../store/settingsStore'
 import { Colors } from '../../constants/colors'
 import { Spacing, Radius } from '../../constants/spacing'
@@ -133,7 +133,7 @@ export default function SearchScreen() {
           </View>
         )}
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <SettingsButton />
+          <ListButton />
         </View>
       </Animated.View>
 
@@ -266,7 +266,7 @@ export default function SearchScreen() {
             renderItem={({ item }) => (
               cardLayout === 'grid'
                 ? <View style={styles.cardWrapGrid}><OfferCardGrid offer={item} /></View>
-                : <View style={styles.cardWrap}><OfferCard offer={item} compact={cardLayout === 'compact'} /></View>
+                : <View style={[styles.cardWrap, cardLayout === 'compact' && { marginTop: 40 }]}><OfferCard offer={item} compact={cardLayout === 'compact'} /></View>
             )}
             ListFooterComponent={<View style={{ height: 100 }} />}
           />
@@ -371,5 +371,5 @@ const styles = StyleSheet.create({
   resultsCount:  { fontFamily: 'Inter-Medium', fontSize: 14, color: Colors.textMedium },
   resultsList:   {},
   cardWrap:      { paddingHorizontal: Spacing.lg },
-  cardWrapGrid:  { flex: 1, margin: 6, height: 320 },
+  cardWrapGrid:  { flex: 1, margin: 6, height: 335 },
 })

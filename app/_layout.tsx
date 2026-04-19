@@ -164,7 +164,7 @@ export default function RootLayout() {
             headerTitleStyle: { fontFamily: 'PlusJakartaSans-Bold', fontSize: 20, color: '#1C1B33' },
           }}
         />
-        <Stack.Screen
+<Stack.Screen
           name="offer/[id]"
           options={{
             headerShown:       true,
