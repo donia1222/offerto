@@ -1,7 +1,7 @@
 <?php
 /**
- * Cron: cada lunes a las 06:00
- * 0 6 * * 1 php /path/to/backend/cron/scrape_weekly.php >> /path/to/backend/logs/cron.log 2>&1
+ * Cron: cada domingo a las 06:00 (tiendas publican KW nueva el sábado/domingo)
+ * 0 6 * * 0 php /path/to/backend/cron/scrape_weekly.php >> /path/to/backend/logs/cron.log 2>&1
  */
 define('CRON_MODE', true);
 require_once __DIR__ . '/../config/db.php';

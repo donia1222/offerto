@@ -2,8 +2,14 @@
 require_once __DIR__ . '/_cors.php';
 require_once __DIR__ . '/../config/db.php';
 
-$year = (int) date('Y');
-$kw   = (int) date('W');
+// Rollover: desde sábado 18:00 o cualquier hora del domingo, tratar la próxima KW como "esta semana"
+$dow      = (int) date('N');                            // 1=lun … 7=dom
+$hour     = (int) date('H');
+$rollover = ($dow === 7) || ($dow === 6 && $hour >= 18);
+
+$baseTs = strtotime($rollover ? 'monday next week' : 'monday this week');
+$year   = (int) date('o', $baseTs);                     // ISO year de la semana base
+$kw     = (int) date('W', $baseTs);
 
 // ── Transgourmet ──────────────────────────────────────────────────────────────
 function getTransgourmetUrl(): ?string {
@@ -11,20 +17,45 @@ function getTransgourmetUrl(): ?string {
         stream_context_create(['http' => ['timeout' => 10, 'header' => "User-Agent: Mozilla/5.0\r\n"]])
     );
     if ($html) {
-        preg_match_all('/href="(https:\/\/www-static\.transgourmet\.ch\/public\/[^"]*kw\d+[^"]*aktionen[^"]*\.pdf)"/i', $html, $m);
-        if (!empty($m[1])) return $m[1][0];
+        // Buscar todos los PDFs con su KW y elegir el más cercano a la semana base
+        if (preg_match_all('/href="(https:\/\/www-static\.transgourmet\.ch\/public\/[^"]*kw(\d+)[^"]*aktionen[^"]*\.pdf)"/i', $html, $m, PREG_SET_ORDER)) {
+            global $kw;
+            // Preferir match exacto con la KW base
+            foreach ($m as $hit) {
+                if ((int) $hit[2] === $kw) return $hit[1];
+            }
+            return $m[0][1];
+        }
     }
-    $kw = (int) date('W');
+    global $kw;
     $month = date('Y-m');
-    return "https://www-static.transgourmet.ch/public/{$month}/kw{$kw}-agh-aktionen-d.pdf";
+    $kwPad = str_pad($kw, 2, '0', STR_PAD_LEFT);
+    return "https://www-static.transgourmet.ch/public/{$month}/kw{$kwPad}-agh-aktionen-d.pdf";
 }
 
 // ── TopCC ─────────────────────────────────────────────────────────────────────
-// URL pattern: https://wochenhits.topcc.ch/flugblatt/YYYY/topcc-wochen-hits-YYYY-kwNN/
-function getTopCCUrl(): string {
+function getTopCCUrl(int $weekOffset = 0): string {
     global $year, $kw;
-    $kwPad = str_pad($kw, 2, '0', STR_PAD_LEFT);
-    return "https://wochenhits.topcc.ch/flugblatt/{$year}/topcc-wochen-hits-{$year}-kw{$kwPad}/";
+    $targetKw   = $kw + $weekOffset;
+    $targetYear = $year;
+    if ($targetKw > 52) { $targetKw -= 52; $targetYear++; }
+    $kwPad = str_pad($targetKw, 2, '0', STR_PAD_LEFT);
+    return "https://wochenhits.topcc.ch/flugblatt/{$targetYear}/topcc-wochen-hits-{$targetYear}-kw{$kwPad}/";
+}
+
+function topCCUrlExists(string $url): bool {
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_NOBODY         => true,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_TIMEOUT        => 8,
+        CURLOPT_USERAGENT      => 'Mozilla/5.0',
+    ]);
+    curl_exec($ch);
+    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    return $code === 200;
 }
 
 // ── Aligro ────────────────────────────────────────────────────────────────────
@@ -45,43 +76,86 @@ function curlGet(string $url): string|false {
     return $res;
 }
 
-function getAligroUrl(): ?string {
+// Busca el PDF del flyer semanal Aligro (DE: "PROFI-Aktionen", FR: "Actions PRO")
+// cuya fecha cae dentro del rango [from, to] (YYYY-MM-DD). null si no hay match.
+function getAligroUrlForRange(string $from, string $to): ?string {
+    // /documents/prospectus con Accept-Language: de-CH hace meta-refresh a /de/dokumente/prospekte
+    // — vamos directo a las dos URLs (DE primero, FR como fallback).
     $pages = [
-        'https://www.aligro.ch/de/prospekte',
-        'https://www.aligro.ch/fr/prospectus',
+        'https://www.aligro.ch/de/dokumente/prospekte',
+        'https://www.aligro.ch/fr/documents/prospectus',
     ];
-    foreach ($pages as $url) {
-        $html = curlGet($url);
+
+    $monthsDe = [
+        'januar'=>1,'februar'=>2,'märz'=>3,'marz'=>3,'april'=>4,'mai'=>5,'juni'=>6,
+        'juli'=>7,'august'=>8,'september'=>9,'oktober'=>10,'november'=>11,'dezember'=>12,
+    ];
+    $monthsFr = [
+        'janvier'=>1,'février'=>2,'fevrier'=>2,'mars'=>3,'avril'=>4,'mai'=>5,'juin'=>6,
+        'juillet'=>7,'août'=>8,'aout'=>8,'septembre'=>9,'octobre'=>10,'novembre'=>11,'décembre'=>12,'decembre'=>12,
+    ];
+    $fromTs = strtotime($from);
+    $toTs   = strtotime($to);
+
+    foreach ($pages as $pageUrl) {
+        $html = curlGet($pageUrl);
         if (!$html) continue;
+        if (!preg_match_all('/<article class="prospectus[^"]*">(.*?)<\/article>/is', $html, $articles)) continue;
 
-        // PDF directo en uploads
-        if (preg_match('/(https:\/\/www\.aligro\.ch\/uploads\/documents\/prospectus\/[^\s"\'<>]+\.pdf)/i', $html, $m)) {
-            return $m[1];
-        }
-        if (preg_match('/href="(\/uploads\/documents\/prospectus\/[^"]+\.pdf)"/i', $html, $m)) {
-            return 'https://www.aligro.ch' . $m[1];
-        }
-        // JSON embebido (Next.js / React apps cargan datos en __NEXT_DATA__ o window.__data__)
-        if (preg_match('/"url"\s*:\s*"([^"]+\/prospectus\/[^"]+\.pdf)"/i', $html, $m)) {
-            $u = $m[1];
-            return str_starts_with($u, 'http') ? $u : 'https://www.aligro.ch' . $u;
-        }
-        if (preg_match('/"path"\s*:\s*"([^"]+\/prospectus\/[^"]+\.pdf)"/i', $html, $m)) {
-            $u = $m[1];
-            return str_starts_with($u, 'http') ? $u : 'https://www.aligro.ch' . $u;
+        foreach ($articles[1] as $block) {
+            // Flyer semanal (excluimos P&G mensual)
+            if (!preg_match('/PROFI-Aktionen|Actions\s+PRO/i', $block)) continue;
+            if (!preg_match('/href="(\/uploads\/documents\/prospectus\/[^"]+\.pdf)"/i', $block, $h)) continue;
+
+            $startTs = $endTs = null;
+
+            // DE: "vom 20. bis 25. April 2026" | "vom 27. April bis 2. Mai 2026"
+            if (preg_match(
+                '/vom\s+(\d{1,2})\.\s*(?:([a-zäöü]+)\s+)?bis\s+(\d{1,2})\.\s*([a-zäöü]+)\s+(\d{4})/iu',
+                $block, $d
+            )) {
+                $em = $monthsDe[mb_strtolower($d[4])] ?? null;
+                $sm = ($d[2] !== '') ? ($monthsDe[mb_strtolower($d[2])] ?? $em) : $em;
+                if ($em && $sm) {
+                    $startTs = mktime(0, 0, 0, $sm, (int) $d[1], (int) $d[5]);
+                    $endTs   = mktime(23, 59, 59, $em, (int) $d[3], (int) $d[5]);
+                }
+            }
+            // FR: "du 20 au 25 avril 2026" | "du 27 avril au 2 mai 2026"
+            elseif (preg_match(
+                '/du\s+(\d{1,2})(?:\s+([a-zéû]+))?\s+au\s+(\d{1,2})\s+([a-zéû]+)\s+(\d{4})/iu',
+                $block, $d
+            )) {
+                $em = $monthsFr[mb_strtolower($d[4])] ?? null;
+                $sm = (isset($d[2]) && $d[2] !== '') ? ($monthsFr[mb_strtolower($d[2])] ?? $em) : $em;
+                if ($em && $sm) {
+                    $startTs = mktime(0, 0, 0, $sm, (int) $d[1], (int) $d[5]);
+                    $endTs   = mktime(23, 59, 59, $em, (int) $d[3], (int) $d[5]);
+                }
+            }
+
+            if ($startTs === null) continue;
+            if ($endTs >= $fromTs && $startTs <= $toTs) {
+                return 'https://www.aligro.ch' . $h[1];
+            }
         }
     }
+    return null;
+}
 
-    // Intentar API interna de Aligro (algunos sitios exponen /api/prospectus o similar)
-    $api = curlGet('https://www.aligro.ch/api/prospectus');
-    if ($api) {
-        $json = json_decode($api, true);
-        if (!empty($json['pdf_url']))  return $json['pdf_url'];
-        if (!empty($json[0]['url']))   return $json[0]['url'];
-        if (!empty($json['url']))      return $json['url'];
-    }
+function getAligroUrl(): ?string {
+    global $monday, $sunday;
+    $u = getAligroUrlForRange($monday, $sunday);
+    if ($u) return $u;
 
-    // Fallback: leer desde DB (actualizable via set_aligro.php)
+    // Fallback: primer flyer semanal que aparezca en la página DE
+    $html = curlGet('https://www.aligro.ch/de/dokumente/prospekte');
+    if ($html && preg_match(
+        '/<article class="prospectus[^"]*">.*?(?:PROFI-Aktionen|Actions\s+PRO).*?href="(\/uploads\/documents\/prospectus\/[^"]+\.pdf)"/is',
+        $html, $m
+    )) return 'https://www.aligro.ch' . $m[1];
+
+    // Último recurso: DB
     try {
         $row = getDB()->query("SELECT valor FROM config WHERE clave = 'aligro_pdf_url'")->fetch();
         if ($row) return $row['valor'];
@@ -89,10 +163,15 @@ function getAligroUrl(): ?string {
     return null;
 }
 
-$monday = date('Y-m-d', strtotime('monday this week'));
-$sunday = date('Y-m-d', strtotime('sunday this week'));
-$semana = 'KW ' . str_pad($kw, 2, '0', STR_PAD_LEFT);
+$monday     = date('Y-m-d', $baseTs);
+$sunday     = date('Y-m-d', strtotime('+6 days', $baseTs));
+$nextMonday = date('Y-m-d', strtotime('+7 days',  $baseTs));
+$nextSunday = date('Y-m-d', strtotime('+13 days', $baseTs));
+$semana     = 'KW ' . str_pad($kw, 2, '0', STR_PAD_LEFT);
+$nextKw     = $kw + 1 > 52 ? 1 : $kw + 1;
+$nextSemana = 'KW ' . str_pad($nextKw, 2, '0', STR_PAD_LEFT);
 
+// ── Esta semana ──
 $folletos = [
     [
         'tienda'       => 'transgourmet',
@@ -107,7 +186,7 @@ $folletos = [
         'tienda'       => 'topcc',
         'nombre'       => 'TopCC',
         'semana'       => $semana,
-        'pdf_url'      => getTopCCUrl(),
+        'pdf_url'      => getTopCCUrl(0),
         'tipo'         => 'web',
         'valido_desde' => $monday,
         'valido_hasta' => $sunday,
@@ -122,6 +201,20 @@ $folletos = [
         'valido_hasta' => $sunday,
     ],
 ];
+
+// ── Próxima semana: TopCC (patrón predecible, siempre incluir) ──
+$folletos[] = [
+    'tienda'       => 'topcc',
+    'nombre'       => 'TopCC',
+    'semana'       => $nextSemana,
+    'pdf_url'      => getTopCCUrl(1),
+    'tipo'         => 'web',
+    'valido_desde' => $nextMonday,
+    'valido_hasta' => $nextSunday,
+];
+
+// Transgourmet ya publica el PDF de la próxima semana en su sitio durante el fin de semana
+// → no duplicar como entry separado de "próxima semana"
 
 // Filtrar los que no tienen URL
 $folletos = array_values(array_filter($folletos, fn($f) => $f['pdf_url'] !== null));

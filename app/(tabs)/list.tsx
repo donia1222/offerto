@@ -47,7 +47,13 @@ export default function ListScreen() {
   if (items.length === 0) return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.title}>{t('list.title')}</Text>
+        <View style={styles.titleLeft}>
+          <Image source={require('../../assets/images/trasnparehte.png')} style={styles.headerLogo} resizeMode="contain" />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.title}>{t('list.title')}</Text>
+            <Text style={styles.subtitle}>{t('list.subtitle')}</Text>
+          </View>
+        </View>
       </View>
       <View style={styles.empty}>
         <Ionicons name="cart-outline" size={64} color={Colors.textLight} />
@@ -107,7 +113,13 @@ export default function ListScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.title}>{t('list.title')}</Text>
+        <View style={styles.titleLeft}>
+          <Image source={require('../../assets/images/trasnparehte.png')} style={styles.headerLogo} resizeMode="contain" />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.title}>{t('list.title')}</Text>
+            <Text style={styles.subtitle}>{t('list.subtitle')}</Text>
+          </View>
+        </View>
         <View style={{ flexDirection: 'row', gap: 4 }}>
           {doneCount > 0 && (
             <TouchableOpacity style={styles.headerBtn} onPress={clearComprado}>
@@ -157,6 +169,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg, paddingTop: Spacing.md, paddingBottom: Spacing.sm,
   },
   title: { fontFamily: 'PlusJakartaSans-Bold', fontSize: 26, color: Colors.textDark },
+  titleLeft:  { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 },
+  headerLogo: { width: 44, height: 44 },
+  subtitle:   { fontFamily: 'Inter-Medium', fontSize: 13, color: Colors.textMedium, marginTop: -2 },
   headerBtn: {
     width: 36, height: 36, borderRadius: 18,
     backgroundColor: Colors.surface, alignItems: 'center', justifyContent: 'center',

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import {
   View, Text, StyleSheet, TouchableOpacity,
-  Image, ImageBackground, ActivityIndicator, Modal, ScrollView,
+  Image, ActivityIndicator, Modal, ScrollView,
   useWindowDimensions,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -32,11 +32,12 @@ const STORE_COLORS: Record<string, string> = {
   topcc:        '#0050AA',
   aligro:       '#FF6600',
 }
-const STORE_IMAGES: Record<string, any> = {
-  aligro:       require('../../assets/images/prospectos/aligro.png'),
-  topcc:        require('../../assets/images/prospectos/topcc.png'),
-  transgourmet: require('../../assets/images/prospectos/transgousrmet.png'),
-}
+const STORE_CHIPS = [
+  { slug: 'all',          logo: null },
+  { slug: 'aligro',       logo: StoreLogos.aligro },
+  { slug: 'topcc',        logo: StoreLogos.topcc },
+  { slug: 'transgourmet', logo: StoreLogos.transgourmet },
+]
 
 export default function KatalogeScreen() {
   const { t } = useTranslation()
@@ -66,14 +67,14 @@ export default function KatalogeScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.title}>{t('kataloge.title')}</Text>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <SearchButton />
-          <SettingsButton />
+        <Image source={require('../../assets/images/trasnparehte.png')} style={styles.headerLogo} resizeMode="contain" />
+        <View style={{ flex: 1 }}>
+          <Text style={styles.title}>{t('kataloge.title')}</Text>
+          <Text style={styles.subtitle}>{t('kataloge.thisWeek')}</Text>
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} contentInsetAdjustmentBehavior="never">
         {loading ? (
           <View style={styles.centerBox}>
             <ActivityIndicator color={Colors.primary} />
@@ -88,20 +89,27 @@ export default function KatalogeScreen() {
           </View>
         ) : (
           <View style={styles.grid}>
-            {items.map(item => (
+            {items.filter(item => {
+              // Sólo la semana vigente (menor valido_desde)
+              const minDate = items.reduce((a, b) => a.valido_desde < b.valido_desde ? a : b).valido_desde
+              return item.valido_desde === minDate
+            }).map(item => (
               <TouchableOpacity
-                key={item.tienda}
-                style={[styles.card, { width: cardSize, height: item.tienda === 'topcc' ? cardSize * 0.8 : cardSize }]}
+                key={item.tienda + item.semana}
+                style={[styles.card, { width: cardSize, height: cardSize * 0.5, backgroundColor: Colors.surface }]}
                 activeOpacity={0.88}
                 onPress={() => open(item)}
               >
-                <ImageBackground
-                  source={STORE_IMAGES[item.tienda]}
-                  style={styles.cardImg}
-                  imageStyle={styles.cardImgStyle}
-                  resizeMode="contain"
-                >
-                </ImageBackground>
+                <View style={styles.nextCard}>
+                  <Image source={StoreLogos[item.tienda]} style={styles.nextCardLogo} resizeMode="contain" />
+                  <View style={styles.nextCardBody}>
+                    <Text style={styles.nextCardText}>{t('kataloge.nextWeekLabel', { store: item.nombre, kw: item.semana })}</Text>
+                    <View style={styles.nextCardCta}>
+                      <Text style={styles.nextCardCtaText}>{t('kataloge.open')}</Text>
+                      <Ionicons name="chevron-forward" size={16} color={Colors.primary} />
+                    </View>
+                  </View>
+                </View>
               </TouchableOpacity>
             ))}
           </View>
@@ -131,6 +139,7 @@ export default function KatalogeScreen() {
 
           {active?.pdf_url && (
             <WebView
+              key={active.pdf_url}
               source={{ uri: active.pdf_url }}
               style={styles.webview}
               onLoadStart={() => setWebLoading(true)}
@@ -153,12 +162,30 @@ export default function KatalogeScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: Spacing.lg, paddingTop: Spacing.md, paddingBottom: Spacing.sm,
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    paddingHorizontal: Spacing.lg, paddingTop: Spacing.md, paddingBottom: Spacing.md,
   },
-  title: { flex: 1, fontFamily: 'PlusJakartaSans-Bold', fontSize: 26, color: Colors.textDark },
-  content:  { padding: Spacing.lg, gap: Spacing.lg },
-  centerBox:{ alignItems: 'center', justifyContent: 'center', paddingVertical: 60, gap: 12 },
+  headerLogo: { width: 44, height: 44 },
+  title:    { fontFamily: 'PlusJakartaSans-Bold', fontSize: 26, color: Colors.textDark },
+  subtitle: { fontFamily: 'Inter-Medium', fontSize: 14, color: Colors.textMedium, marginTop: 2 },
+
+  chipScroll: { flexGrow: 0 },
+  chipBar:    { paddingHorizontal: Spacing.lg, paddingBottom: Spacing.md, gap: 8 },
+  chip: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    paddingHorizontal: 14, paddingVertical: 8,
+    borderRadius: Radius.full,
+    backgroundColor: Colors.surface,
+    borderWidth: 1.5, borderColor: Colors.border,
+    shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 }, elevation: 1,
+  },
+  chipLogo: { width: 36, height: 22, borderRadius: 3 },
+  chipText: { fontFamily: 'Inter-SemiBold', fontSize: 13, color: Colors.textMedium },
+
+  content:   { flexGrow: 1, padding: Spacing.lg, gap: Spacing.lg, justifyContent: 'center' },
+  centerBox: { alignItems: 'center', justifyContent: 'center', paddingVertical: 60, gap: 12 },
+  grid:      { gap: Spacing.md },
 
   card: {
     borderRadius:  Radius.xl,
@@ -169,9 +196,27 @@ const styles = StyleSheet.create({
     shadowOffset:  { width: 0, height: 5 },
     elevation:     5,
   },
-  grid:         { gap: Spacing.md },
-  cardImg:      { flex: 1 },
-  cardImgStyle: { borderRadius: Radius.xl },
+  nextCard: {
+    flex: 1, flexDirection: 'row', alignItems: 'center',
+    gap: Spacing.lg, paddingHorizontal: Spacing.xl, paddingVertical: Spacing.lg,
+  },
+  nextCardLogo: { width: 80, height: 48 },
+  nextCardBody: { flex: 1, gap: 6 },
+  nextCardText: {
+    fontFamily: 'Inter-Medium', fontSize: 14,
+    color: Colors.textMedium,
+  },
+  nextCardCta: {
+    flexDirection: 'row', alignItems: 'center', gap: 2,
+  },
+  nextCardCtaText: {
+    fontFamily: 'Inter-SemiBold', fontSize: 13, color: Colors.primary,
+  },
+  cardFooter:   {},
+  cardLogo:     {},
+  cardStoreName:{ fontFamily: 'PlusJakartaSans-SemiBold', fontSize: 14, color: '#fff' },
+  cardDate:     { fontFamily: 'Inter-Regular', fontSize: 12, color: 'rgba(255,255,255,0.8)' },
+  openBtn:      {},
   cardGradient: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
     padding:  Spacing.lg, gap: 6,

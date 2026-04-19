@@ -20,7 +20,8 @@
     "settings": "Paramètres"
   },
   "home": {
-    "title": "Cette semaine",
+    "title": "Offres",
+    "subtitle": "Cette semaine",
     "featured": "Meilleures offres",
     "allOffers": "Toutes les offres",
     "expiringSoon": "Expire bientôt",
@@ -49,6 +50,7 @@
   },
   "search": {
     "placeholder": "Rechercher un produit...",
+    "subtitle": "Tous les produits",
     "filters": "Filtres",
     "minDiscount": "Rabais min.",
     "category": "Catégorie",
@@ -63,6 +65,7 @@
   },
   "list": {
     "title": "Liste de courses",
+    "subtitle": "Tes articles",
     "empty": "Liste vide",
     "emptyHint": "Appuyez sur 🛒 sur une offre\npour l'ajouter ici",
     "totalSaving": "Économies CHF {{amount}}",
@@ -79,10 +82,15 @@
   "kataloge": {
     "title": "Prospectus",
     "empty": "Aucun catalogue disponible",
-    "loading": "Chargement du catalogue..."
+    "loading": "Chargement du catalogue...",
+    "thisWeek": "Cette semaine",
+    "nextWeek": "Semaine prochaine",
+    "nextWeekLabel": "Offres {{kw}} · {{store}}",
+    "open": "Ouvrir"
   },
   "settings": {
     "title": "Paramètres",
+    "subtitle": "Personnaliser l'app",
     "languageSection": "LANGUE",
     "storesSection": "MAGASINS FAVORIS",
     "cantonSection": "CANTON",
@@ -101,6 +109,7 @@
   },
   "notif": {
     "title":              "Notifications",
+    "subtitle":           "Reste informé",
     "masterLabel":        "Notifications",
     "masterOn":           "Actif — vous serez notifié",
     "masterOff":          "Désactivé",

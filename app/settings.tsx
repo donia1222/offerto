@@ -10,6 +10,24 @@ import { Spacing, Radius } from '../constants/spacing'
 import { StoreLogos } from '../constants/stores'
 import { useSettingsStore, type AppLang } from '../store/settingsStore'
 
+const CATEGORY_IMAGES: Record<string, any> = {
+  fleisch:    require('../assets/images/categorias/carne.png'),
+  fisch:      require('../assets/images/categorias/pescado.png'),
+  gemuese:    require('../assets/images/categorias/frutaverdura.png'),
+  milch:      require('../assets/images/categorias/leche-queso.png'),
+  bakery:     require('../assets/images/categorias/panaderia.png'),
+  getraenke:  require('../assets/images/categorias/bebidas.png'),
+  snacks:     require('../assets/images/categorias/snacks.png'),
+  haushalt:   require('../assets/images/categorias/prodeuctsocasa.png'),
+  hygiene:    require('../assets/images/categorias/korperpflege.png'),
+  tierfutter: require('../assets/images/categorias/comida-animales.png'),
+}
+
+const ALL_CATEGORIES = [
+  'fleisch', 'fisch', 'gemuese', 'milch', 'bakery',
+  'getraenke', 'snacks', 'haushalt', 'hygiene', 'tierfutter',
+]
+
 const LANGUAGES = [
   { code: 'de', label: 'Deutsch',  flag: '🇩🇪' },
   { code: 'fr', label: 'Français', flag: '🇫🇷' },
@@ -35,8 +53,8 @@ export default function SettingsScreen() {
   const { t }  = useTranslation()
 
   const {
-    language, canton, activeStores, compactMode, showMwst,
-    setLanguage, setCanton, toggleStore, setCompactMode, setShowMwst,
+    language, canton, activeStores, visibleCategories, compactMode, showMwst,
+    setLanguage, setCanton, toggleStore, toggleVisibleCategory, setCompactMode, setShowMwst,
   } = useSettingsStore()
 
   const [cantonOpen, setCantonOpen] = React.useState(false)
@@ -51,7 +69,13 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.title}>{t('settings.title')}</Text>
+        <View style={styles.titleLeft}>
+          <Image source={require('../assets/images/trasnparehte.png')} style={styles.headerLogo} resizeMode="contain" />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.title}>{t('settings.title')}</Text>
+            <Text style={styles.subtitle}>{t('settings.subtitle')}</Text>
+          </View>
+        </View>
         <TouchableOpacity onPress={() => router.back()} style={styles.closeBtn}>
           <Ionicons name="close" size={22} color={Colors.textDark} />
         </TouchableOpacity>
@@ -115,41 +139,38 @@ export default function SettingsScreen() {
           </View>
         </View>
 
-        {/* Kanton */}
-        <Text style={styles.sectionHeader}>{t('settings.cantonSection')}</Text>
+        {/* Kategorien */}
+        <Text style={styles.sectionHeader}>{t('settings.categoriesSection')}</Text>
         <View style={styles.card}>
-          <TouchableOpacity
-            style={[styles.row, styles.rowLast]}
-            onPress={() => setCantonOpen(!cantonOpen)}
-            activeOpacity={0.8}
-          >
-            <View style={styles.rowLeft}>
-              <View style={styles.rowIcon}>
-                <Ionicons name="location-outline" size={18} color={Colors.primary} />
-              </View>
-              <Text style={styles.rowLabel}>{t('settings.canton')}</Text>
-            </View>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <Text style={styles.rowValue}>{cantonLabel}</Text>
-              <Ionicons name={cantonOpen ? 'chevron-up' : 'chevron-down'} size={16} color={Colors.textLight} />
-            </View>
-          </TouchableOpacity>
-          {cantonOpen && (
-            <View style={styles.cantonGrid}>
-              {CANTONS.map(c => (
+          <View style={styles.catGrid}>
+            {ALL_CATEGORIES.map(slug => {
+              const selected = visibleCategories.includes(slug)
+              return (
                 <TouchableOpacity
-                  key={c}
-                  style={[styles.cantonBtn, canton === c && styles.cantonBtnActive]}
-                  onPress={() => { setCanton(c); setCantonOpen(false) }}
+                  key={slug}
+                  style={[styles.catBtn, selected && styles.catBtnActive]}
+                  onPress={() => toggleVisibleCategory(slug)}
                   activeOpacity={0.8}
                 >
-                  <Text style={[styles.cantonText, canton === c && styles.cantonTextActive]}>
-                    {c === 'all' ? t('common.all') : c}
+                  <Image source={CATEGORY_IMAGES[slug]} style={styles.catBtnImg} resizeMode="cover" />
+                  <Text style={[styles.catBtnLabel, selected && styles.catBtnLabelActive]}>
+                    {t(`categories.${slug}`)}
                   </Text>
+                  {selected && (
+                    <View style={styles.catCheck}>
+                      <Ionicons name="checkmark" size={10} color="#fff" />
+                    </View>
+                  )}
                 </TouchableOpacity>
-              ))}
-            </View>
-          )}
+              )
+            })}
+          </View>
+          <TouchableOpacity
+            style={styles.resetCats}
+            onPress={() => useSettingsStore.setState({ visibleCategories: ALL_CATEGORIES })}
+          >
+            <Text style={styles.resetCatsText}>{t('settings.categoriesReset')}</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Darstellung */}
@@ -158,22 +179,22 @@ export default function SettingsScreen() {
           <View style={styles.row}>
             <View style={styles.rowLeft}>
               <View style={styles.rowIcon}>
-                <Ionicons name="grid-outline" size={18} color={Colors.primary} />
+                <Ionicons name="grid-outline" size={18} color={Colors.textMedium} />
               </View>
               <Text style={styles.rowLabel}>{t('settings.compactMode')}</Text>
             </View>
             <Switch value={compactMode} onValueChange={setCompactMode}
-              trackColor={{ false: Colors.border, true: Colors.primary }} thumbColor="#fff" />
+              trackColor={{ false: Colors.border, true: Colors.textMedium }} thumbColor="#fff" />
           </View>
           <View style={[styles.row, styles.rowLast]}>
             <View style={styles.rowLeft}>
               <View style={styles.rowIcon}>
-                <Ionicons name="pricetag-outline" size={18} color={Colors.primary} />
+                <Ionicons name="pricetag-outline" size={18} color={Colors.textMedium} />
               </View>
               <Text style={styles.rowLabel}>{t('settings.showMwst')}</Text>
             </View>
             <Switch value={showMwst} onValueChange={setShowMwst}
-              trackColor={{ false: Colors.border, true: Colors.primary }} thumbColor="#fff" />
+              trackColor={{ false: Colors.border, true: Colors.textMedium }} thumbColor="#fff" />
           </View>
         </View>
 
@@ -194,7 +215,7 @@ export default function SettingsScreen() {
             >
               <View style={styles.rowLeft}>
                 <View style={styles.rowIcon}>
-                  <Ionicons name={item.icon as any} size={18} color={Colors.primary} />
+                  <Ionicons name={item.icon as any} size={18} color={Colors.textMedium} />
                 </View>
                 <Text style={styles.rowLabel}>{t(`settings.${item.key}`)}</Text>
               </View>
@@ -216,8 +237,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: Spacing.lg, paddingTop: Spacing.md, paddingBottom: Spacing.sm,
   },
-  title:    { fontFamily: 'PlusJakartaSans-Bold', fontSize: 26, color: Colors.textDark },
-  closeBtn: { padding: Spacing.sm },
+  title:      { fontFamily: 'PlusJakartaSans-Bold', fontSize: 26, color: Colors.textDark },
+  titleLeft:  { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 },
+  headerLogo: { width: 44, height: 44 },
+  subtitle:   { fontFamily: 'Inter-Medium', fontSize: 13, color: Colors.textMedium, marginTop: -2 },
+  closeBtn:   { padding: Spacing.sm },
   scroll:   { paddingHorizontal: Spacing.lg, paddingTop: Spacing.sm },
 
   sectionHeader: {
@@ -237,7 +261,7 @@ const styles = StyleSheet.create({
   rowLast:  { borderBottomWidth: 0 },
   rowLeft:  { flexDirection: 'row', alignItems: 'center', gap: Spacing.md, flex: 1 },
   rowIcon:  {
-    width: 32, height: 32, borderRadius: 8, backgroundColor: Colors.primaryLight,
+    width: 32, height: 32, borderRadius: 8, backgroundColor: Colors.surfaceAlt,
     alignItems: 'center', justifyContent: 'center',
   },
   rowLabel: { fontFamily: 'Inter-Medium', fontSize: 15, color: Colors.textDark },
@@ -249,13 +273,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md, paddingVertical: 12,
     borderRadius: Radius.md, borderWidth: 1.5, borderColor: Colors.border, position: 'relative',
   },
-  langBtnActive:   { borderColor: Colors.primary, backgroundColor: Colors.primaryLight },
+  langBtnActive:   { borderColor: Colors.textMedium, backgroundColor: Colors.surfaceAlt },
   langFlag:        { fontSize: 20 },
   langLabel:       { fontFamily: 'Inter-Medium', fontSize: 14, color: Colors.textMedium },
-  langLabelActive: { color: Colors.primary, fontFamily: 'Inter-SemiBold' },
+  langLabelActive: { color: Colors.textDark, fontFamily: 'Inter-SemiBold' },
   langCheck: {
     position: 'absolute', top: 6, right: 6, width: 16, height: 16, borderRadius: 8,
-    backgroundColor: Colors.primary, alignItems: 'center', justifyContent: 'center',
+    backgroundColor: Colors.textMedium, alignItems: 'center', justifyContent: 'center',
   },
 
   storeBanners: { flexDirection: 'row', gap: Spacing.md, padding: Spacing.md },
@@ -272,6 +296,27 @@ const styles = StyleSheet.create({
     position: 'absolute', top: 4, right: 4, width: 18, height: 18, borderRadius: 9,
     alignItems: 'center', justifyContent: 'center',
   },
+
+  catGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, padding: Spacing.md },
+  catBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 7,
+    paddingHorizontal: 12, paddingVertical: 8,
+    borderRadius: Radius.full, borderWidth: 1.5, borderColor: Colors.border,
+    backgroundColor: Colors.background, position: 'relative',
+  },
+  catBtnActive:      { borderColor: Colors.textMedium, backgroundColor: Colors.surfaceAlt },
+  catBtnImg:         { width: 24, height: 24, borderRadius: 12 },
+  catBtnLabel:       { fontFamily: 'Inter-Medium', fontSize: 13, color: Colors.textMedium },
+  catBtnLabelActive: { color: Colors.textDark, fontFamily: 'Inter-SemiBold' },
+  catCheck: {
+    position: 'absolute', top: -4, right: -4, width: 16, height: 16, borderRadius: 8,
+    backgroundColor: Colors.textMedium, alignItems: 'center', justifyContent: 'center',
+  },
+  resetCats: {
+    paddingVertical: 12, alignItems: 'center',
+    borderTopWidth: 1, borderTopColor: Colors.divider,
+  },
+  resetCatsText: { fontFamily: 'Inter-Medium', fontSize: 13, color: Colors.textLight },
 
   cantonGrid: {
     flexDirection: 'row', flexWrap: 'wrap', gap: 8,

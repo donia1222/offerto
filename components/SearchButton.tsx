@@ -45,8 +45,8 @@ export default function SearchButton() {
 
   return (
     <>
-      <TouchableOpacity style={styles.btn} onPress={() => setOpen(true)}>
-        <Ionicons name="search" size={26} color={Colors.primary} />
+      <TouchableOpacity style={styles.btn} onPress={() => setOpen(true)} activeOpacity={0.75}>
+        <Ionicons name="search" size={22} color={Colors.textDark} />
       </TouchableOpacity>
 
       <Modal visible={open} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
@@ -122,7 +122,12 @@ export default function SearchButton() {
 }
 
 const styles = StyleSheet.create({
-  btn: { padding: 4, marginRight: 4 },
+  btn: {
+    width: 40, height: 40, borderRadius: 20,
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: Colors.surfaceAlt,
+    marginRight: 4,
+  },
 
   modal:  { flex: 1, backgroundColor: Colors.background },
   header: {

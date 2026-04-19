@@ -71,19 +71,29 @@ export default function OfferDetailScreen() {
     <SafeAreaView style={styles.container} edges={['bottom']}>
       <Stack.Screen
         options={{
+          headerShadowVisible: false,
+          headerStyle: { backgroundColor: Colors.background },
           headerTitle: () => (
-            <Text style={{ fontFamily: 'PlusJakartaSans-Bold', fontSize: 24, color: offer.tienda.color }}>
-              {offer.tienda.nombre}
-            </Text>
+            StoreLogos[offer.tienda.slug] ? (
+              <Image
+                source={StoreLogos[offer.tienda.slug]}
+                style={{ width: 96, height: 32 }}
+                resizeMode="contain"
+              />
+            ) : (
+              <Text style={{ fontFamily: 'PlusJakartaSans-Bold', fontSize: 24, color: offer.tienda.color }}>
+                {offer.tienda.nombre}
+              </Text>
+            )
           ),
           headerLeft: () => (
-            <TouchableOpacity onPress={() => router.back()} style={{ padding: 8, marginLeft: -4 }}>
-              <Ionicons name="chevron-back" size={26} color={Colors.primary} />
+            <TouchableOpacity onPress={() => router.back()} style={styles.headerIconBtn} activeOpacity={0.75}>
+              <Ionicons name="chevron-back" size={26} color={Colors.textDark} />
             </TouchableOpacity>
           ),
           headerRight: () => (
-            <TouchableOpacity onPress={onShare} style={{ padding: 8 }}>
-              <Ionicons name="share-outline" size={22} color={Colors.primary} />
+            <TouchableOpacity onPress={onShare} style={styles.headerIconBtn} activeOpacity={0.75}>
+              <Ionicons name="share-outline" size={24} color={Colors.textDark} />
             </TouchableOpacity>
           ),
         }}
@@ -91,7 +101,7 @@ export default function OfferDetailScreen() {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 48 }}>
 
         {/* Imagen */}
-        <View style={[styles.imageWrap, { backgroundColor: offer.tienda.color + '12', marginTop: 10 }]}>
+        <View style={[styles.imageWrap, { backgroundColor: (offer.tienda.slug === 'aligro' || offer.tienda.slug === 'topcc') ? Colors.surface : offer.tienda.color + '12', marginTop: 20 }]}>
           {offer.imagen && !imgError ? (
             <Image
               source={{ uri: offer.imagen }}
@@ -120,11 +130,6 @@ export default function OfferDetailScreen() {
         </View>
 
         <View style={styles.body}>
-
-          {/* Store logo */}
-          {StoreLogos[offer.tienda.slug] && (
-            <Image source={StoreLogos[offer.tienda.slug]} style={styles.storeLogo} resizeMode="contain" />
-          )}
 
           {/* Nombre */}
           <Text style={styles.name}>{getOfferName(offer, language)}</Text>
@@ -167,8 +172,8 @@ export default function OfferDetailScreen() {
                   onPress={() => watched ? removeWatch(term) : addWatch(term)}
                   activeOpacity={0.85}
                 >
-                  <Ionicons name={watched ? 'notifications' : 'notifications-outline'} size={20} color={watched ? Colors.primary : Colors.textLight} />
-                  <Text style={[styles.watchBtnText, watched && { color: Colors.primary }]}>
+                  <Ionicons name={watched ? 'notifications' : 'notifications-outline'} size={20} color={Colors.success} />
+                  <Text style={[styles.watchBtnText, { color: Colors.success }]}>
                     {watched ? t('offer.watchingProduct') : t('offer.watchProduct')}
                   </Text>
                 </TouchableOpacity>
@@ -232,6 +237,11 @@ export default function OfferDetailScreen() {
 
 const styles = StyleSheet.create({
   container:   { flex: 1, backgroundColor: Colors.background },
+  headerIconBtn: {
+    width: 40, height: 40, borderRadius: 20,
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: Colors.surfaceAlt,
+  },
   center:      { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 16, backgroundColor: Colors.background },
   errorText:   { fontFamily: 'Inter-Regular', fontSize: 17, color: Colors.textMedium },
   backBtn:     { backgroundColor: Colors.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: Radius.full },
@@ -321,11 +331,11 @@ const styles = StyleSheet.create({
   listBtnText:   { fontFamily: 'PlusJakartaSans-SemiBold', fontSize: 16, color: Colors.primary },
   watchBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    borderWidth: 1.5, borderColor: Colors.border, borderRadius: Radius.full,
+    borderWidth: 1.5, borderColor: Colors.success, borderRadius: Radius.full,
     paddingVertical: 10, paddingHorizontal: 24,
   },
-  watchBtnActive:  { borderColor: Colors.primary, backgroundColor: Colors.primaryLight },
-  watchBtnText:    { fontFamily: 'Inter-Medium', fontSize: 15, color: Colors.textLight },
+  watchBtnActive:  { backgroundColor: Colors.successLight },
+  watchBtnText:    { fontFamily: 'Inter-Medium', fontSize: 15, color: Colors.success },
 
   savingsBanner: {
     flexDirection:  'row',

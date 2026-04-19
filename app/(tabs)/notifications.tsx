@@ -100,7 +100,11 @@ export default function NotificationsScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.title}>{t('notif.title')}</Text>
+        <Image source={require('../../assets/images/trasnparehte.png')} style={styles.headerLogo} resizeMode="contain" />
+        <View style={{ flex: 1 }}>
+          <Text style={styles.title}>{t('notif.title')}</Text>
+          <Text style={styles.subtitle}>{t('notif.subtitle')}</Text>
+        </View>
       </View>
 
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
@@ -263,10 +267,12 @@ export default function NotificationsScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    flexDirection: 'row', alignItems: 'center', gap: 10,
     paddingHorizontal: Spacing.lg, paddingTop: Spacing.md, paddingBottom: Spacing.sm,
   },
-  title: { fontFamily: 'PlusJakartaSans-Bold', fontSize: 26, color: Colors.textDark },
+  headerLogo: { width: 44, height: 44 },
+  title:      { fontFamily: 'PlusJakartaSans-Bold', fontSize: 26, color: Colors.textDark },
+  subtitle:   { fontFamily: 'Inter-Medium', fontSize: 13, color: Colors.textMedium, marginTop: -2 },
   scroll: { paddingHorizontal: Spacing.lg, paddingTop: Spacing.sm },
 
   masterCard: {

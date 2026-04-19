@@ -44,10 +44,10 @@ const CATEGORY_SLUGS = [
   { slug: 'milch',      color: '#D4A017' },
   { slug: 'bakery',     color: '#C07038' },
   { slug: 'getraenke',  color: '#3A6CC8' },
-  { slug: 'snacks',     color: '#7C6FCD' },
+  { slug: 'snacks',     color: '#A08060' },
   { slug: 'haushalt',   color: '#2A9D8F' },
   { slug: 'hygiene',    color: '#C2185B' },
-  { slug: 'tierfutter', color: '#7B5EA7' },
+  { slug: 'tierfutter', color: '#6B5D52' },
 ]
 
 const STORES = [
@@ -88,19 +88,11 @@ export default function SearchScreen() {
       const effectiveStore = storeSlug !== 'all'
         ? storeSlug
         : activeStores.length < 3 ? activeStores.join(',') : ''
-      let datos: Offer[] = []
-      if (cat.searchQuery) {
-        const params: Record<string, string> = { q: cat.searchQuery, limite: '200' }
-        if (effectiveStore) params.tienda = effectiveStore
-        const res = await api.get('/buscar.php', { params })
-        datos = res.data.datos ?? []
-      } else {
-        const params: Record<string, string> = { orden: 'descuento', pagina: '1', limite: '200' }
-        if (cat.slug) params.categoria = cat.slug
-        if (effectiveStore) params.tienda = effectiveStore
-        const res = await api.get('/ofertas.php', { params })
-        datos = res.data.datos ?? []
-      }
+      const params: Record<string, string> = { orden: 'descuento', pagina: '1', limite: '200' }
+      if (cat.slug) params.categoria = cat.slug
+      if (effectiveStore) params.tienda = effectiveStore
+      const res = await api.get('/ofertas.php', { params })
+      const datos: Offer[] = res.data.datos ?? []
       setResults(datos)
     } catch {
       setResults([])
@@ -121,26 +113,35 @@ export default function SearchScreen() {
 
       {/* ── Header ── */}
       <Animated.View style={[styles.header, { paddingTop: titlePad }]}>
-        {screen === 'results' && (
-          <TouchableOpacity onPress={goBack} style={styles.backBtn} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-            <Ionicons name="arrow-back" size={22} color={Colors.textDark} />
-          </TouchableOpacity>
+        {screen === 'results' ? (
+          <>
+            <TouchableOpacity onPress={goBack} style={styles.backBtn} activeOpacity={0.75}>
+              <Ionicons name="arrow-back" size={24} color={Colors.textDark} />
+            </TouchableOpacity>
+            <Animated.Text style={[styles.title, { fontSize: titleSize, flex: 1 }]} numberOfLines={1}>
+              {category?.label}
+            </Animated.Text>
+          </>
+        ) : (
+          <View style={styles.titleLeft}>
+            <Image source={require('../../assets/images/trasnparehte.png')} style={styles.titleLogo} resizeMode="contain" />
+            <View style={{ flex: 1 }}>
+              <Animated.Text style={[styles.title, { fontSize: titleSize }]} numberOfLines={1}>{t('tabs.search')}</Animated.Text>
+              <Text style={styles.subtitle}>{t('search.subtitle')}</Text>
+            </View>
+          </View>
         )}
-        <Animated.Text style={[styles.title, { fontSize: titleSize }]} numberOfLines={1}>
-          {screen === 'results' && category ? category.label : t('tabs.search')}
-        </Animated.Text>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <SearchButton />
-          <SettingsButton />
         </View>
       </Animated.View>
 
-      {/* ── Store chips — only inside a category ── */}
+      {/* ── Store banners (sólo dentro de una categoría) ── */}
       {screen === 'results' && <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.chipBar}
-        style={styles.chipScroll}
+        contentContainerStyle={styles.filterBar}
+        style={styles.filterScroll}
       >
         {STORES.map(s => {
           const active    = store === s.slug
@@ -148,18 +149,31 @@ export default function SearchScreen() {
           return (
             <TouchableOpacity
               key={s.slug}
-              style={[styles.chip, active && isEnabled && { backgroundColor: s.color, borderColor: s.color }, !isEnabled && { opacity: 0.35 }]}
+              style={[
+                styles.filterBanner,
+                active && isEnabled
+                  ? { backgroundColor: s.color, borderColor: s.color }
+                  : { backgroundColor: Colors.surface, borderColor: Colors.border },
+                !isEnabled && { opacity: 0.4 },
+              ]}
               onPress={() => isEnabled && onStorePress(s.slug)}
-              activeOpacity={isEnabled ? 0.8 : 1}
+              activeOpacity={isEnabled ? 0.82 : 1}
             >
               {s.logo ? (
-                <Image source={s.logo} style={[styles.chipLogo, active && { opacity: 0.95 }]} resizeMode="contain" />
+                <Image
+                  source={s.logo}
+                  style={[styles.bannerLogo, s.slug === 'transgourmet' && styles.bannerLogoLarge]}
+                  resizeMode="contain"
+                />
               ) : (
-                <Ionicons name="apps" size={14} color={active ? '#fff' : Colors.textMedium} />
+                <Ionicons name="apps" size={26} color={active ? '#fff' : Colors.textLight} />
               )}
-              <Text style={[styles.chipText, active && isEnabled && styles.chipTextActive]}>
-                {s.slug === 'all' ? t('common.all') : s.slug === 'aligro' ? 'Aligro' : s.slug === 'topcc' ? 'TopCC' : 'Transgourmet'}
-              </Text>
+              {!isEnabled && (
+                <View style={styles.baldChip}>
+                  <Ionicons name="time-outline" size={11} color="#fff" />
+                  <Text style={styles.baldChipText}>Bald</Text>
+                </View>
+              )}
             </TouchableOpacity>
           )
         })}
@@ -267,23 +281,38 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: Spacing.lg, paddingBottom: Spacing.sm,
   },
-  backBtn: { marginRight: Spacing.sm },
-  title:   { flex: 1, fontFamily: 'PlusJakartaSans-Bold', fontSize: 26, color: Colors.textDark },
-
-  chipScroll: { flexGrow: 0 },
-  chipBar:    { paddingHorizontal: Spacing.lg, paddingBottom: Spacing.md, gap: 8 },
-  chip: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
-    paddingHorizontal: 14, paddingVertical: 8,
-    borderRadius: Radius.full,
-    backgroundColor: Colors.surface,
-    borderWidth: 1.5, borderColor: Colors.border,
-    shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 4,
-    shadowOffset: { width: 0, height: 1 }, elevation: 1,
+  backBtn: {
+    width: 40, height: 40, borderRadius: 20,
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: Colors.surfaceAlt,
+    marginRight: Spacing.sm,
   },
-  chipLogo:       { width: 36, height: 22, borderRadius: 3 },
-  chipText:       { fontFamily: 'Inter-SemiBold', fontSize: 14, color: Colors.textMedium },
-  chipTextActive: { color: '#fff' },
+  title:      { fontFamily: 'PlusJakartaSans-Bold', fontSize: 26, color: Colors.textDark },
+  titleLeft:  { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 },
+  titleLogo:  { width: 44, height: 44 },
+  subtitle:   { fontFamily: 'Inter-Medium', fontSize: 13, color: Colors.textMedium, marginTop: 0 },
+
+  filterScroll: { flexGrow: 0 },
+  filterBar:    { paddingHorizontal: Spacing.lg, paddingBottom: Spacing.md, gap: 10 },
+  filterBanner: {
+    flexDirection:   'column',
+    alignItems:      'center',
+    justifyContent:  'center',
+    gap:             6,
+    width:           110,
+    height:          64,
+    borderRadius:    Radius.md,
+    borderWidth:     1.5,
+    shadowColor:     '#000',
+    shadowOpacity:   0.06,
+    shadowRadius:    6,
+    shadowOffset:    { width: 0, height: 2 },
+    elevation:       2,
+  },
+  bannerLogo:      { width: 68, height: 38, borderRadius: 4 },
+  bannerLogoLarge: { width: 80, height: 48 },
+  baldChip:        { position: 'absolute', bottom: 5, right: 5, flexDirection: 'row', alignItems: 'center', gap: 2, backgroundColor: Colors.textLight, borderRadius: Radius.full, paddingHorizontal: 5, paddingVertical: 2 },
+  baldChipText:    { fontFamily: 'Inter-Medium', fontSize: 9, color: '#fff' },
 
   grid:    { flexGrow: 1 },
   gridRow: { flexDirection: 'row' },

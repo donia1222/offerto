@@ -20,7 +20,8 @@
     "settings": "Impostazioni"
   },
   "home": {
-    "title": "Questa settimana",
+    "title": "Offerte",
+    "subtitle": "Questa settimana",
     "featured": "Offerte top",
     "allOffers": "Tutte le offerte",
     "expiringSoon": "In scadenza",
@@ -49,6 +50,7 @@
   },
   "search": {
     "placeholder": "Cerca prodotto...",
+    "subtitle": "Tutti i prodotti",
     "filters": "Filtri",
     "minDiscount": "Sconto min.",
     "category": "Categoria",
@@ -63,6 +65,7 @@
   },
   "list": {
     "title": "Lista della spesa",
+    "subtitle": "I tuoi articoli",
     "empty": "Lista vuota",
     "emptyHint": "Tocca 🛒 su un'offerta\nper aggiungerla qui",
     "totalSaving": "Risparmio CHF {{amount}}",
@@ -79,10 +82,15 @@
   "kataloge": {
     "title": "Volantini",
     "empty": "Nessun catalogo disponibile",
-    "loading": "Caricamento catalogo..."
+    "loading": "Caricamento catalogo...",
+    "thisWeek": "Questa settimana",
+    "nextWeek": "Prossima settimana",
+    "nextWeekLabel": "Offerte {{kw}} · {{store}}",
+    "open": "Apri"
   },
   "settings": {
     "title": "Impostazioni",
+    "subtitle": "Personalizza l'app",
     "languageSection": "LINGUA",
     "storesSection": "NEGOZI PREFERITI",
     "cantonSection": "CANTONE",
@@ -101,6 +109,7 @@
   },
   "notif": {
     "title":              "Notifiche",
+    "subtitle":           "Resta aggiornato",
     "masterLabel":        "Notifiche",
     "masterOn":           "Attivo — riceverai notifiche",
     "masterOff":          "Disattivato",

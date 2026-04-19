@@ -74,19 +74,19 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-        name="search"
+        name="kataloge"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon name={focused ? 'grid' : 'grid-outline'} focused={focused} label="Entdecken" />
+            <TabIcon name={focused ? 'newspaper' : 'newspaper-outline'} focused={focused} label={t('tabs.kataloge')} />
           ),
         }}
       />
 
       <Tabs.Screen
-        name="kataloge"
+        name="search"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon name={focused ? 'newspaper' : 'newspaper-outline'} focused={focused} label={t('tabs.kataloge')} />
+            <TabIcon name={focused ? 'grid' : 'grid-outline'} focused={focused} label="Entdecken" />
           ),
         }}
       />

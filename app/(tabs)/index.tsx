@@ -27,10 +27,37 @@ const STORE_COLORS: Record<string, string> = {
   aligro: '#FF6600', topcc: '#0050AA', transgourmet: '#E2001A',
 }
 
+const CATEGORY_IMAGES: Record<string, any> = {
+  fleisch:    require('../../assets/images/categorias/carne.png'),
+  fisch:      require('../../assets/images/categorias/pescado.png'),
+  gemuese:    require('../../assets/images/categorias/frutaverdura.png'),
+  milch:      require('../../assets/images/categorias/leche-queso.png'),
+  bakery:     require('../../assets/images/categorias/panaderia.png'),
+  getraenke:  require('../../assets/images/categorias/bebidas.png'),
+  snacks:     require('../../assets/images/categorias/snacks.png'),
+  haushalt:   require('../../assets/images/categorias/prodeuctsocasa.png'),
+  hygiene:    require('../../assets/images/categorias/korperpflege.png'),
+  tierfutter: require('../../assets/images/categorias/comida-animales.png'),
+}
+
+const CATEGORIES = [
+  { slug: 'all',        labelKey: 'common.all' },
+  { slug: 'fleisch',    labelKey: 'categories.fleisch' },
+  { slug: 'fisch',      labelKey: 'categories.fisch' },
+  { slug: 'gemuese',    labelKey: 'categories.gemuese' },
+  { slug: 'milch',      labelKey: 'categories.milch' },
+  { slug: 'bakery',     labelKey: 'categories.bakery' },
+  { slug: 'getraenke',  labelKey: 'categories.getraenke' },
+  { slug: 'snacks',     labelKey: 'categories.snacks' },
+  { slug: 'haushalt',   labelKey: 'categories.haushalt' },
+  { slug: 'hygiene',    labelKey: 'categories.hygiene' },
+  { slug: 'tierfutter', labelKey: 'categories.tierfutter' },
+]
+
 export default function HomeScreen() {
   const { t }  = useTranslation()
   const router = useRouter()
-  const { language, activeStores } = useSettingsStore()
+  const { language, activeStores, visibleCategories } = useSettingsStore()
 
   const [featured, setFeatured]       = useState<Offer[]>([])
   const [offers, setOffers]           = useState<Offer[]>([])
@@ -38,16 +65,17 @@ export default function HomeScreen() {
   const [filtering, setFiltering]     = useState(false)
   const [refreshing, setRefreshing]   = useState(false)
   const [error, setError]             = useState<string | null>(null)
-  const [activeStore, setActiveStore] = useState<string>('all')
-  const [page, setPage]               = useState(1)
-  const [total, setTotal]             = useState(0)
-  const [loadingMore, setLoadingMore] = useState(false)
+  const [activeStore, setActiveStore]       = useState<string>('all')
+  const [activeCategories, setActiveCategories] = useState<string[]>([])
+  const [page, setPage]                     = useState(1)
+  const [total, setTotal]                   = useState(0)
+  const [loadingMore, setLoadingMore]       = useState(false)
 
   const scrollY      = useRef(new Animated.Value(0)).current
   const lastScrollY  = useRef(0)
   const bannerHeight  = useRef(new Animated.Value(74)).current
   const bannersShown  = useRef(true)
-  const headerOuterH  = bannerHeight.interpolate({ inputRange: [0, 74], outputRange: [106, 180] })
+  const headerOuterH  = bannerHeight.interpolate({ inputRange: [0, 74], outputRange: [148, 222] })
 
   const headerBlur  = scrollY.interpolate({ inputRange: [0, 40],  outputRange: [0, 1],  extrapolate: 'clamp' })
   const titleSize   = scrollY.interpolate({ inputRange: [0, 50],  outputRange: [26, 18], extrapolate: 'clamp' })
@@ -72,7 +100,7 @@ export default function HomeScreen() {
     }
   )
 
-  const load = useCallback(async (store: string, pg: number, append = false) => {
+  const load = useCallback(async (store: string, cats: string[], pg: number, append = false) => {
     try {
       let storeFilter: string[]
       if (store !== 'all') {
@@ -82,7 +110,9 @@ export default function HomeScreen() {
       } else {
         storeFilter = []
       }
-      const filters = storeFilter.length ? { stores: storeFilter } : {}
+      const filters: Record<string, any> = {}
+      if (storeFilter.length) filters.stores     = storeFilter
+      if (cats.length)        filters.categories = cats
       const [feat, result] = await Promise.all([
         pg === 1 ? offersService.getFeatured() : Promise.resolve(featured),
         offersService.getOffers(filters, pg),
@@ -97,15 +127,28 @@ export default function HomeScreen() {
 
   useEffect(() => {
     setActiveStore('all')
+    setActiveCategories([])
     setLoading(true)
-    load('all', 1).finally(() => setLoading(false))
+    load('all', [], 1).finally(() => setLoading(false))
   }, [activeStores.join(',')])
 
-  const onRefresh = async () => { setRefreshing(true); await load(activeStore, 1); setRefreshing(false) }
-  const onStoreFilter = (slug: string) => { setActiveStore(slug); setFiltering(true); load(slug, 1).finally(() => setFiltering(false)) }
+  const onRefresh = async () => { setRefreshing(true); await load(activeStore, activeCategories, 1); setRefreshing(false) }
+  const onStoreFilter = (slug: string) => {
+    setActiveStore(slug)
+    setFiltering(true)
+    load(slug, activeCategories, 1).finally(() => setFiltering(false))
+  }
+  const onCategoryFilter = (cat: string) => {
+    const next = activeCategories.includes(cat)
+      ? activeCategories.filter(c => c !== cat)
+      : [...activeCategories, cat]
+    setActiveCategories(next)
+    setFiltering(true)
+    load(activeStore, next, 1).finally(() => setFiltering(false))
+  }
   const onLoadMore = async () => {
     if (loadingMore || offers.length >= total) return
-    setLoadingMore(true); await load(activeStore, page + 1, true); setLoadingMore(false)
+    setLoadingMore(true); await load(activeStore, activeCategories, page + 1, true); setLoadingMore(false)
   }
 
   if (loading) return (
@@ -118,7 +161,7 @@ export default function HomeScreen() {
   if (error) return (
     <SafeAreaView style={styles.center} edges={['top']}>
       <Text style={styles.errorText}>{error}</Text>
-      <TouchableOpacity style={styles.retryBtn} onPress={() => { setLoading(true); load('all', 1).finally(() => setLoading(false)) }}>
+      <TouchableOpacity style={styles.retryBtn} onPress={() => { setLoading(true); load('all', 'all', 1).finally(() => setLoading(false)) }}>
         <Text style={styles.retryText}>{t('common.retry')}</Text>
       </TouchableOpacity>
     </SafeAreaView>
@@ -148,7 +191,7 @@ export default function HomeScreen() {
         ListHeaderComponent={
           <View style={styles.listHeader}>
             {/* Spacer for fixed header */}
-            <View style={{ height: 190 }} />
+            <View style={{ height: 260 }} />
 
             {/* Featured horizontal scroll */}
             {featured.length > 0 && activeStore === 'all' && (
@@ -216,9 +259,14 @@ export default function HomeScreen() {
       <SafeAreaView style={styles.headerSafe} edges={['top']} pointerEvents="box-none">
         {/* Title row */}
         <Animated.View style={[styles.titleRow, { paddingTop: titlePadTop }]}>
-          <Animated.Text style={[styles.title, { fontSize: titleSize }]}>{t('home.title')}</Animated.Text>
+          <View style={styles.titleLeft}>
+            <Image source={require('../../assets/images/trasnparehte.png')} style={styles.titleLogo} resizeMode="contain" />
+            <View style={{ flex: 1 }}>
+              <Animated.Text style={[styles.title, { fontSize: titleSize }]}>{t('home.title')}</Animated.Text>
+              <Text style={styles.subtitle}>{t('home.subtitle')}</Text>
+            </View>
+          </View>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <SearchButton />
             <SettingsButton />
           </View>
         </Animated.View>
@@ -276,6 +324,50 @@ export default function HomeScreen() {
           })}
         </ScrollView>
         </Animated.View>
+
+        {/* Category chips */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.catBar}
+          style={styles.catScroll}
+        >
+          <TouchableOpacity
+            style={[styles.catChip, activeCategories.length === 0 && styles.catChipActive]}
+            onPress={() => { setActiveCategories([]); setFiltering(true); load(activeStore, [], 1).finally(() => setFiltering(false)) }}
+            activeOpacity={0.8}
+          >
+            <View style={[styles.catAvatar, { backgroundColor: Colors.surfaceAlt, alignItems: 'center', justifyContent: 'center' }]}>
+              <Ionicons name="apps" size={18} color={activeCategories.length === 0 ? Colors.primary : Colors.textMedium} />
+            </View>
+            <Text style={[styles.catLabel, activeCategories.length === 0 && styles.catLabelActive]}>{t('common.all')}</Text>
+          </TouchableOpacity>
+
+          {CATEGORIES.filter(cat =>
+            cat.slug !== 'all' && visibleCategories.includes(cat.slug)
+          ).map(cat => {
+            const isActive = activeCategories.includes(cat.slug)
+            return (
+              <TouchableOpacity
+                key={cat.slug}
+                style={[styles.catChip, isActive && styles.catChipActive]}
+                onPress={() => onCategoryFilter(cat.slug)}
+                activeOpacity={0.8}
+              >
+                {CATEGORY_IMAGES[cat.slug] && (
+                  <Image
+                    source={CATEGORY_IMAGES[cat.slug]}
+                    style={styles.catAvatar}
+                    resizeMode="cover"
+                  />
+                )}
+                <Text style={[styles.catLabel, isActive && styles.catLabelActive]} numberOfLines={2}>
+                  {t(cat.labelKey)}
+                </Text>
+              </TouchableOpacity>
+            )
+          })}
+        </ScrollView>
       </SafeAreaView>
     </View>
   )
@@ -292,7 +384,10 @@ const styles = StyleSheet.create({
   headerOuter: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 },
   headerSafe:  { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 11 },
   titleRow:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: Spacing.lg, paddingBottom: Spacing.sm },
+  titleLeft:   { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 },
+  titleLogo:   { width: 44, height: 44 },
   title:       { fontFamily: 'PlusJakartaSans-Bold', fontSize: 26, color: Colors.textDark },
+  subtitle:    { fontFamily: 'Inter-Medium', fontSize: 13, color: Colors.textMedium, marginTop: -2 },
 
   // Filter bar
 
@@ -325,7 +420,7 @@ const styles = StyleSheet.create({
   section:      { marginBottom: 4 },
   sectionRow:   { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: Spacing.lg, marginBottom: Spacing.md },
   sectionRow2:  { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: Spacing.lg, marginTop: Spacing.xl, marginBottom: Spacing.sm },
-  sectionTitle: { fontFamily: 'PlusJakartaSans-Bold', fontSize: 20, color: Colors.textDark },
+  sectionTitle: { fontFamily: 'PlusJakartaSans-Bold', fontSize: 20, color: Colors.textDark, marginTop: 20 },
   sectionBadge: { backgroundColor: Colors.accentLight, paddingHorizontal: 10, paddingVertical: 3, borderRadius: Radius.full },
   sectionBadgeText: { fontFamily: 'Inter-Medium', fontSize: 12, color: Colors.accent },
   countPill:    { backgroundColor: Colors.primaryLight, paddingHorizontal: 10, paddingVertical: 3, borderRadius: Radius.full },
@@ -353,7 +448,36 @@ const styles = StyleSheet.create({
   featPrice:   { fontFamily: 'PlusJakartaSans-Bold', fontSize: 14, color: '#fff', marginBottom: 2 },
   featStore:   { fontFamily: 'Inter-Regular', fontSize: 11, color: 'rgba(255,255,255,0.75)' },
 
-  filterOverlay: { position: 'absolute', top: 180, left: 0, right: 0, alignItems: 'center', zIndex: 20 },
+  // Category chips
+  catScroll:      { flexGrow: 0, backgroundColor: 'rgba(245,243,255,0.92)' },
+  catBar:         { paddingHorizontal: Spacing.lg, paddingTop: 6, paddingBottom: 12, gap: 8 },
+  catChip: {
+    flexDirection:     'row',
+    alignItems:        'center',
+    gap:               8,
+    height:            48,
+    paddingLeft:       6,
+    paddingRight:      14,
+    borderRadius:      Radius.md,
+    backgroundColor:   Colors.surface,
+    borderWidth:       1.5,
+    borderColor:       Colors.border,
+    shadowColor:       '#000',
+    shadowOpacity:     0.06,
+    shadowRadius:      6,
+    shadowOffset:      { width: 0, height: 2 },
+    elevation:         2,
+  },
+  catChipActive: {
+    backgroundColor: Colors.primaryLight,
+    borderColor:     Colors.primary,
+  },
+  catAvatar:     { width: 34, height: 34, borderRadius: 17, overflow: 'hidden' },
+  catAvatarAll:  { backgroundColor: Colors.primaryLight, alignItems: 'center', justifyContent: 'center' },
+  catLabel:      { fontFamily: 'Inter-Medium', fontSize: 13, color: Colors.textDark },
+  catLabelActive:{ color: Colors.primary, fontFamily: 'Inter-SemiBold' },
+
+  filterOverlay: { position: 'absolute', top: 222, left: 0, right: 0, alignItems: 'center', zIndex: 20 },
   loadingText:  { fontFamily: 'Inter-Regular', fontSize: 16, color: Colors.textMedium },
   errorText:    { color: Colors.error, fontSize: 17, textAlign: 'center', paddingHorizontal: 32 },
   retryBtn:     { backgroundColor: Colors.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: Radius.full },

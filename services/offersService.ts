@@ -8,7 +8,7 @@ export const offersService = {
   },
 
   async getOffers(filters?: Partial<FilterState>, page = 1): Promise<{ offers: Offer[], total: number }> {
-    const params: Record<string, string | number> = { pagina: page }
+    const params: Record<string, string | number> = { pagina: page, solo_ofertas: 1 }
     if (filters?.stores?.length)       params.tienda        = filters.stores.join(',')
     if (filters?.categories?.length)   params.categoria     = filters.categories.join(',')
     if (filters?.minDiscount)          params.min_descuento = filters.minDiscount

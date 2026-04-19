@@ -1,11 +1,11 @@
 export const Colors = {
-  background:   '#F5F3FF',
+  background:   '#F4F4F6',
   surface:      '#FFFFFF',
-  surfaceAlt:   '#EDE9FF',
+  surfaceAlt:   '#ECECEF',
 
-  primary:      '#7C6FCD',
-  primaryLight: '#EDE9FF',
-  primaryDark:  '#5A4FA8',
+  primary:      '#E23744',
+  primaryLight: '#FDEAEC',
+  primaryDark:  '#B52632',
 
   accent:       '#FF8C61',
   accentLight:  '#FFF0E9',
@@ -16,13 +16,13 @@ export const Colors = {
   warningLight: '#FFF5E0',
   error:        '#FF6B6B',
 
-  textDark:    '#1C1B33',
-  textMedium:  '#6B6B8A',
-  textLight:   '#A8A8C0',
+  textDark:    '#1C1B22',
+  textMedium:  '#6B6B78',
+  textLight:   '#A8A8B0',
   textInverse: '#FFFFFF',
 
-  border:   '#EAE8F5',
-  divider:  '#F0EEF8',
+  border:   '#E5E5EA',
+  divider:  '#EEEEF2',
 
   stores: {
     migros:       '#FF6600',

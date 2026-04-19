@@ -30,6 +30,7 @@ try {
     $tiendas     = isset($_GET['tienda'])       ? explode(',', $_GET['tienda'])  : [];
     $categorias  = isset($_GET['categoria'])    ? explode(',', $_GET['categoria']) : [];
     $minDesc     = isset($_GET['min_descuento']) ? (int) $_GET['min_descuento']  : 0;
+    $soloOfertas = !empty($_GET['solo_ofertas']);
     $canton      = $_GET['canton']  ?? 'all';
     $orden       = $_GET['orden']   ?? 'descuento';
     $pagina      = max(1, (int) ($_GET['pagina'] ?? 1));
@@ -39,6 +40,10 @@ try {
     // --- WHERE dinámico ---
     $where  = ['o.activa = 1', 'o.valido_hasta >= CURDATE()'];
     $params = [];
+
+    if ($soloOfertas) {
+        $where[] = 'o.descuento_pct > 0';
+    }
 
     if ($tiendas) {
         $ph = implode(',', array_fill(0, count($tiendas), '?'));

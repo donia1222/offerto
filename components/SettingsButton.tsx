@@ -7,12 +7,17 @@ import { Colors } from '../constants/colors'
 export default function SettingsButton() {
   const router = useRouter()
   return (
-    <TouchableOpacity style={styles.btn} onPress={() => router.push('/settings')}>
-      <Ionicons name="settings-outline" size={26} color={Colors.primary} />
+    <TouchableOpacity style={styles.btn} onPress={() => router.push('/settings')} activeOpacity={0.75}>
+      <Ionicons name="settings-outline" size={22} color={Colors.textDark} />
     </TouchableOpacity>
   )
 }
 
 const styles = StyleSheet.create({
-  btn: { padding: 4, marginLeft: 4 },
+  btn: {
+    width: 40, height: 40, borderRadius: 20,
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: Colors.surfaceAlt,
+    marginLeft: 4,
+  },
 })
