@@ -8,7 +8,7 @@ import i18n from 'i18next'
 import { Colors } from '../constants/colors'
 import { Spacing, Radius } from '../constants/spacing'
 import { StoreLogos } from '../constants/stores'
-import { useSettingsStore, type AppLang } from '../store/settingsStore'
+import { useSettingsStore, type AppLang, type CardLayout } from '../store/settingsStore'
 
 const CATEGORY_IMAGES: Record<string, any> = {
   fleisch:    require('../assets/images/categorias/carne.png'),
@@ -53,8 +53,8 @@ export default function SettingsScreen() {
   const { t }  = useTranslation()
 
   const {
-    language, canton, activeStores, visibleCategories, compactMode, showMwst,
-    setLanguage, setCanton, toggleStore, toggleVisibleCategory, setCompactMode, setShowMwst,
+    language, canton, activeStores, visibleCategories, compactMode, showMwst, cardLayout,
+    setLanguage, setCanton, toggleStore, toggleVisibleCategory, setCompactMode, setShowMwst, setCardLayout,
   } = useSettingsStore()
 
   const [cantonOpen, setCantonOpen] = React.useState(false)
@@ -173,28 +173,38 @@ export default function SettingsScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Ansicht */}
+        <Text style={styles.sectionHeader}>{t('settings.layoutSection')}</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.layoutRow}>
+          {([
+            { mode: 'grid',    icon: 'grid',          label: t('settings.layoutGrid') },
+            { mode: 'list',    icon: 'list',          label: t('settings.layoutList') },
+            { mode: 'compact', icon: 'reorder-three', label: t('settings.layoutCompact') },
+          ] as { mode: CardLayout; icon: any; label: string }[]).map(({ mode, icon, label }) => (
+            <TouchableOpacity
+              key={mode}
+              style={[styles.layoutBtn, cardLayout === mode && styles.layoutBtnActive]}
+              onPress={() => setCardLayout(mode)}
+              activeOpacity={0.8}
+            >
+              <Ionicons name={icon} size={26} color={cardLayout === mode ? Colors.primary : Colors.textMedium} />
+              <Text style={[styles.layoutLabel, cardLayout === mode && styles.layoutLabelActive]}>{label}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
         {/* Darstellung */}
         <Text style={styles.sectionHeader}>{t('settings.displaySection')}</Text>
         <View style={styles.card}>
-          <View style={styles.row}>
-            <View style={styles.rowLeft}>
-              <View style={styles.rowIcon}>
-                <Ionicons name="grid-outline" size={18} color={Colors.textMedium} />
-              </View>
-              <Text style={styles.rowLabel}>{t('settings.compactMode')}</Text>
-            </View>
-            <Switch value={compactMode} onValueChange={setCompactMode}
-              trackColor={{ false: Colors.border, true: Colors.textMedium }} thumbColor="#fff" />
-          </View>
           <View style={[styles.row, styles.rowLast]}>
             <View style={styles.rowLeft}>
               <View style={styles.rowIcon}>
-                <Ionicons name="pricetag-outline" size={18} color={Colors.textMedium} />
+                <Ionicons name="pricetag-outline" size={18} color={Colors.primary} />
               </View>
               <Text style={styles.rowLabel}>{t('settings.showMwst')}</Text>
             </View>
             <Switch value={showMwst} onValueChange={setShowMwst}
-              trackColor={{ false: Colors.border, true: Colors.textMedium }} thumbColor="#fff" />
+              trackColor={{ false: Colors.border, true: Colors.primary }} thumbColor="#fff" />
           </View>
         </View>
 
@@ -215,7 +225,7 @@ export default function SettingsScreen() {
             >
               <View style={styles.rowLeft}>
                 <View style={styles.rowIcon}>
-                  <Ionicons name={item.icon as any} size={18} color={Colors.textMedium} />
+                  <Ionicons name={item.icon as any} size={18} color={Colors.primary} />
                 </View>
                 <Text style={styles.rowLabel}>{t(`settings.${item.key}`)}</Text>
               </View>
@@ -273,13 +283,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md, paddingVertical: 12,
     borderRadius: Radius.md, borderWidth: 1.5, borderColor: Colors.border, position: 'relative',
   },
-  langBtnActive:   { borderColor: Colors.textMedium, backgroundColor: Colors.surfaceAlt },
+  langBtnActive:   { borderColor: Colors.border, backgroundColor: Colors.surface },
   langFlag:        { fontSize: 20 },
   langLabel:       { fontFamily: 'Inter-Medium', fontSize: 14, color: Colors.textMedium },
   langLabelActive: { color: Colors.textDark, fontFamily: 'Inter-SemiBold' },
   langCheck: {
     position: 'absolute', top: 6, right: 6, width: 16, height: 16, borderRadius: 8,
-    backgroundColor: Colors.textMedium, alignItems: 'center', justifyContent: 'center',
+    backgroundColor: Colors.primary, alignItems: 'center', justifyContent: 'center',
   },
 
   storeBanners: { flexDirection: 'row', gap: Spacing.md, padding: Spacing.md },
@@ -304,14 +314,24 @@ const styles = StyleSheet.create({
     borderRadius: Radius.full, borderWidth: 1.5, borderColor: Colors.border,
     backgroundColor: Colors.background, position: 'relative',
   },
-  catBtnActive:      { borderColor: Colors.textMedium, backgroundColor: Colors.surfaceAlt },
+  catBtnActive:      { borderColor: Colors.border, backgroundColor: Colors.surface },
   catBtnImg:         { width: 24, height: 24, borderRadius: 12 },
   catBtnLabel:       { fontFamily: 'Inter-Medium', fontSize: 13, color: Colors.textMedium },
   catBtnLabelActive: { color: Colors.textDark, fontFamily: 'Inter-SemiBold' },
   catCheck: {
     position: 'absolute', top: -4, right: -4, width: 16, height: 16, borderRadius: 8,
-    backgroundColor: Colors.textMedium, alignItems: 'center', justifyContent: 'center',
+    backgroundColor: Colors.primary, alignItems: 'center', justifyContent: 'center',
   },
+  layoutRow: { flexDirection: 'row', gap: Spacing.md, paddingHorizontal: Spacing.md, paddingVertical: Spacing.md },
+  layoutBtn: {
+    width: 120, alignItems: 'center', justifyContent: 'center', gap: 8,
+    paddingVertical: 18, borderRadius: Radius.md,
+    borderWidth: 1.5, borderColor: Colors.border, backgroundColor: Colors.background,
+  },
+  layoutBtnActive:  { borderColor: Colors.border, backgroundColor: Colors.primaryLight },
+  layoutLabel:      { fontFamily: 'Inter-Medium', fontSize: 13, color: Colors.textMedium },
+  layoutLabelActive:{ color: Colors.primary, fontFamily: 'Inter-SemiBold' },
+
   resetCats: {
     paddingVertical: 12, alignItems: 'center',
     borderTopWidth: 1, borderTopColor: Colors.divider,

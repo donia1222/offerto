@@ -13,16 +13,17 @@ import { useSettingsStore } from '../store/settingsStore'
 import { useNotificationsStore } from '../store/notificationsStore'
 import { getOfferName } from '../utils/getOfferName'
 
-interface Props { offer: Offer }
+interface Props { offer: Offer; compact?: boolean; fixedHeight?: boolean }
 
 const MWST = 1.077
 const fmt  = (v: unknown) => parseFloat(String(v)).toFixed(2)
 
-export default function OfferCard({ offer }: Props) {
+export default function OfferCard({ offer, compact: compactProp, fixedHeight }: Props) {
   const router = useRouter()
   const { t }  = useTranslation()
   const { add, remove, isInList } = useListStore()
-  const { language, compactMode, showMwst } = useSettingsStore()
+  const { language, compactMode: compactSetting, showMwst } = useSettingsStore()
+  const compactMode = compactProp ?? compactSetting
   const { watchlist, addWatch, removeWatch } = useNotificationsStore()
   const inList    = isInList(offer.id)
   const name      = getOfferName(offer, language)
@@ -97,7 +98,7 @@ export default function OfferCard({ offer }: Props) {
 
         {/* Name + acciones */}
         <View style={styles.nameRow}>
-          <Text style={[styles.name, compactMode && styles.nameCompact]} numberOfLines={compactMode ? 1 : 2}>{name}</Text>
+          <Text style={[styles.name, compactMode && styles.nameCompact]} numberOfLines={2}>{name}</Text>
           <View style={styles.actionIcons}>
             <TouchableOpacity onPress={() => inList ? remove(offer.id) : add(offer)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
               <Ionicons name={inList ? 'cart' : 'cart-outline'} size={26} color={inList ? Colors.primary : Colors.textLight} />
@@ -117,10 +118,10 @@ export default function OfferCard({ offer }: Props) {
           {showMwst && <Text style={styles.mwstLabel}>inkl. MwSt</Text>}
         </View>
 
-        {offer.unidad && !compactMode ? <Text style={styles.unit}>{t('offer.unit', { unit: offer.unidad })}</Text> : null}
+        {offer.unidad ? <Text style={styles.unit} numberOfLines={1}>{t('offer.unit', { unit: offer.unidad })}</Text> : null}
 
         {/* Expiry */}
-        {(!compactMode || isExpiringSoon) && <View style={styles.expiryRow}>
+        {!compactMode && <View style={styles.expiryRow}>
           <Ionicons name="time-outline" size={12} color={isExpiringSoon ? Colors.warning : Colors.textLight} />
           <Text style={[styles.expiry, isExpiringSoon && styles.expiryUrgent]}>
             {Number(offer.dias_restantes) === 0
@@ -149,7 +150,7 @@ const styles = StyleSheet.create({
     shadowOffset:    { width: 0, height: 3 },
     elevation:       3,
   },
-  cardExpiring: { borderColor: Colors.warning, borderWidth: 1.5, borderLeftWidth: 3 },
+  cardExpiring: {},
 
   imgBox: { alignSelf: 'stretch', alignItems: 'center', justifyContent: 'center' },
   img:    { width: 94, height: 94 },

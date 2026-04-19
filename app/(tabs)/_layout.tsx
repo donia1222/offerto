@@ -27,6 +27,7 @@ export default function TabLayout() {
 
   return (
     <Tabs
+      initialRouteName="index"
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor:   Colors.primary,
@@ -65,10 +66,10 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="search"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon name="compass" focused={focused} label={t('tabs.home')} size={28} />
+            <TabIcon name="compass" focused={focused} label="Entdecken" size={28} />
           ),
         }}
       />
@@ -83,10 +84,10 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-        name="search"
+        name="index"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon name={focused ? 'grid' : 'grid-outline'} focused={focused} label="Entdecken" />
+            <TabIcon name={focused ? 'grid' : 'grid-outline'} focused={focused} label={t('tabs.home')} />
           ),
         }}
       />

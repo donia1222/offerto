@@ -72,6 +72,9 @@ export default function KatalogeScreen() {
           <Text style={styles.title}>{t('kataloge.title')}</Text>
           <Text style={styles.subtitle}>{t('kataloge.thisWeek')}</Text>
         </View>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <SettingsButton />
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} contentInsetAdjustmentBehavior="never">
@@ -167,7 +170,7 @@ const styles = StyleSheet.create({
   },
   headerLogo: { width: 44, height: 44 },
   title:    { fontFamily: 'PlusJakartaSans-Bold', fontSize: 26, color: Colors.textDark },
-  subtitle: { fontFamily: 'Inter-Medium', fontSize: 14, color: Colors.textMedium, marginTop: 2 },
+  subtitle: { fontFamily: 'Inter-Medium', fontSize: 13, color: Colors.textMedium, marginTop: -2 },
 
   chipScroll: { flexGrow: 0 },
   chipBar:    { paddingHorizontal: Spacing.lg, paddingBottom: Spacing.md, gap: 8 },

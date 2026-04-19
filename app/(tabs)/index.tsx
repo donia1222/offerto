@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import { offersService } from '../../services/offersService'
 import OfferCard from '../../components/OfferCard'
-import SearchButton from '../../components/SearchButton'
+import OfferCardGrid from '../../components/OfferCardGrid'
 import SettingsButton from '../../components/SettingsButton'
 import { useSettingsStore } from '../../store/settingsStore'
 import { getOfferName } from '../../utils/getOfferName'
@@ -57,7 +57,7 @@ const CATEGORIES = [
 export default function HomeScreen() {
   const { t }  = useTranslation()
   const router = useRouter()
-  const { language, activeStores, visibleCategories } = useSettingsStore()
+  const { language, activeStores, visibleCategories, cardLayout } = useSettingsStore()
 
   const [featured, setFeatured]       = useState<Offer[]>([])
   const [offers, setOffers]           = useState<Offer[]>([])
@@ -172,12 +172,15 @@ export default function HomeScreen() {
       <Animated.FlatList
         data={offers}
         keyExtractor={o => String(o.id)}
+        key={cardLayout}
+        numColumns={cardLayout === 'grid' ? 2 : 1}
         renderItem={({ item }) => (
-          <View style={styles.cardWrapper}>
-            <OfferCard offer={item} />
-          </View>
+          cardLayout === 'grid'
+            ? <View style={styles.cardWrapperGrid}><OfferCardGrid offer={item} /></View>
+            : <View style={styles.cardWrapper}><OfferCard offer={item} compact={cardLayout === 'compact'} /></View>
         )}
-        contentContainerStyle={styles.listContent}
+        extraData={cardLayout}
+        contentContainerStyle={[styles.listContent, cardLayout === 'grid' && { paddingHorizontal: Spacing.sm }]}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />}
         onEndReached={onLoadMore}
         onEndReachedThreshold={0.3}
@@ -204,28 +207,34 @@ export default function HomeScreen() {
                 </View>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.featuredScroll}>
                   {featured.filter(o => activeStores.includes(o.tienda?.slug)).slice(0, 10).map(o => (
-                    <TouchableOpacity
-                      key={o.id}
-                      style={styles.featuredCard}
-                      onPress={() => router.push(`/offer/${o.id}`)}
-                      activeOpacity={0.88}
-                    >
-                      <View style={[styles.featImg, { backgroundColor: '#fff' }]}>
-                        {o.imagen
-                          ? <Image source={{ uri: o.imagen }} style={{ width: 160, height: 210 }} resizeMode="contain" />
-                          : <Text style={{ fontSize: 40 }}>🛒</Text>
-                        }
+                    cardLayout === 'grid' ? (
+                      <TouchableOpacity
+                        key={o.id}
+                        style={styles.featuredCard}
+                        onPress={() => router.push(`/offer/${o.id}`)}
+                        activeOpacity={0.88}
+                      >
+                        <View style={[styles.featImg, { backgroundColor: '#fff' }]}>
+                          {o.imagen
+                            ? <Image source={{ uri: o.imagen }} style={{ width: 160, height: 210 }} resizeMode="contain" />
+                            : <Text style={{ fontSize: 40 }}>🛒</Text>
+                          }
+                        </View>
+                        <View style={styles.featOverlay} />
+                        <View style={[styles.featBadge, { backgroundColor: o.descuento >= 30 ? Colors.success : Colors.accent }]}>
+                          <Text style={styles.featBadgeText}>-{o.descuento}%</Text>
+                        </View>
+                        <View style={styles.featBottom}>
+                          <Text style={styles.featName} numberOfLines={2}>{getOfferName(o, language)}</Text>
+                          <Text style={styles.featPrice}>CHF {o.precio_oferta.toFixed(2)}</Text>
+                          <Text style={styles.featStore}>{o.tienda.nombre}</Text>
+                        </View>
+                      </TouchableOpacity>
+                    ) : (
+                      <View key={o.id} style={styles.featuredListCard} pointerEvents="box-none">
+                        <OfferCard offer={o} compact={cardLayout === 'compact'} fixedHeight />
                       </View>
-                      <View style={styles.featOverlay} />
-                      <View style={[styles.featBadge, { backgroundColor: o.descuento >= 30 ? Colors.success : Colors.accent }]}>
-                        <Text style={styles.featBadgeText}>-{o.descuento}%</Text>
-                      </View>
-                      <View style={styles.featBottom}>
-                        <Text style={styles.featName} numberOfLines={2}>{getOfferName(o, language)}</Text>
-                        <Text style={styles.featPrice}>CHF {o.precio_oferta.toFixed(2)}</Text>
-                        <Text style={styles.featStore}>{o.tienda.nombre}</Text>
-                      </View>
-                    </TouchableOpacity>
+                    )
                   ))}
                 </ScrollView>
               </View>
@@ -377,7 +386,8 @@ const styles = StyleSheet.create({
   container:    { flex: 1, backgroundColor: Colors.background },
   center:       { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.background, gap: 12 },
   listContent:  { paddingBottom: 110 },
-  cardWrapper:  { paddingHorizontal: Spacing.lg },
+  cardWrapper:      { paddingHorizontal: Spacing.lg },
+  cardWrapperGrid:  { flex: 1, margin: 6, height: 320 },
   listHeader:   {},
 
   // Fixed header
@@ -428,6 +438,7 @@ const styles = StyleSheet.create({
 
   // Featured cards
   featuredScroll:  { paddingLeft: Spacing.lg, paddingRight: Spacing.sm, gap: 12, paddingBottom: 4 },
+  featuredListCard:{ width: 290, overflow: 'hidden', borderRadius: Radius.lg },
   featuredCard: {
     width:        160,
     height:       210,

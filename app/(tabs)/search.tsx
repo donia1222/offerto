@@ -9,6 +9,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { api } from '../../services/api'
 import OfferCard from '../../components/OfferCard'
+import OfferCardGrid from '../../components/OfferCardGrid'
 import { useTranslation } from 'react-i18next'
 import SearchButton from '../../components/SearchButton'
 import SettingsButton from '../../components/SettingsButton'
@@ -60,7 +61,7 @@ const STORES = [
 export default function SearchScreen() {
   const { width } = useWindowDimensions()
   const { t }     = useTranslation()
-  const { activeStores } = useSettingsStore()
+  const { activeStores, cardLayout } = useSettingsStore()
   const GAP       = Spacing.md
   const PADDING   = Spacing.lg * 2
   const tileSize  = (width - PADDING - GAP) / 2
@@ -132,7 +133,7 @@ export default function SearchScreen() {
           </View>
         )}
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <SearchButton />
+          <SettingsButton />
         </View>
       </Animated.View>
 
@@ -188,8 +189,8 @@ export default function SearchScreen() {
           scrollEventThrottle={16}
         >
           {(() => {
-            const grid = CATEGORIES.filter(c => c.label !== 'Alle Angebote')
-            const alle = CATEGORIES.find(c => c.label === 'Alle Angebote')
+            const grid = CATEGORIES.filter(c => c.slug !== '')
+            const alle = CATEGORIES.find(c => c.slug === '')
             return (
               <>
                 {Array.from({ length: Math.ceil(grid.length / 2) }, (_, i) => {
@@ -249,7 +250,9 @@ export default function SearchScreen() {
           <FlatList
             data={results}
             keyExtractor={o => String(o.id)}
-            contentContainerStyle={styles.resultsList}
+            key={cardLayout}
+            numColumns={cardLayout === 'grid' ? 2 : 1}
+            contentContainerStyle={[styles.resultsList, cardLayout === 'grid' && { paddingHorizontal: Spacing.sm }]}
             showsVerticalScrollIndicator={false}
             removeClippedSubviews={false}
             initialNumToRender={20}
@@ -261,9 +264,9 @@ export default function SearchScreen() {
               </View>
             }
             renderItem={({ item }) => (
-              <View style={styles.cardWrap}>
-                <OfferCard offer={item} />
-              </View>
+              cardLayout === 'grid'
+                ? <View style={styles.cardWrapGrid}><OfferCardGrid offer={item} /></View>
+                : <View style={styles.cardWrap}><OfferCard offer={item} compact={cardLayout === 'compact'} /></View>
             )}
             ListFooterComponent={<View style={{ height: 100 }} />}
           />
@@ -368,4 +371,5 @@ const styles = StyleSheet.create({
   resultsCount:  { fontFamily: 'Inter-Medium', fontSize: 14, color: Colors.textMedium },
   resultsList:   {},
   cardWrap:      { paddingHorizontal: Spacing.lg },
+  cardWrapGrid:  { flex: 1, margin: 6, height: 320 },
 })
