@@ -51,8 +51,25 @@ class TopCCScraper extends BaseScraper {
 
     private function getOfferUrls(): array {
         $xml = $this->fetch(self::SITEMAP);
-        if (!$xml) return [];
+        if (!$xml) {
+            $this->log('ERROR: no se pudo obtener el sitemap');
+            return [];
+        }
+        // Log first 1000 chars of sitemap for debugging
+        $this->log('Sitemap preview: ' . substr(preg_replace('/\s+/', ' ', $xml), 0, 800));
+
+        // All <loc> URLs in sitemap
+        preg_match_all('/<loc>([^<]+)<\/loc>/', $xml, $all);
+        $this->log('Total URLs en sitemap: ' . count($all[1]));
+
+        // Filter: only offer detail pages
         preg_match_all('/<loc>([^<]+detail[^<]+)<\/loc>/', $xml, $m);
+        $this->log('URLs con "detail": ' . count($m[1]));
+
+        // Also try without "detail" filter to see patterns
+        $sample = array_slice($all[1], 0, 5);
+        $this->log('Muestra de URLs: ' . implode(' | ', $sample));
+
         return $m[1] ?? [];
     }
 

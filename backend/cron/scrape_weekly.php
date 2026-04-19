@@ -24,7 +24,7 @@ $scrapers = [
     'Lidl'          => __DIR__ . '/../scrapers/LidlScraper.php',
     'Aldi'          => __DIR__ . '/../scrapers/AldiScraper.php',
     'Denner'        => __DIR__ . '/../scrapers/DennerScraper.php',
-    'Aligro'        => __DIR__ . '/../scrapers/AligroScraper.php',
+    'AligroPdf'     => __DIR__ . '/../scrapers/AligroPdfScraper.php',
     'TopCC'         => __DIR__ . '/../scrapers/TopCCScraper.php',
     'Transgourmet'  => __DIR__ . '/../scrapers/TransgourmetScraper.php',
 ];
