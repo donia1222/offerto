@@ -208,50 +208,6 @@ export default function HomeScreen() {
             {/* Spacer for fixed header */}
             <View style={{ height: headerExpanded }} />
 
-            {/* Featured horizontal scroll */}
-            {featured.length > 0 && activeStore === 'all' && activeStores.length > 0 && (
-              <View style={[styles.section, { marginTop: 30 }]}>
-                <View style={styles.sectionRow}>
-                  <Text style={styles.sectionTitle}>{t('home.featured')}</Text>
-                  <View style={styles.sectionBadge}>
-                    <Text style={styles.sectionBadgeText}>🔥 Top</Text>
-                  </View>
-                </View>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.featuredScroll}>
-                  {featured.filter(o => activeStores.includes(o.tienda?.slug)).slice(0, 10).map(o => (
-                    cardLayout === 'grid' ? (
-                      <TouchableOpacity
-                        key={o.id}
-                        style={styles.featuredCard}
-                        onPress={() => router.push(`/offer/${o.id}`)}
-                        activeOpacity={0.88}
-                      >
-                        <View style={[styles.featImg, { backgroundColor: '#fff' }]}>
-                          {o.imagen
-                            ? <Image source={{ uri: o.imagen }} style={{ width: 160, height: 210 }} resizeMode="contain" />
-                            : <Text style={{ fontSize: 40 }}>🛒</Text>
-                          }
-                        </View>
-                        <View style={styles.featOverlay} />
-                        <View style={[styles.featBadge, { backgroundColor: o.descuento >= 30 ? Colors.success : Colors.accent }]}>
-                          <Text style={styles.featBadgeText}>-{o.descuento}%</Text>
-                        </View>
-                        <View style={styles.featBottom}>
-                          <Text style={styles.featName} numberOfLines={2}>{getOfferName(o, language)}</Text>
-                          <Text style={styles.featPrice}>CHF {o.precio_oferta.toFixed(2)}</Text>
-                          <Text style={styles.featStore}>{o.tienda.nombre}</Text>
-                        </View>
-                      </TouchableOpacity>
-                    ) : (
-                      <View key={o.id} style={styles.featuredListCard} pointerEvents="box-none">
-                        <OfferCard offer={o} compact={cardLayout === 'compact'} fixedHeight hideFooter hideExpiry />
-                      </View>
-                    )
-                  ))}
-                </ScrollView>
-              </View>
-            )}
-
             {/* Count */}
             <View style={styles.sectionRow2}>
               <Text style={styles.sectionTitle}>
