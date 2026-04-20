@@ -98,7 +98,7 @@ export default function ListScreen() {
           </View>
         </TouchableOpacity>
 
-        <View style={[styles.imgBox, { backgroundColor: storeColor + '12' }]}>
+        <View style={styles.imgBox}>
           {offer.imagen ? (
             <Image source={{ uri: offer.imagen }} style={styles.img} resizeMode="contain" />
           ) : StoreLogos[offer.tienda?.slug] ? (
@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
 
-  imgBox:     { width: 72, height: 72, alignItems: 'center', justifyContent: 'center' },
+  imgBox:     { width: 72, height: 72, alignItems: 'center', justifyContent: 'center', backgroundColor: '#fff' },
   img:        { width: 58, height: 58 },
   imgFallback:{ width: 44, height: 44, opacity: 0.4 },
 

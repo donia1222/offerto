@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   Switch, TextInput, Image, KeyboardAvoidingView, Platform,
@@ -12,6 +12,8 @@ import * as Notifications from 'expo-notifications'
 import { Colors } from '../../constants/colors'
 import { Spacing, Radius } from '../../constants/spacing'
 import { StoreLogos } from '../../constants/stores'
+import { offersService } from '../../services/offersService'
+import type { Offer } from '../../types'
 
 const CATEGORY_ICONS: Record<string, string> = {
   fleisch:    'restaurant-outline',
@@ -46,8 +48,27 @@ export default function NotificationsScreen() {
   const [input,    setInput]    = useState('')
   const [sending,  setSending]  = useState(false)
   const [expanded, setExpanded] = useState(false)
+  const [watchMatches, setWatchMatches] = useState<Record<string, Offer | null>>({})
 
   const visibleStores = ['aligro', 'topcc', 'transgourmet'].filter(s => activeStores.includes(s))
+
+  useEffect(() => {
+    if (watchlist.length === 0) { setWatchMatches({}); return }
+    let cancelled = false
+    ;(async () => {
+      const next: Record<string, Offer | null> = {}
+      for (const term of watchlist) {
+        try {
+          const results = await offersService.search(term) as unknown as Offer[]
+          next[term] = Array.isArray(results) ? (results[0] ?? null) : null
+        } catch {
+          next[term] = null
+        }
+      }
+      if (!cancelled) setWatchMatches(next)
+    })()
+    return () => { cancelled = true }
+  }, [watchlist])
 
   const sendTest = async () => {
     setSending(true)
@@ -128,21 +149,54 @@ export default function NotificationsScreen() {
               <Ionicons name="add" size={20} color="#fff" />
             </TouchableOpacity>
           </View>
-          {watchlist.length > 0 ? (
-            <View style={styles.watchChips}>
-              {watchlist.map(term => (
-                <View key={term} style={styles.watchChip}>
-                  <Text style={styles.watchChipText}>{term}</Text>
-                  <TouchableOpacity onPress={() => removeWatch(term)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                    <Ionicons name="close-circle" size={16} color={Colors.primary} />
+        </View>
+
+        {watchlist.length > 0 ? (
+          <View style={styles.watchList}>
+            {watchlist.map(term => {
+              const offer = watchMatches[term]
+              const storeSlug = offer?.tienda?.slug
+              const storeColor = offer?.tienda?.color ?? Colors.primary
+              return (
+                <View key={term} style={styles.watchItem}>
+                  <View style={styles.watchItemImg}>
+                    {offer?.imagen ? (
+                      <Image source={{ uri: offer.imagen }} style={styles.watchItemImgInner} resizeMode="contain" />
+                    ) : storeSlug && StoreLogos[storeSlug] ? (
+                      <Image source={StoreLogos[storeSlug]} style={styles.watchItemImgFallback} resizeMode="contain" />
+                    ) : (
+                      <Ionicons name="notifications-outline" size={24} color={Colors.primary} />
+                    )}
+                  </View>
+                  <View style={styles.watchItemInfo}>
+                    {offer?.tienda?.nombre && (
+                      <View style={[styles.watchStorePill, { backgroundColor: storeColor + '15' }]}>
+                        <Text style={[styles.watchStoreText, { color: storeColor }]}>{offer.tienda.nombre}</Text>
+                      </View>
+                    )}
+                    <Text style={styles.watchItemName} numberOfLines={2}>{term}</Text>
+                    <Text style={styles.watchItemPrice}>
+                      {offer
+                        ? `CHF ${Number(offer.precio_oferta).toFixed(2)}`
+                        : t('notif.watchingProductHint', { defaultValue: 'Wir benachrichtigen dich' })}
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    style={styles.watchItemRemove}
+                    onPress={() => removeWatch(term)}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  >
+                    <Ionicons name="close-circle" size={22} color={Colors.textLight} />
                   </TouchableOpacity>
                 </View>
-              ))}
-            </View>
-          ) : (
+              )
+            })}
+          </View>
+        ) : (
+          <View style={[styles.card, { padding: Spacing.md }]}>
             <Text style={styles.watchEmpty}>{t('notif.watchEmpty')}</Text>
-          )}
-        </View>
+          </View>
+        )}
 
         {/* Acordeón más opciones */}
         {/* Automático */}
@@ -271,14 +325,41 @@ const styles = StyleSheet.create({
   watchInput:         { flex: 1, fontFamily: 'Inter-Regular', fontSize: 15, color: Colors.textDark, paddingVertical: 6 },
   watchAddBtn:        { width: 32, height: 32, borderRadius: 16, backgroundColor: Colors.primary, alignItems: 'center', justifyContent: 'center' },
   watchAddBtnDisabled:{ backgroundColor: Colors.border },
-  watchChips:         { flexDirection: 'row', flexWrap: 'wrap', gap: 8, padding: Spacing.md },
-  watchChip: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
-    backgroundColor: Colors.primaryLight, paddingHorizontal: 12,
-    paddingVertical: 6, borderRadius: Radius.full,
+  watchList: { marginTop: Spacing.sm },
+  watchItem: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: Colors.surface, borderRadius: Radius.lg,
+    marginBottom: Spacing.sm, overflow: 'hidden',
+    shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 }, elevation: 2,
   },
-  watchChipText: { fontFamily: 'Inter-Medium', fontSize: 13, color: Colors.primary },
-  watchEmpty:    { fontFamily: 'Inter-Regular', fontSize: 14, color: Colors.textLight, padding: Spacing.md },
+  watchItemImg: {
+    width: 72, height: 72, alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#fff',
+  },
+  watchItemImgInner:    { width: 58, height: 58 },
+  watchItemImgFallback: { width: 44, height: 44, opacity: 0.4 },
+  watchItemInfo: {
+    flex: 1, paddingVertical: Spacing.sm, paddingLeft: Spacing.sm,
+  },
+  watchStorePill: {
+    alignSelf: 'flex-start', paddingHorizontal: 7, paddingVertical: 2,
+    borderRadius: Radius.full, marginBottom: 3,
+  },
+  watchStoreText: { fontSize: 11, fontFamily: 'Inter-SemiBold' },
+  watchItemName: {
+    fontSize: 13, fontFamily: 'PlusJakartaSans-SemiBold',
+    color: Colors.textDark, lineHeight: 18, marginBottom: 3,
+    textTransform: 'capitalize',
+  },
+  watchItemPrice: {
+    fontSize: 15, fontFamily: 'PlusJakartaSans-Bold', color: Colors.primary,
+  },
+  watchItemRemove: {
+    paddingRight: Spacing.md, paddingLeft: Spacing.sm,
+    paddingVertical: Spacing.sm,
+  },
+  watchEmpty: { fontFamily: 'Inter-Regular', fontSize: 14, color: Colors.textLight },
 
   chipCard: { overflow: 'visible' },
   chipRow:  { paddingHorizontal: Spacing.md, paddingVertical: Spacing.md, gap: 8 },
