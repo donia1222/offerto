@@ -36,7 +36,6 @@ const CATEGORY_IMAGES: Record<string, any> = {
   snacks:     require('../../assets/images/categorias/snacks.png'),
   haushalt:   require('../../assets/images/categorias/prodeuctsocasa.png'),
   hygiene:    require('../../assets/images/categorias/korperpflege.png'),
-  tierfutter: require('../../assets/images/categorias/comida-animales.png'),
 }
 const CATEGORY_SLUGS = [
   { slug: 'fleisch',    color: '#E05252' },
@@ -48,7 +47,6 @@ const CATEGORY_SLUGS = [
   { slug: 'snacks',     color: '#A08060' },
   { slug: 'haushalt',   color: '#2A9D8F' },
   { slug: 'hygiene',    color: '#C2185B' },
-  { slug: 'tierfutter', color: '#6B5D52' },
 ]
 
 const STORES = [

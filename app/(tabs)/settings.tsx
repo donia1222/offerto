@@ -11,24 +11,6 @@ import { StoreLogos } from '../../constants/stores'
 import { useSettingsStore, type AppLang, type CardLayout } from '../../store/settingsStore'
 import { useNotificationsStore } from '../../store/notificationsStore'
 
-const CATEGORY_IMAGES: Record<string, any> = {
-  fleisch:    require('../../assets/images/categorias/carne.png'),
-  fisch:      require('../../assets/images/categorias/pescado.png'),
-  gemuese:    require('../../assets/images/categorias/frutaverdura.png'),
-  milch:      require('../../assets/images/categorias/leche-queso.png'),
-  bakery:     require('../../assets/images/categorias/panaderia.png'),
-  getraenke:  require('../../assets/images/categorias/bebidas.png'),
-  snacks:     require('../../assets/images/categorias/snacks.png'),
-  haushalt:   require('../../assets/images/categorias/prodeuctsocasa.png'),
-  hygiene:    require('../../assets/images/categorias/korperpflege.png'),
-  tierfutter: require('../../assets/images/categorias/comida-animales.png'),
-}
-
-const ALL_CATEGORIES = [
-  'fleisch', 'fisch', 'gemuese', 'milch', 'bakery',
-  'getraenke', 'snacks', 'haushalt', 'hygiene', 'tierfutter',
-]
-
 const LANGUAGES = [
   { code: 'de', label: 'Deutsch',  flag: '🇩🇪' },
   { code: 'fr', label: 'Français', flag: '🇫🇷' },
@@ -46,7 +28,7 @@ const STORES = [
   { slug: 'aligro',       color: '#FF6600', enabled: true },
   { slug: 'topcc',        color: '#0050AA', enabled: true },
   // TODO: activar cuando Transgourmet proporcione API de imágenes — cambiar enabled: false → true
-  { slug: 'transgourmet', color: '#E2001A', enabled: true },
+  { slug: 'transgourmet', color: '#E2001A', enabled: false },
 ]
 
 export default function SettingsScreen() {
@@ -54,8 +36,8 @@ export default function SettingsScreen() {
   const { t }  = useTranslation()
 
   const {
-    language, canton, activeStores, visibleCategories, compactMode, showMwst, cardLayout,
-    setLanguage, setCanton, toggleStore, toggleVisibleCategory, setCompactMode, setShowMwst, setCardLayout,
+    language, canton, activeStores, compactMode, showMwst, cardLayout,
+    setLanguage, setCanton, toggleStore, setCompactMode, setShowMwst, setCardLayout,
   } = useSettingsStore()
 
   const { enabled: notifsEnabled, setEnabled: setNotifsEnabled } = useNotificationsStore()
@@ -155,40 +137,6 @@ export default function SettingsScreen() {
               )
             })}
           </View>
-        </View>
-
-        {/* Kategorien */}
-        <Text style={styles.sectionHeader}>{t('settings.categoriesSection')}</Text>
-        <View style={styles.card}>
-          <View style={styles.catGrid}>
-            {ALL_CATEGORIES.map(slug => {
-              const selected = visibleCategories.includes(slug)
-              return (
-                <TouchableOpacity
-                  key={slug}
-                  style={[styles.catBtn, selected && styles.catBtnActive]}
-                  onPress={() => toggleVisibleCategory(slug)}
-                  activeOpacity={0.8}
-                >
-                  <Image source={CATEGORY_IMAGES[slug]} style={styles.catBtnImg} resizeMode="cover" />
-                  <Text style={[styles.catBtnLabel, selected && styles.catBtnLabelActive]}>
-                    {t(`categories.${slug}`)}
-                  </Text>
-                  {selected && (
-                    <View style={styles.catCheck}>
-                      <Ionicons name="checkmark" size={10} color="#fff" />
-                    </View>
-                  )}
-                </TouchableOpacity>
-              )
-            })}
-          </View>
-          <TouchableOpacity
-            style={styles.resetCats}
-            onPress={() => useSettingsStore.setState({ visibleCategories: ALL_CATEGORIES })}
-          >
-            <Text style={styles.resetCatsText}>{t('settings.categoriesReset')}</Text>
-          </TouchableOpacity>
         </View>
 
         {/* Ansicht */}

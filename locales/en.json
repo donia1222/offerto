@@ -21,6 +21,7 @@
   },
   "home": {
     "title": "This week",
+    "filter": "Categories",
     "featured": "Top offers",
     "allOffers": "All offers",
     "noStoresTitle": "No store selected",

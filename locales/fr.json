@@ -22,6 +22,7 @@
   "home": {
     "title": "Offres",
     "subtitle": "Cette semaine",
+    "filter": "Catégories",
     "featured": "Meilleures offres",
     "allOffers": "Toutes les offres",
     "noStoresTitle": "Aucun magasin sélectionné",

@@ -10,6 +10,7 @@ interface SettingsState {
   canton:            string
   activeStores:      string[]
   visibleCategories: string[]
+  activeCategories:  string[]
   compactMode:       boolean
   showMwst:          boolean
   cardLayout:        CardLayout
@@ -18,6 +19,7 @@ interface SettingsState {
   setActiveStores:      (s: string[]) => void
   toggleStore:          (slug: string) => void
   toggleVisibleCategory:(slug: string) => void
+  setActiveCategories:  (s: string[]) => void
   setCompactMode:       (v: boolean) => void
   setShowMwst:          (v: boolean) => void
   setCardLayout:        (v: CardLayout) => void
@@ -30,6 +32,7 @@ export const useSettingsStore = create<SettingsState>()(
       canton:            'Alle',
       activeStores:      ['aligro', 'topcc'],
       visibleCategories: ['fleisch','fisch','gemuese','milch','bakery','getraenke','snacks','haushalt','hygiene','tierfutter'],
+      activeCategories:  [],
       compactMode:       false,
       showMwst:          false,
       cardLayout:        'grid',
@@ -48,13 +51,14 @@ export const useSettingsStore = create<SettingsState>()(
           ? get().visibleCategories.filter(s => s !== slug)
           : [...get().visibleCategories, slug],
       }),
+      setActiveCategories: (activeCategories) => set({ activeCategories }),
       setCompactMode:  (compactMode)  => set({ compactMode }),
       setShowMwst:     (showMwst)     => set({ showMwst }),
     }),
     {
       name:    'offerto-settings',
       storage: createJSONStorage(() => AsyncStorage),
-      version: 3,
+      version: 5,
       migrate: (state: any, version: number) => {
         if (version < 2) {
           state.activeStores = (state.activeStores ?? ['aligro', 'topcc'])
@@ -62,6 +66,13 @@ export const useSettingsStore = create<SettingsState>()(
         }
         if (version < 3) {
           state.cardLayout = 'grid'
+        }
+        if (version < 4) {
+          state.activeCategories = state.activeCategories ?? []
+        }
+        if (version < 5) {
+          state.activeStores = (state.activeStores ?? ['aligro', 'topcc'])
+            .filter((s: string) => s !== 'transgourmet')
         }
         return state
       },
