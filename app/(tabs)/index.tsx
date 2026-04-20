@@ -167,6 +167,7 @@ export default function HomeScreen() {
     </SafeAreaView>
   )
 
+
   return (
     <View style={styles.container}>
       <Animated.FlatList
@@ -197,7 +198,7 @@ export default function HomeScreen() {
             <View style={{ height: 260 }} />
 
             {/* Featured horizontal scroll */}
-            {featured.length > 0 && activeStore === 'all' && (
+            {featured.length > 0 && activeStore === 'all' && activeStores.length > 0 && (
               <View style={[styles.section, { marginTop: 30 }]}>
                 <View style={styles.sectionRow}>
                   <Text style={styles.sectionTitle}>{t('home.featured')}</Text>
@@ -292,27 +293,31 @@ export default function HomeScreen() {
             onPress={() => onStoreFilter('all')}
             activeOpacity={0.82}
           >
-            <Ionicons name="flame" size={26} color={activeStore === 'all' ? Colors.primary : Colors.textLight} />
-            <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 10, color: activeStore === 'all' ? Colors.primary : Colors.textLight }}>Top Angebote</Text>
+            <Ionicons
+              name={activeStores.length > 0 ? 'flame' : 'storefront-outline'}
+              size={26}
+              color={activeStore === 'all' ? Colors.primary : Colors.textLight}
+            />
+            <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 10, color: activeStore === 'all' ? Colors.primary : Colors.textLight }}>
+              {activeStores.length > 0 ? 'Top Angebote' : t('home.allOffers')}
+            </Text>
           </TouchableOpacity>
 
           {/* Store banners */}
-          {STORES.map(slug => {
-            const isActive  = activeStore === slug
-            const isEnabled = activeStores.includes(slug)
-            const color     = STORE_COLORS[slug] ?? Colors.primary
+          {STORES.filter(slug => activeStores.includes(slug)).map(slug => {
+            const isActive = activeStore === slug
+            const color    = STORE_COLORS[slug] ?? Colors.primary
             return (
               <TouchableOpacity
                 key={slug}
                 style={[
                   styles.filterBanner,
-                  isActive && isEnabled
+                  isActive
                     ? { backgroundColor: color, borderColor: color }
                     : { backgroundColor: Colors.surface, borderColor: Colors.border },
-                  !isEnabled && { opacity: 0.4 },
                 ]}
-                onPress={() => isEnabled && onStoreFilter(slug)}
-                activeOpacity={isEnabled ? 0.82 : 1}
+                onPress={() => onStoreFilter(slug)}
+                activeOpacity={0.82}
               >
                 {StoreLogos[slug] && (
                   <Image
@@ -320,12 +325,6 @@ export default function HomeScreen() {
                     style={[styles.bannerLogo, slug === 'transgourmet' && styles.bannerLogoLarge]}
                     resizeMode="contain"
                   />
-                )}
-                {!isEnabled && (
-                  <View style={styles.baldChip}>
-                    <Ionicons name="time-outline" size={11} color="#fff" />
-                    <Text style={styles.baldChipText}>Bald</Text>
-                  </View>
                 )}
               </TouchableOpacity>
             )
@@ -495,4 +494,6 @@ const styles = StyleSheet.create({
   errorText:    { color: Colors.error, fontSize: 17, textAlign: 'center', paddingHorizontal: 32 },
   retryBtn:     { backgroundColor: Colors.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: Radius.full },
   retryText:    { color: Colors.textInverse, fontFamily: 'Inter-Medium', fontSize: 16 },
+  emptyTitle:   { fontFamily: 'PlusJakartaSans-Bold', fontSize: 20, color: Colors.textDark, marginTop: 16 },
+  emptySub:     { fontFamily: 'Inter-Regular', fontSize: 15, color: Colors.textMedium, textAlign: 'center', paddingHorizontal: 32, lineHeight: 22 },
 })

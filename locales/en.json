@@ -23,6 +23,8 @@
     "title": "This week",
     "featured": "Top offers",
     "allOffers": "All offers",
+    "noStoresTitle": "No store selected",
+    "noStoresSub": "Choose a store in Settings to see offers.",
     "expiringSoon": "Expiring soon",
     "validUntil": "Valid until {{date}}",
     "expiresIn": "{{days}} days left",
@@ -44,6 +46,7 @@
     "watchingProduct": "Watching",
     "unit": "per {{unit}}",
     "notFound": "Offer not found",
+    "noImage": "No image available",
     "lastDay": "Last day today!",
     "daysLeft": "{{days}} days left"
   },

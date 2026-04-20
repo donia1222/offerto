@@ -24,6 +24,8 @@
     "subtitle": "Questa settimana",
     "featured": "Offerte top",
     "allOffers": "Tutte le offerte",
+    "noStoresTitle": "Nessun negozio selezionato",
+    "noStoresSub": "Scegli un negozio nelle impostazioni per vedere le offerte.",
     "expiringSoon": "In scadenza",
     "validUntil": "Valido fino al {{date}}",
     "expiresIn": "Ancora {{days}} giorni",
@@ -45,6 +47,7 @@
     "watchingProduct": "Monitorato",
     "unit": "per {{unit}}",
     "notFound": "Offerta non trovata",
+    "noImage": "Nessuna immagine disponibile",
     "lastDay": "Ultimo giorno!",
     "daysLeft": "Ancora {{days}} giorni"
   },

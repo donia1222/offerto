@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import {
-  cancelAll,
+  cancelAll, requestPermissions,
   scheduleWeekly, cancelWeekly,
   scheduleExpiringReminder, cancelExpiringReminder,
 } from '../services/notificationsService'
@@ -32,21 +32,27 @@ interface NotifState {
 export const useNotificationsStore = create<NotifState>()(
   persist(
     (set, get) => ({
-      enabled:    true,
+      enabled:    false,
       weekly:     true,
       expiring:   true,
       categories: ['fleisch', 'fisch'],
       stores:     ['aligro', 'topcc', 'transgourmet'],
       watchlist:  [],
 
-      setEnabled: (enabled) => {
-        set({ enabled })
-        if (!enabled) {
-          cancelAll()
-        } else {
+      setEnabled: async (enabled) => {
+        if (enabled) {
+          set({ enabled: true })
+          const granted = await requestPermissions()
+          if (!granted) {
+            set({ enabled: false })
+            return
+          }
           const { weekly, expiring } = get()
           if (weekly)   scheduleWeekly(W_TITLE, W_BODY)
           if (expiring) scheduleExpiringReminder(E_TITLE, E_BODY)
+        } else {
+          set({ enabled: false })
+          cancelAll()
         }
       },
 

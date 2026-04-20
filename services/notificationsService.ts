@@ -14,7 +14,7 @@ Notifications.setNotificationHandler({
 })
 
 export async function requestPermissions(): Promise<boolean> {
-  if (!Device.isDevice) return false
+  if (!Device.isDevice) return true
   const { status: existing } = await Notifications.getPermissionsAsync()
   if (existing === 'granted') return true
   const { status } = await Notifications.requestPermissionsAsync()

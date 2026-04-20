@@ -102,32 +102,9 @@ export default function NotificationsScreen() {
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
 
-        {/* Master toggle */}
-        <View style={styles.masterCard}>
-          <View style={styles.masterLeft}>
-            <View style={[styles.masterIcon, { backgroundColor: enabled ? Colors.primary : Colors.border }]}>
-              <Ionicons name="notifications" size={22} color="#fff" />
-            </View>
-            <View>
-              <Text style={styles.masterLabel}>{t('notif.masterLabel')}</Text>
-              <Text style={styles.masterSub}>{enabled ? t('notif.masterOn') : t('notif.masterOff')}</Text>
-            </View>
-          </View>
-          <Switch
-            value={enabled}
-            onValueChange={setEnabled}
-            trackColor={{ false: Colors.border, true: Colors.primary }}
-            thumbColor="#fff"
-          />
-        </View>
-
         {enabled && (
           <>
-          <TouchableOpacity onPress={sendTest} disabled={sending} activeOpacity={0.6} style={styles.testLinkRow}>
-            <Text style={styles.testLink}>{sending ? t('notif.testSending') : t('notif.testBtn')}</Text>
-          </TouchableOpacity>
-
-        {/* Watchlist */}
+          {/* Watchlist */}
         <Text style={styles.sectionHeader}>{t('notif.sectionWatch')}</Text>
         <View style={[styles.card, !enabled && styles.cardDisabled]}>
           <View style={styles.watchInputRow}>
@@ -168,26 +145,15 @@ export default function NotificationsScreen() {
         </View>
 
         {/* Acordeón más opciones */}
-        <TouchableOpacity
-          style={styles.accordionBtn}
-          onPress={() => setExpanded(e => !e)}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.accordionLabel}>{t('notif.moreOptions')}</Text>
-          <Ionicons name={expanded ? 'chevron-up' : 'chevron-down'} size={18} color={Colors.textMedium} />
-        </TouchableOpacity>
+        {/* Automático */}
+        <Text style={styles.sectionHeader}>{t('notif.sectionAuto')}</Text>
+        <View style={[styles.card, !enabled && styles.cardDisabled]}>
+          <Row icon="calendar-outline" label={t('notif.weekly')}   value={weekly}   onChange={setWeekly} />
+          <Row icon="time-outline"     label={t('notif.expiring')} value={expiring} onChange={setExpiring} last />
+        </View>
 
-        {expanded && (
-          <>
-            {/* Automático */}
-            <Text style={styles.sectionHeader}>{t('notif.sectionAuto')}</Text>
-            <View style={[styles.card, !enabled && styles.cardDisabled]}>
-              <Row icon="calendar-outline" label={t('notif.weekly')}   value={weekly}   onChange={setWeekly} />
-              <Row icon="time-outline"     label={t('notif.expiring')} value={expiring} onChange={setExpiring} last />
-            </View>
-
-            {/* Por tienda */}
-            <Text style={styles.sectionHeader}>{t('notif.sectionStores')}</Text>
+        {/* Por tienda */}
+        <Text style={styles.sectionHeader}>{t('notif.sectionStores')}</Text>
             <View style={[styles.card, !enabled && styles.cardDisabled]}>
               {visibleStores.map((slug, idx) => (
                 <View key={slug} style={[styles.row, idx === visibleStores.length - 1 && styles.rowLast]}>
@@ -217,10 +183,12 @@ export default function NotificationsScreen() {
                   <Text style={styles.emptyHint}>{t('notif.noStores')}</Text>
                 </View>
               )}
-            </View>
-          </>
-        )}
+        </View>
 
+          <TouchableOpacity onPress={sendTest} disabled={sending} activeOpacity={0.75} style={styles.testBtn}>
+            <Ionicons name="paper-plane-outline" size={16} color={Colors.textMedium} />
+            <Text style={styles.testBtnText}>{sending ? t('notif.testSending') : t('notif.testBtn')}</Text>
+          </TouchableOpacity>
           </>
         )}
 
@@ -240,7 +208,7 @@ const styles = StyleSheet.create({
   headerLogo: { width: 44, height: 44 },
   title:      { fontFamily: 'PlusJakartaSans-Bold', fontSize: 26, color: Colors.textDark },
   subtitle:   { fontFamily: 'Inter-Medium', fontSize: 13, color: Colors.textMedium, marginTop: -2 },
-  scroll:     { paddingHorizontal: Spacing.lg, paddingTop: Spacing.sm },
+  scroll:     { paddingHorizontal: Spacing.lg, paddingTop: Spacing.sm, marginTop:40 },
 
   masterCard: {
     backgroundColor: Colors.surface, borderRadius: Radius.lg,
@@ -253,8 +221,14 @@ const styles = StyleSheet.create({
   masterIcon:  { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   masterLabel: { fontFamily: 'PlusJakartaSans-SemiBold', fontSize: 16, color: Colors.textDark },
   masterSub:   { fontFamily: 'Inter-Regular', fontSize: 13, color: Colors.textMedium, marginTop: 2 },
-  testLinkRow: { alignItems: 'flex-end', marginTop: 4, marginBottom: 4, paddingHorizontal: 4 },
-  testLink:    { fontFamily: 'Inter-Medium', fontSize: 13, color: Colors.primary, textDecorationLine: 'underline' },
+  testBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+    alignSelf: 'flex-start', marginTop: 20,
+    backgroundColor: Colors.surfaceAlt, borderRadius: Radius.full,
+    paddingHorizontal: Spacing.lg, paddingVertical: 8,
+    borderWidth: 1, borderColor: Colors.border,
+  },
+  testBtnText: { fontFamily: 'Inter-Medium', fontSize: 13, color: Colors.textMedium },
 
   sectionHeader: {
     fontFamily: 'Inter-SemiBold', fontSize: 12, color: Colors.textLight,

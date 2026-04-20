@@ -24,7 +24,7 @@ export default function OfferCard({ offer, compact: compactProp, fixedHeight, hi
   const { add, remove, isInList } = useListStore()
   const { language, compactMode: compactSetting, showMwst } = useSettingsStore()
   const compactMode = compactProp ?? compactSetting
-  const { watchlist, addWatch, removeWatch } = useNotificationsStore()
+  const { enabled: notifsEnabled, watchlist, addWatch, removeWatch } = useNotificationsStore()
   const inList    = isInList(offer.id)
   const name      = getOfferName(offer, language)
   const watchTerm = (offer.nombre ?? '').trim().toLowerCase()
@@ -112,10 +112,14 @@ export default function OfferCard({ offer, compact: compactProp, fixedHeight, hi
           <TouchableOpacity style={[styles.footerBtn, inList && { backgroundColor: '#FFF0F0' }]} onPress={() => inList ? remove(offer.id) : add(offer)} activeOpacity={0.75}>
             <Ionicons name={inList ? 'cart' : 'cart-outline'} size={inList ? 26 : 22} color={inList ? '#E2001A' : Colors.textMedium} />
           </TouchableOpacity>
-          <View style={styles.footerDivider} />
-          <TouchableOpacity style={[styles.footerBtn, watched && { backgroundColor: Colors.successLight }]} onPress={() => watched ? removeWatch(watchTerm) : addWatch(watchTerm)} activeOpacity={0.75}>
-            <Ionicons name={watched ? 'notifications' : 'notifications-outline'} size={watched ? 24 : 21} color={watched ? Colors.success : Colors.textMedium} />
-          </TouchableOpacity>
+          {notifsEnabled && (
+            <>
+              <View style={styles.footerDivider} />
+              <TouchableOpacity style={[styles.footerBtn, watched && { backgroundColor: Colors.successLight }]} onPress={() => watched ? removeWatch(watchTerm) : addWatch(watchTerm)} activeOpacity={0.75}>
+                <Ionicons name={watched ? 'notifications' : 'notifications-outline'} size={watched ? 24 : 21} color={watched ? Colors.success : Colors.textMedium} />
+              </TouchableOpacity>
+            </>
+          )}
         </View>
       )}
     </TouchableOpacity>
@@ -147,7 +151,7 @@ const styles = StyleSheet.create({
 
   imgBox: { alignSelf: 'stretch', alignItems: 'center', justifyContent: 'center' },
   img:    { width: 94, height: 94 },
-  logoFallback: { width: 70, height: 70, opacity: 0.4 },
+  logoFallback: { width: 100, height: 48, opacity: 0.5 },
   emoji:  { fontSize: 32 },
 
   badge: { position: 'absolute', top: 7, left: 7, borderRadius: Radius.full, paddingHorizontal: 7, paddingVertical: 3 },

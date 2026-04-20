@@ -15,7 +15,9 @@ class TopCCScraper extends BaseScraper {
         $this->log('URLs encontradas: ' . count($urls));
 
         $count = 0;
-        [$desde, $hasta] = $this->mondayThisSunday();
+        // TopCC ofertas semanales: siempre lunes → sábado de esta semana
+        $desde = date('Y-m-d', strtotime('monday this week'));
+        $hasta = date('Y-m-d', strtotime('saturday this week'));
 
         foreach ($urls as $url) {
             $data = $this->parseOfferPage($url);
@@ -35,8 +37,8 @@ class TopCCScraper extends BaseScraper {
                 ':descuento_pct'   => $data['discount'],
                 ':unidad'          => $data['unit'],
                 ':imagen_url'      => $data['image'],
-                ':valido_desde'    => $data['valid_from'] ?? $desde,
-                ':valido_hasta'    => $data['valid_until'] ?? $hasta,
+                ':valido_desde'    => $desde,
+                ':valido_hasta'    => $hasta,
                 ':canton'          => 'all',
                 ':fuente_url'      => mb_substr($url, 0, 500),
             ]);
@@ -112,16 +114,34 @@ class TopCCScraper extends BaseScraper {
         preg_match('/m-price-box-2024__list-item[^>]*>\s*([^<]+)\s*</i', $html, $ui);
         $unit = isset($ui[1]) ? trim(html_entity_decode($ui[1])) : null;
 
-        // Fechas: buscar "gültig" o DD.MM.YYYY
-        preg_match_all('/(\d{2})\.(\d{2})\.(\d{4})/', $html, $dates);
+        // Fechas: buscar contexto "gültig vom … bis …" o similar
         $validFrom  = null;
         $validUntil = null;
-        if (!empty($dates[0])) {
-            foreach ($dates[0] as $d) {
+        $now    = time();
+        $minTs  = $now - 7 * 86400;   // hasta 7 días atrás
+        $maxTs  = $now + 60 * 86400;  // hasta 60 días adelante
+
+        // 1) Intentar extraer del bloque que menciona validez
+        if (preg_match('/g.ltig[^<]{0,200}?(\d{2})\.(\d{2})\.(\d{4})[^<]{0,100}?(\d{2})\.(\d{2})\.(\d{4})/is', $html, $vm)) {
+            $tsFrom  = mktime(0, 0, 0, (int)$vm[2], (int)$vm[1], (int)$vm[3]);
+            $tsUntil = mktime(0, 0, 0, (int)$vm[5], (int)$vm[4], (int)$vm[6]);
+            if ($tsFrom >= $minTs && $tsFrom <= $maxTs) $validFrom  = date('Y-m-d', $tsFrom);
+            if ($tsUntil >= $minTs && $tsUntil <= $maxTs) $validUntil = date('Y-m-d', $tsUntil);
+        }
+
+        // 2) Si no, recoger todas las fechas y filtrar solo las que caen en rango razonable
+        if (!$validFrom || !$validUntil) {
+            preg_match_all('/(\d{2})\.(\d{2})\.(\d{4})/', $html, $allDates);
+            $candidates = [];
+            foreach ($allDates[0] as $d) {
                 [$day, $month, $year] = explode('.', $d);
                 $ts = mktime(0, 0, 0, (int)$month, (int)$day, (int)$year);
-                if (!$validFrom) $validFrom = date('Y-m-d', $ts);
-                $validUntil = date('Y-m-d', $ts);
+                if ($ts >= $minTs && $ts <= $maxTs) $candidates[] = $ts;
+            }
+            if (!empty($candidates)) {
+                sort($candidates);
+                if (!$validFrom)  $validFrom  = date('Y-m-d', $candidates[0]);
+                if (!$validUntil) $validUntil = date('Y-m-d', end($candidates));
             }
         }
 

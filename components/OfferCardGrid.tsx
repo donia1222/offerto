@@ -22,7 +22,7 @@ export default function OfferCardGrid({ offer }: Props) {
   const { t }  = useTranslation()
   const { add, remove, isInList } = useListStore()
   const { language, showMwst } = useSettingsStore()
-  const { watchlist, addWatch, removeWatch } = useNotificationsStore()
+  const { enabled: notifsEnabled, watchlist, addWatch, removeWatch } = useNotificationsStore()
   const inList    = isInList(offer.id)
   const name      = getOfferName(offer, language)
   const watchTerm = (offer.nombre ?? '').trim().toLowerCase()
@@ -88,7 +88,11 @@ export default function OfferCardGrid({ offer }: Props) {
       {/* Info */}
       <View style={styles.info}>
         {StoreLogos[offer.tienda?.slug] && (
-          <Image source={StoreLogos[offer.tienda.slug]} style={styles.storeLogo} resizeMode="contain" />
+          <Image
+            source={StoreLogos[offer.tienda.slug]}
+            style={offer.tienda.slug === 'transgourmet' ? styles.storeLogo : styles.storeLogoSmall}
+            resizeMode="contain"
+          />
         )}
         <Text style={styles.name} numberOfLines={2}>{name}</Text>
         <View style={styles.priceRow}>
@@ -109,14 +113,18 @@ export default function OfferCardGrid({ offer }: Props) {
         >
           <Ionicons name={inList ? 'cart' : 'cart-outline'} size={inList ? 24 : 20} color={inList ? '#E2001A' : Colors.textMedium} />
         </TouchableOpacity>
-        <View style={styles.footerDivider} />
-        <TouchableOpacity
-          style={[styles.footerBtn, watched && { backgroundColor: Colors.successLight }]}
-          onPress={() => watched ? removeWatch(watchTerm) : addWatch(watchTerm)}
-          activeOpacity={0.75}
-        >
-          <Ionicons name={watched ? 'notifications' : 'notifications-outline'} size={watched ? 22 : 19} color={watched ? Colors.success : Colors.textMedium} />
-        </TouchableOpacity>
+        {notifsEnabled && (
+          <>
+            <View style={styles.footerDivider} />
+            <TouchableOpacity
+              style={[styles.footerBtn, watched && { backgroundColor: Colors.successLight }]}
+              onPress={() => watched ? removeWatch(watchTerm) : addWatch(watchTerm)}
+              activeOpacity={0.75}
+            >
+              <Ionicons name={watched ? 'notifications' : 'notifications-outline'} size={watched ? 22 : 19} color={watched ? Colors.success : Colors.textMedium} />
+            </TouchableOpacity>
+          </>
+        )}
       </View>
     </TouchableOpacity>
   )
@@ -146,7 +154,7 @@ const styles = StyleSheet.create({
     position:        'relative',
   },
   img:         { width: '80%', height: '80%' },
-  logoFallback:{ width: 60, height: 60, opacity: 0.35 },
+  logoFallback:{ width: 130, height: 64, opacity: 0.5 },
   emoji:       { fontSize: 36 },
 
   badge: {
@@ -169,7 +177,8 @@ const styles = StyleSheet.create({
   },
 
   info:      { padding: Spacing.sm, gap: 3, flex: 1 },
-  storeLogo: { width: 64, height: 24, marginBottom: 2 },
+  storeLogo:      { width: 130, height: 40, marginBottom: 2, marginLeft: -4 },
+  storeLogoSmall: { width: 64, height: 24, marginBottom: 2 },
   name:      { fontFamily: 'Inter-SemiBold', fontSize: 15, color: Colors.textDark, lineHeight: 20 },
 
   priceRow:  { flexDirection: 'row', alignItems: 'baseline', gap: 6, marginTop: 2 },

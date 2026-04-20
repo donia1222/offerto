@@ -85,10 +85,12 @@ export default function RootLayout() {
     if (!loaderDone) return
     AsyncStorage.getItem('offerto-notifications').then(async raw => {
       try {
-        const state   = JSON.parse(raw ?? '{}')?.state ?? {}
+        const state = JSON.parse(raw ?? '{}')?.state ?? {}
+
+        if (!state.enabled) return
+
         const granted = await requestPermissions()
 
-        // Siempre registrar el token si hay permiso
         if (granted) {
           registerToken(
             state.stores     ?? [],
@@ -97,7 +99,7 @@ export default function RootLayout() {
           )
         }
 
-        if (!granted || state.enabled === false) return
+        if (!granted) return
         if (state.weekly   !== false) scheduleWeekly('Offerto 🛒', 'Neue Angebote diese Woche — jetzt entdecken!')
         if (state.expiring !== false) scheduleExpiringReminder('Offerto ⏰', 'Einige Angebote laufen morgen ab!')
 

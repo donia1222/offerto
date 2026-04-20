@@ -30,7 +30,7 @@ function CartTabIcon({ focused }: { focused: boolean }) {
   const count = useListStore(s => s.items.length)
   return (
     <View style={[styles.iconWrap, focused && styles.iconWrapActive]}>
-      <Ionicons name={focused ? 'cart' : 'cart-outline'} size={24} color={focused ? '#fff' : Colors.textLight} />
+      <Ionicons name={focused ? 'cart' : 'cart-outline'} size={27} color={focused ? '#fff' : Colors.textLight} />
       {count > 0 && (
         <View style={styles.cartBadge}>
           <Text style={styles.cartBadgeText}>{count > 99 ? '99' : count}</Text>
@@ -55,7 +55,8 @@ function TabIcon({ name, focused, label, size = 22 }: {
 
 export default function TabLayout() {
   const { t } = useTranslation()
-  const cardLayout = useSettingsStore(s => s.cardLayout)
+  const cardLayout     = useSettingsStore(s => s.cardLayout)
+  const notifsEnabled  = useNotificationsStore(s => s.enabled)
 
   return (
     <Tabs
@@ -140,6 +141,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="notifications"
         options={{
+          href: notifsEnabled ? undefined : null,
           tabBarIcon: ({ focused }) => <BellTabIcon focused={focused} />,
         }}
       />

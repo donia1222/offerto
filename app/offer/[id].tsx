@@ -29,7 +29,7 @@ export default function OfferDetailScreen() {
   const [imgError, setImgError] = useState(false)
   const { add, remove, isInList, items: listItems } = useListStore()
   const { language } = useSettingsStore()
-  const { watchlist, addWatch, removeWatch } = useNotificationsStore()
+  const { enabled: notifsEnabled, watchlist, addWatch, removeWatch } = useNotificationsStore()
 
   useEffect(() => {
     api.get(`/ofertas.php?id=${id}`)
@@ -76,8 +76,15 @@ export default function OfferDetailScreen() {
           headerTitle: () => (
             StoreLogos[offer.tienda.slug] ? (
               <Image
-                source={StoreLogos[offer.tienda.slug]}
-                style={{ width: 96, height: 32 }}
+                source={offer.tienda.slug === 'transgourmet'
+                  ? require('../../assets/images/logos-shops/trasngoustettrasprete.png')
+                  : offer.tienda.slug === 'topcc'
+                  ? require('../../assets/images/logos-shops/topcctrasparehte.png')
+                  : offer.tienda.slug === 'aligro'
+                  ? require('../../assets/images/logos-shops/aligrotrasnparehte.png')
+                  : StoreLogos[offer.tienda.slug]
+                }
+                style={offer.tienda.slug === 'transgourmet' ? { width: 170, height: 56 } : { width: 96, height: 32 }}
                 resizeMode="contain"
               />
             ) : (
@@ -111,7 +118,7 @@ export default function OfferDetailScreen() {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 48 }}>
 
         {/* Imagen */}
-        <View style={[styles.imageWrap, { backgroundColor: (offer.tienda.slug === 'aligro' || offer.tienda.slug === 'topcc') ? Colors.surface : offer.tienda.color + '12', marginTop: 20 }]}>
+        <View style={[styles.imageWrap, { backgroundColor: '#fff', marginTop: 20 }]}>
           {offer.imagen && !imgError ? (
             <Image
               source={{ uri: offer.imagen }}
@@ -119,6 +126,11 @@ export default function OfferDetailScreen() {
               resizeMode="contain"
               onError={() => setImgError(true)}
             />
+          ) : StoreLogos[offer.tienda?.slug] ? (
+            <View style={{ alignItems: 'center', gap: 8 }}>
+              <Image source={StoreLogos[offer.tienda.slug]} style={styles.logoFallback} resizeMode="contain" />
+              <Text style={styles.noImageText}>{t('offer.noImage')}</Text>
+            </View>
           ) : (
             <Text style={styles.imagePlaceholder}>🛒</Text>
           )}
@@ -173,7 +185,7 @@ export default function OfferDetailScreen() {
             </TouchableOpacity>
 
             {/* Notificación watchlist */}
-            {(() => {
+            {notifsEnabled && (() => {
               const term    = (offer.nombre ?? '').trim().toLowerCase()
               const watched = watchlist.includes(term)
               return (
@@ -276,6 +288,8 @@ const styles = StyleSheet.create({
   },
   image:            { width: '80%', height: '80%' },
   imagePlaceholder: { fontSize: 80 },
+  logoFallback:     { width: 160, height: 80, opacity: 0.5 },
+  noImageText:      { fontFamily: 'Inter-Regular', fontSize: 12, color: Colors.textLight },
   favBtn: {
     position: 'absolute', top: 12, right: 12, zIndex: 2,
     backgroundColor: 'rgba(255,255,255,0.85)',

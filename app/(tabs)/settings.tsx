@@ -9,6 +9,7 @@ import { Colors } from '../../constants/colors'
 import { Spacing, Radius } from '../../constants/spacing'
 import { StoreLogos } from '../../constants/stores'
 import { useSettingsStore, type AppLang, type CardLayout } from '../../store/settingsStore'
+import { useNotificationsStore } from '../../store/notificationsStore'
 
 const CATEGORY_IMAGES: Record<string, any> = {
   fleisch:    require('../../assets/images/categorias/carne.png'),
@@ -45,7 +46,7 @@ const STORES = [
   { slug: 'aligro',       color: '#FF6600', enabled: true },
   { slug: 'topcc',        color: '#0050AA', enabled: true },
   // TODO: activar cuando Transgourmet proporcione API de imágenes — cambiar enabled: false → true
-  { slug: 'transgourmet', color: '#E2001A', enabled: false },
+  { slug: 'transgourmet', color: '#E2001A', enabled: true },
 ]
 
 export default function SettingsScreen() {
@@ -57,6 +58,7 @@ export default function SettingsScreen() {
     setLanguage, setCanton, toggleStore, toggleVisibleCategory, setCompactMode, setShowMwst, setCardLayout,
   } = useSettingsStore()
 
+  const { enabled: notifsEnabled, setEnabled: setNotifsEnabled } = useNotificationsStore()
   const [cantonOpen, setCantonOpen] = React.useState(false)
 
   const onLangChange = (code: AppLang) => {
@@ -79,6 +81,25 @@ export default function SettingsScreen() {
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+
+        {/* Notificaciones master toggle */}
+        <View style={styles.notifCard}>
+          <View style={styles.notifLeft}>
+            <View style={[styles.notifIcon, { backgroundColor: notifsEnabled ? Colors.primary : Colors.border }]}>
+              <Ionicons name="notifications" size={22} color="#fff" />
+            </View>
+            <View>
+              <Text style={styles.notifLabel}>{t('notif.masterLabel')}</Text>
+              <Text style={styles.notifSub}>{notifsEnabled ? t('notif.masterOn') : t('notif.masterOff')}</Text>
+            </View>
+          </View>
+          <Switch
+            value={notifsEnabled}
+            onValueChange={setNotifsEnabled}
+            trackColor={{ false: Colors.border, true: Colors.primary }}
+            thumbColor="#fff"
+          />
+        </View>
 
         {/* Sprache */}
         <Text style={styles.sectionHeader}>{t('settings.languageSection')}</Text>
@@ -249,6 +270,18 @@ const styles = StyleSheet.create({
   subtitle:   { fontFamily: 'Inter-Medium', fontSize: 13, color: Colors.textMedium, marginTop: -2 },
   closeBtn:   { padding: Spacing.sm },
   scroll:   { paddingHorizontal: Spacing.lg, paddingTop: Spacing.sm },
+
+  notifCard: {
+    backgroundColor: Colors.surface, borderRadius: Radius.lg,
+    padding: Spacing.lg, flexDirection: 'row', alignItems: 'center',
+    justifyContent: 'space-between', marginTop: Spacing.sm,
+    shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 10,
+    shadowOffset: { width: 0, height: 3 }, elevation: 3,
+  },
+  notifLeft:  { flexDirection: 'row', alignItems: 'center', gap: Spacing.md, flex: 1 },
+  notifIcon:  { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
+  notifLabel: { fontFamily: 'PlusJakartaSans-SemiBold', fontSize: 16, color: Colors.textDark },
+  notifSub:   { fontFamily: 'Inter-Regular', fontSize: 13, color: Colors.textMedium, marginTop: 2 },
 
   sectionHeader: {
     fontFamily: 'Inter-SemiBold', fontSize: 12, color: Colors.textLight,
