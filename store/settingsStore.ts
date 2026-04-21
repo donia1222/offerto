@@ -35,7 +35,7 @@ export const useSettingsStore = create<SettingsState>()(
       activeCategories:  [],
       compactMode:       false,
       showMwst:          false,
-      cardLayout:        'grid',
+      cardLayout:        'list',
 
       setLanguage:     (language)     => set({ language }),
       setCanton:       (canton)       => set({ canton }),

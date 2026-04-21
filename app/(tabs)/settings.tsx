@@ -67,8 +67,8 @@ export default function SettingsScreen() {
         {/* Notificaciones master toggle */}
         <View style={styles.notifCard}>
           <View style={styles.notifLeft}>
-            <View style={[styles.notifIcon, { backgroundColor: notifsEnabled ? Colors.primary : Colors.border }]}>
-              <Ionicons name="notifications" size={22} color="#fff" />
+            <View style={styles.notifIcon}>
+              <Ionicons name="notifications-outline" size={18} color={Colors.primary} />
             </View>
             <View>
               <Text style={styles.notifLabel}>{t('notif.masterLabel')}</Text>
@@ -143,8 +143,8 @@ export default function SettingsScreen() {
         <Text style={styles.sectionHeader}>{t('settings.layoutSection')}</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.layoutRow}>
           {([
-            { mode: 'grid', icon: 'grid', label: t('settings.layoutGrid') },
             { mode: 'list', icon: 'list', label: t('settings.layoutList') },
+            { mode: 'grid', icon: 'grid', label: t('settings.layoutGrid') },
           ] as { mode: CardLayout; icon: any; label: string }[]).map(({ mode, icon, label }) => (
             <TouchableOpacity
               key={mode}
@@ -220,16 +220,19 @@ const styles = StyleSheet.create({
   scroll:   { paddingHorizontal: Spacing.lg, paddingTop: Spacing.sm },
 
   notifCard: {
-    backgroundColor: Colors.surface, borderRadius: Radius.lg,
-    padding: Spacing.lg, flexDirection: 'row', alignItems: 'center',
-    justifyContent: 'space-between', marginTop: Spacing.sm,
-    shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 10,
-    shadowOffset: { width: 0, height: 3 }, elevation: 3,
+    backgroundColor: Colors.surface, borderRadius: Radius.lg, overflow: 'hidden',
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: Spacing.lg, paddingVertical: 12, marginTop: Spacing.sm,
+    shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 }, elevation: 2,
   },
   notifLeft:  { flexDirection: 'row', alignItems: 'center', gap: Spacing.md, flex: 1 },
-  notifIcon:  { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
-  notifLabel: { fontFamily: 'PlusJakartaSans-SemiBold', fontSize: 16, color: Colors.textDark },
-  notifSub:   { fontFamily: 'Inter-Regular', fontSize: 13, color: Colors.textMedium, marginTop: 2 },
+  notifIcon:  {
+    width: 32, height: 32, borderRadius: 8, backgroundColor: Colors.surfaceAlt,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  notifLabel: { fontFamily: 'Inter-Medium', fontSize: 15, color: Colors.textDark },
+  notifSub:   { fontFamily: 'Inter-Regular', fontSize: 12, color: Colors.textLight, marginTop: 1 },
 
   sectionHeader: {
     fontFamily: 'Inter-SemiBold', fontSize: 12, color: Colors.textLight,

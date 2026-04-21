@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Stack } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
+import { View } from 'react-native'
 import { useFonts } from 'expo-font'
 import {
   PlusJakartaSans_700Bold,
@@ -21,6 +22,7 @@ import it from '../locales/it.json'
 import en from '../locales/en.json'
 import { Colors } from '../constants/colors'
 import AppLoader from '../components/AppLoader'
+import Onboarding from '../components/Onboarding'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { requestPermissions, registerToken, scheduleWeekly, scheduleExpiringReminder, checkWatchlist, checkStores } from '../services/notificationsService'
 import * as Updates from 'expo-updates'
@@ -34,7 +36,7 @@ const deviceLocale: string =
     : NativeModules.I18nManager?.localeIdentifier) ?? 'de'
 
 const deviceLang    = deviceLocale.substring(0, 2).toLowerCase()
-const supportedLang = ['de', 'fr', 'it'].includes(deviceLang) ? deviceLang : 'de'
+const supportedLang = ['de', 'fr', 'it', 'en'].includes(deviceLang) ? deviceLang : 'de'
 
 if (!i18n.isInitialized) {
   i18n.use(initReactI18next).init({
@@ -51,13 +53,20 @@ if (!i18n.isInitialized) {
 }
 
 export default function RootLayout() {
-  const [loaderDone, setLoaderDone] = useState(false)
+  const [loaderDone, setLoaderDone]           = useState(false)
+  const [onboardingDone, setOnboardingDone]   = useState<boolean | null>(null)
   const [fontsLoaded] = useFonts({
     'PlusJakartaSans-Bold':     PlusJakartaSans_700Bold,
     'PlusJakartaSans-SemiBold': PlusJakartaSans_600SemiBold,
     'Inter-Regular':            Inter_400Regular,
     'Inter-Medium':             Inter_500Medium,
   })
+
+  useEffect(() => {
+    // DEV: siempre mostrar onboarding — cambiar a true cuando esté listo
+    setOnboardingDone(false)
+    // AsyncStorage.getItem('offerto-onboarding-done').then(v => setOnboardingDone(v === 'true'))
+  }, [])
 
   useEffect(() => {
     async function checkForUpdates() {
@@ -185,6 +194,11 @@ export default function RootLayout() {
           }}
         />
       </Stack>
+      {loaderDone && onboardingDone === false && (
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+          <Onboarding lang={supportedLang} onDone={() => setOnboardingDone(true)} />
+        </View>
+      )}
     </>
   )
 }
