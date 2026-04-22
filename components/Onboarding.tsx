@@ -5,6 +5,7 @@ import {
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
+import { Video, ResizeMode } from 'expo-av'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Radius, Spacing } from '../constants/spacing'
 
@@ -12,26 +13,28 @@ const { width, height } = Dimensions.get('window')
 
 type Lang = 'de' | 'fr' | 'it' | 'en'
 
-const SLIDES: Record<Lang, { title: string; subtitle: string; body: string }[]> = {
+const EMOJIS = ['🛒', '🔍', '📋']
+
+const SLIDES: Record<Lang, { title: string; subtitle: string; subtitleEmoji: string; body: string }[]> = {
   de: [
-    { title: 'Willkommen\nbei Offerto', subtitle: 'Alle Angebote. Eine App.', body: 'Die wöchentlichen Aktionen von Aligro, TopCC und Transgourmet — übersichtlich, schnell und immer aktuell.' },
-    { title: 'Angebote\nentdecken', subtitle: 'Suchen, filtern, sparen.', body: 'Durchstöbere hunderte Angebote nach Kategorie und Laden. Filtere direkt auf der Startseite.' },
-    { title: 'Einkaufsliste\n& Prospekte', subtitle: 'Nie wieder etwas vergessen.', body: 'Füge Angebote zur Einkaufsliste hinzu, hake Artikel ab und spare CHF. Blättere in digitalen Prospekten.' },
+    { title: 'Willkommen\nbei Offerto', subtitle: 'Alle Angebote. Eine App', subtitleEmoji: '🔥', body: 'Die wöchentlichen Aktionen von Aligro, TopCC und Transgourmet — übersichtlich, schnell und immer aktuell.' },
+    { title: 'Angebote\nentdecken', subtitle: 'Suchen, filtern, sparen', subtitleEmoji: '🔎', body: 'Durchstöbere hunderte Angebote nach Kategorie und Laden. Filtere direkt auf der Startseite.' },
+    { title: 'Einkaufsliste\n& Prospekte', subtitle: 'Nie wieder etwas vergessen', subtitleEmoji: '🫠', body: 'Füge Angebote zur Einkaufsliste hinzu, hake Artikel ab und spare CHF. Blättere in digitalen Prospekten.' },
   ],
   fr: [
-    { title: 'Bienvenue\nsur Offerto', subtitle: 'Toutes les offres. Une app.', body: 'Les promotions hebdomadaires d\'Aligro, TopCC et Transgourmet — clair, rapide et toujours à jour.' },
-    { title: 'Découvrez\nles offres', subtitle: 'Chercher, filtrer, économiser.', body: 'Parcourez des centaines d\'offres par catégorie et magasin. Filtrez directement sur l\'écran d\'accueil.' },
-    { title: 'Liste &\nProspectus', subtitle: 'N\'oubliez plus rien.', body: 'Ajoutez des offres à votre liste, cochez les articles et économisez des CHF. Feuilletez les prospectus numériques.' },
+    { title: 'Bienvenue\nsur Offerto', subtitle: 'Toutes les offres. Une app', subtitleEmoji: '🔥', body: 'Les promotions hebdomadaires d\'Aligro, TopCC et Transgourmet — clair, rapide et toujours à jour.' },
+    { title: 'Découvrez\nles offres', subtitle: 'Chercher, filtrer, économiser', subtitleEmoji: '🔎', body: 'Parcourez des centaines d\'offres par catégorie et magasin. Filtrez directement sur l\'écran d\'accueil.' },
+    { title: 'Liste &\nProspectus', subtitle: 'N\'oubliez plus rien', subtitleEmoji: '🫠', body: 'Ajoutez des offres à votre liste, cochez les articles et économisez des CHF. Feuilletez les prospectus numériques.' },
   ],
   it: [
-    { title: 'Benvenuto\nsu Offerto', subtitle: 'Tutte le offerte. Un\'app.', body: 'Le promozioni settimanali di Aligro, TopCC e Transgourmet — chiaro, veloce e sempre aggiornato.' },
-    { title: 'Scopri\nle offerte', subtitle: 'Cerca, filtra, risparmia.', body: 'Sfoglia centinaia di offerte per categoria e negozio. Filtra direttamente nella schermata principale.' },
-    { title: 'Lista &\nVolantini', subtitle: 'Non dimenticare nulla.', body: 'Aggiungi offerte alla lista della spesa, spunta gli articoli e risparmia CHF. Sfoglia i volantini digitali.' },
+    { title: 'Benvenuto\nsu Offerto', subtitle: 'Tutte le offerte. Un\'app', subtitleEmoji: '🔥', body: 'Le promozioni settimanali di Aligro, TopCC e Transgourmet — chiaro, veloce e sempre aggiornato.' },
+    { title: 'Scopri\nle offerte', subtitle: 'Cerca, filtra, risparmia', subtitleEmoji: '🔎', body: 'Sfoglia centinaia di offerte per categoria e negozio. Filtra direttamente nella schermata principale.' },
+    { title: 'Lista &\nVolantini', subtitle: 'Non dimenticare nulla', subtitleEmoji: '🫠', body: 'Aggiungi offerte alla lista della spesa, spunta gli articoli e risparmia CHF. Sfoglia i volantini digitali.' },
   ],
   en: [
-    { title: 'Welcome\nto Offerto', subtitle: 'All offers. One app.', body: 'Weekly promotions from Aligro, TopCC and Transgourmet — clear, fast and always up to date.' },
-    { title: 'Discover\noffers', subtitle: 'Search, filter, save.', body: 'Browse hundreds of offers by category and store. Filter directly on the home screen.' },
-    { title: 'Shopping list\n& Catalogs', subtitle: 'Never forget anything.', body: 'Add offers to your shopping list, check off items and save CHF. Browse digital catalogs.' },
+    { title: 'Welcome\nto Offerto', subtitle: 'All offers. One app', subtitleEmoji: '🔥', body: 'Weekly promotions from Aligro, TopCC and Transgourmet — clear, fast and always up to date.' },
+    { title: 'Discover\noffers', subtitle: 'Search, filter, save', subtitleEmoji: '🔎', body: 'Browse hundreds of offers by category and store. Filter directly on the home screen.' },
+    { title: 'Shopping list\n& Catalogs', subtitle: 'Never forget anything', subtitleEmoji: '🫠', body: 'Add offers to your shopping list, check off items and save CHF. Browse digital catalogs.' },
   ],
 }
 
@@ -42,18 +45,12 @@ const LABELS: Record<Lang, { next: string; done: string; skip: string }> = {
   en: { next: 'Next', done: 'Get started', skip: 'Skip' },
 }
 
-const BG_IMAGES = [
-  require('../assets/images/welcomeimgs/slide1.jpg'),
-  require('../assets/images/welcomeimgs/slide2.jpg'),
-  require('../assets/images/welcomeimgs/slide3.jpg'),
-]
-
 interface Props { lang: string; onDone: () => void }
 
 export default function Onboarding({ lang, onDone }: Props) {
-  const l       = (['de', 'fr', 'it', 'en'].includes(lang) ? lang : 'de') as Lang
-  const slides  = SLIDES[l]
-  const labels  = LABELS[l]
+  const l      = (['de', 'fr', 'it', 'en'].includes(lang) ? lang : 'de') as Lang
+  const slides = SLIDES[l]
+  const labels = LABELS[l]
   const [current, setCurrent] = useState(0)
   const scrollRef = useRef<ScrollView>(null)
 
@@ -73,17 +70,17 @@ export default function Onboarding({ lang, onDone }: Props) {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
 
-      {/* Background images per slide */}
-      {BG_IMAGES.map((src, i) => (
-        <Image
-          key={i}
-          source={src}
-          style={[styles.bg, { opacity: current === i ? 1 : 0 }]}
-          resizeMode="cover"
-        />
-      ))}
+      {/* Video background — loops silently */}
+      <Video
+        source={require('../assets/video/sora-video-1776799532910.mp4')}
+        style={styles.video}
+        resizeMode={ResizeMode.COVER}
+        isLooping
+        isMuted
+        shouldPlay
+      />
 
-      {/* Dark gradient overlay */}
+      {/* Dark overlay */}
       <View style={styles.overlay} />
 
       {/* Skip */}
@@ -95,7 +92,7 @@ export default function Onboarding({ lang, onDone }: Props) {
         )}
       </SafeAreaView>
 
-      {/* Slides — only text content scrolls */}
+      {/* Slides — text blocks */}
       <ScrollView
         ref={scrollRef}
         horizontal
@@ -108,15 +105,23 @@ export default function Onboarding({ lang, onDone }: Props) {
           <View key={i} style={styles.slide}>
             <View style={styles.textBlock}>
               <View style={styles.logoRow}>
-                <Image
-                  source={require('../assets/images/trasnparehte.png')}
-                  style={styles.logo}
-                  resizeMode="contain"
-                />
-                <Text style={styles.logoText}>Offerto</Text>
+                <View style={styles.logoIconWrap}>
+                  <Image
+                    source={require('../assets/images/trasnparehte.png')}
+                    style={styles.logo}
+                    resizeMode="contain"
+                  />
+                </View>
+                <View style={styles.logoTextRow}>
+                  <Text style={styles.logoText}>Offerto</Text>
+                  <Text style={styles.logoProfi}>PROFI</Text>
+                </View>
               </View>
               <Text style={styles.title}>{slide.title}</Text>
-              <Text style={styles.subtitle}>{slide.subtitle}</Text>
+              <View style={styles.subtitleRow}>
+                <Text style={styles.subtitle}>{slide.subtitle}</Text>
+                <Text style={styles.subtitleEmoji}>{slide.subtitleEmoji}</Text>
+              </View>
               <Text style={styles.body}>{slide.body}</Text>
             </View>
           </View>
@@ -125,7 +130,6 @@ export default function Onboarding({ lang, onDone }: Props) {
 
       {/* Bottom controls */}
       <SafeAreaView style={styles.safeBottom} edges={['bottom']}>
-        {/* Dots */}
         <View style={styles.dots}>
           {slides.map((_, i) => (
             <TouchableOpacity key={i} onPress={() => goTo(i)}>
@@ -133,8 +137,6 @@ export default function Onboarding({ lang, onDone }: Props) {
             </TouchableOpacity>
           ))}
         </View>
-
-        {/* Button */}
         <TouchableOpacity style={styles.btn} onPress={handleNext} activeOpacity={0.88}>
           <Text style={styles.btnText}>
             {current === slides.length - 1 ? labels.done : labels.next}
@@ -153,13 +155,13 @@ export default function Onboarding({ lang, onDone }: Props) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#000' },
 
-  bg: {
+  video: {
     position: 'absolute', top: 0, left: 0, width, height,
   },
 
   overlay: {
     position: 'absolute', top: 0, left: 0, width, height,
-    backgroundColor: 'rgba(0,0,0,0.52)',
+    backgroundColor: 'rgba(245,243,255,0.05)',
   },
 
   safeTop: {
@@ -167,11 +169,15 @@ const styles = StyleSheet.create({
   },
   skip: {
     alignSelf: 'flex-end',
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
+    marginHorizontal: Spacing.lg,
+    marginTop: Spacing.sm,
+    paddingHorizontal: 14, paddingVertical: 7,
+    borderRadius: 99,
+    backgroundColor: 'rgba(255,255,255,0.75)',
+    borderWidth: 1, borderColor: 'rgba(28,27,51,0.12)',
   },
   skipText: {
-    fontFamily: 'Inter-Medium', fontSize: 14, color: 'rgba(255,255,255,0.7)',
+    fontFamily: 'Inter-Medium', fontSize: 13, color: '#1C1B33',
   },
 
   slides: { flex: 1 },
@@ -183,55 +189,74 @@ const styles = StyleSheet.create({
     paddingBottom: 140,
   },
   textBlock: {
-    backgroundColor: 'rgba(15,12,30,0.72)',
+    backgroundColor: 'rgba(255,255,255,0.88)',
     borderRadius: 20,
     padding: Spacing.xl,
     gap: 10,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(255,255,255,0.6)',
+  },
+  slideEmoji: {
+    fontSize: 48, marginBottom: 2,
   },
   logoRow: {
     flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 6,
   },
-  logo: {
-    width: 52, height: 52,
+  logoIconWrap: {
+    width: 58, height: 58,
+    borderRadius: 14,
+    backgroundColor: 'rgba(245,243,255,0.9)',
+    borderWidth: 1,
+    borderColor: 'rgba(124,111,205,0.2)',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  logo: { width: 44, height: 44 },
+  logoTextRow: {
+    flexDirection: 'row', alignItems: 'baseline', gap: 6,
   },
   logoText: {
-    fontFamily: 'PlusJakartaSans-Bold', fontSize: 26, color: '#fff', letterSpacing: 0.5,
+    fontFamily: 'PlusJakartaSans-Bold', fontSize: 26, color: '#1C1B33', letterSpacing: 0.5,
+  },
+  logoProfi: {
+    fontFamily: 'PlusJakartaSans-Bold', fontSize: 14,
+    color: '#FF4D4D', letterSpacing: 1.5,
   },
   title: {
     fontFamily: 'PlusJakartaSans-Bold', fontSize: 32,
-    color: '#fff', lineHeight: 40,
+    color: '#1C1B33', lineHeight: 40,
+  },
+  subtitleRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap',
   },
   subtitle: {
     fontFamily: 'PlusJakartaSans-SemiBold', fontSize: 15,
-    color: 'rgba(180,165,255,1)',
+    color: '#E2001A',
+  },
+  subtitleEmoji: {
+    fontSize: 26,
   },
   body: {
     fontFamily: 'Inter-Regular', fontSize: 14,
-    color: 'rgba(255,255,255,0.7)', lineHeight: 22,
+    color: '#6B6B8A', lineHeight: 22,
   },
 
   safeBottom: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
-    paddingHorizontal: Spacing.lg, paddingBottom: Platform.OS === 'android' ? Spacing.lg : 0,
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Platform.OS === 'android' ? Spacing.lg : 0,
     gap: 16,
   },
-  dots: {
-    flexDirection: 'row', gap: 8, paddingHorizontal: 4,
-  },
+  dots: { flexDirection: 'row', gap: 8, paddingHorizontal: 4 },
   dot: {
     width: 8, height: 4, borderRadius: 2,
-    backgroundColor: 'rgba(255,255,255,0.35)',
+    backgroundColor: 'rgba(28,27,51,0.2)',
   },
-  dotActive: {
-    width: 28, backgroundColor: '#fff',
-  },
+  dotActive: { width: 28, backgroundColor: '#1C1B33' },
 
   btn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 10,
-    backgroundColor: 'rgba(124,111,205,0.9)',
+    backgroundColor: 'rgba(226,0,26,0.75)',
     paddingVertical: 16, borderRadius: Radius.md,
     marginBottom: 8,
   },

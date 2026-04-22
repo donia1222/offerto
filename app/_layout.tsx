@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Stack } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
-import { View } from 'react-native'
 import { useFonts } from 'expo-font'
 import {
   PlusJakartaSans_700Bold,
@@ -63,9 +62,7 @@ export default function RootLayout() {
   })
 
   useEffect(() => {
-    // DEV: siempre mostrar onboarding — cambiar a true cuando esté listo
-    setOnboardingDone(false)
-    // AsyncStorage.getItem('offerto-onboarding-done').then(v => setOnboardingDone(v === 'true'))
+    AsyncStorage.getItem('offerto-onboarding-done').then(v => setOnboardingDone(v === 'true'))
   }, [])
 
   useEffect(() => {
@@ -149,10 +146,30 @@ export default function RootLayout() {
 
   if (!fontsLoaded) return null
 
+  // Loader: fuentes listas pero loader animado aún, o estado de onboarding desconocido
+  if (!loaderDone || onboardingDone === null) {
+    return (
+      <>
+        <StatusBar style="light" />
+        <AppLoader onDone={() => setLoaderDone(true)} />
+      </>
+    )
+  }
+
+  // Onboarding: primera vez — nunca se ve Home
+  if (!onboardingDone) {
+    return (
+      <>
+        <StatusBar style="light" />
+        <Onboarding lang={supportedLang} onDone={() => setOnboardingDone(true)} />
+      </>
+    )
+  }
+
+  // App normal
   return (
     <>
       <StatusBar style="dark" backgroundColor={Colors.background} />
-      {!loaderDone && <AppLoader onDone={() => setLoaderDone(true)} />}
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen
@@ -175,7 +192,7 @@ export default function RootLayout() {
             headerTitleStyle: { fontFamily: 'PlusJakartaSans-Bold', fontSize: 20, color: '#1C1B33' },
           }}
         />
-<Stack.Screen
+        <Stack.Screen
           name="offer/[id]"
           options={{
             headerShown:       true,
@@ -194,11 +211,6 @@ export default function RootLayout() {
           }}
         />
       </Stack>
-      {loaderDone && onboardingDone === false && (
-        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
-          <Onboarding lang={supportedLang} onDone={() => setOnboardingDone(true)} />
-        </View>
-      )}
     </>
   )
 }
