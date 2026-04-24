@@ -1,4 +1,4 @@
-import { Tabs } from 'expo-router'
+import { Tabs, Slot } from 'expo-router'
 import { Platform, View, StyleSheet, Text } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { BlurView } from 'expo-blur'
@@ -7,6 +7,7 @@ import { Colors } from '../../constants/colors'
 import { useListStore } from '../../store/listStore'
 import { useNotificationsStore } from '../../store/notificationsStore'
 import { useSettingsStore } from '../../store/settingsStore'
+import WebLayout from '../../components/WebLayout'
 
 const TAB_HEIGHT = Platform.OS === 'ios' ? 82 : 64
 const TAB_BOTTOM = 0
@@ -57,6 +58,14 @@ export default function TabLayout() {
   const { t } = useTranslation()
   const cardLayout     = useSettingsStore(s => s.cardLayout)
   const notifsEnabled  = useNotificationsStore(s => s.enabled)
+
+  if (Platform.OS === 'web') {
+    return (
+      <WebLayout>
+        <Slot />
+      </WebLayout>
+    )
+  }
 
   return (
     <Tabs
