@@ -2,13 +2,14 @@ import React, { useEffect, useState, useCallback, useRef } from 'react'
 import {
   View, Text, FlatList, ScrollView, Image, ActivityIndicator,
   StyleSheet, RefreshControl, TouchableOpacity, Animated, Modal, Platform,
+  useWindowDimensions,
 } from 'react-native'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { BlurView } from 'expo-blur'
 import { useRouter } from 'expo-router'
 import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
-import { useSidebarStore } from '../../store/sidebarStore'
+import WebNavTabs from '../../components/WebNavTabs'
 import { offersService } from '../../services/offersService'
 import OfferCard from '../../components/OfferCard'
 import OfferCardGrid from '../../components/OfferCardGrid'
@@ -56,17 +57,21 @@ const CATEGORIES = [
   { slug: 'tierfutter', labelKey: 'categories.tierfutter' },
 ]
 
+const NAV_TABS_H = 45
+
 export default function HomeScreen() {
   const { t }  = useTranslation()
   const router = useRouter()
-  const openSidebar = useSidebarStore(s => s.openSidebar)
   const insets = useSafeAreaInsets()
+  const { width } = useWindowDimensions()
+  const isDesktop = Platform.OS === 'web' && width >= 768
   const { language, activeStores, cardLayout, activeCategories, setActiveCategories } = useSettingsStore()
   const HEADER_TITLE_H = 58
   const BANNERS_H      = 74
   const CHIPS_H        = activeCategories.length > 0 ? 52 : 0
-  const headerCollapsed = insets.top + HEADER_TITLE_H + CHIPS_H
-  const headerExpanded  = insets.top + HEADER_TITLE_H + CHIPS_H + BANNERS_H
+  const NAV_H          = isDesktop ? NAV_TABS_H : 0
+  const headerCollapsed = insets.top + HEADER_TITLE_H + CHIPS_H + NAV_H
+  const headerExpanded  = insets.top + HEADER_TITLE_H + CHIPS_H + BANNERS_H + NAV_H
 
   const [featured, setFeatured]       = useState<Offer[]>([])
   const [offers, setOffers]           = useState<Offer[]>([])
@@ -240,13 +245,8 @@ export default function HomeScreen() {
 
       <SafeAreaView style={styles.headerSafe} edges={['top']} pointerEvents="box-none">
         {/* Title row */}
-        <Animated.View style={[styles.titleRow, { paddingTop: titlePadTop }]}>
+        <Animated.View style={[styles.titleRow, { paddingTop: Platform.OS === 'web' ? 12 : titlePadTop }, Platform.OS === 'web' && { paddingRight: 60 }]}>
           <View style={styles.titleLeft}>
-            {Platform.OS === 'web' && (
-              <TouchableOpacity onPress={openSidebar} style={{ marginRight: 8, padding: 4 }} hitSlop={8}>
-                <Ionicons name="menu" size={26} color={Colors.textDark} />
-              </TouchableOpacity>
-            )}
             <Image source={require('../../assets/images/trasnparehte.png')} style={styles.titleLogo} resizeMode="contain" />
             <View style={{ flex: 1 }}>
               <Animated.Text style={[styles.title, { fontSize: titleSize }]}>{t('home.title')}</Animated.Text>
@@ -254,14 +254,20 @@ export default function HomeScreen() {
             </View>
           </View>
           <TouchableOpacity
-            style={styles.addFilterBtn}
+            style={Platform.OS === 'web' ? styles.addFilterBtnWeb : styles.addFilterBtn}
             onPress={openFilter}
             activeOpacity={0.75}
           >
-            <View style={styles.addFilterCircle}>
-              <Ionicons name="add" size={16} color="#fff" />
-            </View>
-            <Text style={styles.addFilterText}>{t('home.filter')}</Text>
+            {Platform.OS === 'web' ? (
+              <Ionicons name="add" size={20} color="#fff" />
+            ) : (
+              <>
+                <View style={styles.addFilterCircle}>
+                  <Ionicons name="add" size={16} color="#fff" />
+                </View>
+                <Text style={styles.addFilterText}>{t('home.filter')}</Text>
+              </>
+            )}
           </TouchableOpacity>
         </Animated.View>
 
@@ -297,6 +303,9 @@ export default function HomeScreen() {
             })}
           </ScrollView>
         )}
+
+        {/* Desktop web nav tabs — inside existing header, above store banners */}
+        {isDesktop && <WebNavTabs />}
 
         {/* Filter banners */}
         <Animated.View style={{ height: bannerHeight, overflow: 'hidden', marginTop: 0 }}>
@@ -555,6 +564,13 @@ const styles = StyleSheet.create({
   addFilterBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 7,
     paddingHorizontal: 6, paddingVertical: 4,
+  },
+  addFilterBtnWeb: {
+    width: 38, height: 38, borderRadius: 19,
+    backgroundColor: '#E2001A',
+    alignItems: 'center', justifyContent: 'center',
+    shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 }, elevation: 4,
   },
   addFilterCircle: {
     width: 24, height: 24, borderRadius: 12,

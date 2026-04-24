@@ -1,10 +1,11 @@
 import React from 'react'
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Image } from 'react-native'
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Image, Platform, useWindowDimensions } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import { useTranslation } from 'react-i18next'
 import i18n from 'i18next'
+import WebNavTabs from '../../components/WebNavTabs'
 import { Colors } from '../../constants/colors'
 import { Spacing, Radius } from '../../constants/spacing'
 import { StoreLogos } from '../../constants/stores'
@@ -29,6 +30,8 @@ const STORES = [
 export default function SettingsScreen() {
   const router = useRouter()
   const { t }  = useTranslation()
+  const { width } = useWindowDimensions()
+  const isDesktop  = Platform.OS === 'web' && width >= 768
 
   const {
     language, activeStores, compactMode, showMwst, cardLayout,
@@ -53,6 +56,7 @@ export default function SettingsScreen() {
           </View>
         </View>
       </View>
+      {isDesktop && <WebNavTabs />}
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
 

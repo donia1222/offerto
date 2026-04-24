@@ -1,13 +1,14 @@
 import React from 'react'
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
-  Image, Share, Alert,
+  Image, Share, Alert, Platform, useWindowDimensions,
 } from 'react-native'
 
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
 import { useRouter } from 'expo-router'
+import WebNavTabs from '../../components/WebNavTabs'
 import { useListStore } from '../../store/listStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { getOfferName } from '../../utils/getOfferName'
@@ -21,6 +22,8 @@ const fmt = (v: number) => v.toFixed(2)
 export default function ListScreen() {
   const { t } = useTranslation()
   const router = useRouter()
+  const { width } = useWindowDimensions()
+  const isDesktop  = Platform.OS === 'web' && width >= 768
   const { language } = useSettingsStore()
   const { items, remove, toggleComprado, setCantidad, clearAll, clearComprado } = useListStore()
 
@@ -79,6 +82,7 @@ export default function ListScreen() {
           <Text style={styles.subtitle}>{t('list.subtitle')}</Text>
         </View>
       </View>
+      {isDesktop && <WebNavTabs />}
       <View style={styles.empty}>
         <Ionicons name="cart-outline" size={64} color={Colors.textLight} />
         <Text style={styles.emptyTitle}>{t('list.empty')}</Text>
@@ -137,6 +141,7 @@ export default function ListScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       {Header}
+      {isDesktop && <WebNavTabs />}
       <FlatList
         data={items}
         keyExtractor={i => String(i.offer.id)}

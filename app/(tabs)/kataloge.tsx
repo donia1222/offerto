@@ -2,13 +2,14 @@ import React, { useEffect, useState } from 'react'
 import {
   View, Text, StyleSheet, TouchableOpacity,
   Image, ActivityIndicator, ScrollView,
-  useWindowDimensions, Linking,
+  useWindowDimensions, Linking, Platform,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
 
 import { api } from '../../services/api'
+import WebNavTabs from '../../components/WebNavTabs'
 import SearchButton from '../../components/SearchButton'
 import ListButton from '../../components/ListButton'
 import { Colors } from '../../constants/colors'
@@ -40,6 +41,7 @@ const STORE_CHIPS = [
 export default function KatalogeScreen() {
   const { t } = useTranslation()
   const { width } = useWindowDimensions()
+  const isDesktop  = Platform.OS === 'web' && width >= 768
   const cardSize   = width - Spacing.lg * 2
 
   const [items, setItems]         = useState<FolletoData[]>([])
@@ -80,37 +82,10 @@ export default function KatalogeScreen() {
           <Text style={styles.title}>{t('kataloge.title')}</Text>
           <Text style={styles.subtitle}>{t('kataloge.thisWeek')}</Text>
         </View>
-        {/* <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <ListButton />
-        </View> */}
       </View>
+      {isDesktop && <WebNavTabs />}
 
-      {/* Store chips */}
-      {items.length > 0 && (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.chipBar} style={styles.chipScroll}>
-          {storeChips.map(slug => {
-            const active = filterStore === slug
-            const color  = STORE_COLORS[slug] ?? Colors.primary
-            return (
-              <TouchableOpacity
-                key={slug}
-                style={[styles.chip, active && { backgroundColor: color, borderColor: color }]}
-                onPress={() => setFilter(slug)}
-                activeOpacity={0.8}
-              >
-                {slug === 'all'
-                  ? <Ionicons name="apps" size={18} color={active ? '#fff' : Colors.textMedium} />
-                  : StoreLogos[slug] && <Image source={StoreLogos[slug]} style={[styles.chipLogo, active && { tintColor: undefined }]} resizeMode="contain" />
-                }
-                <Text style={[styles.chipText, active && { color: '#fff' }]}>
-                  {slug === 'all' ? t('common.all') : STORE_CHIPS.find(s => s.slug === slug)?.slug ?? slug}
-                </Text>
-              </TouchableOpacity>
-            )
-          })}
-        </ScrollView>
-      )}
+
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} contentInsetAdjustmentBehavior="never">
         {loading ? (
