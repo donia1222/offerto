@@ -1,13 +1,14 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react'
 import {
   View, Text, FlatList, ScrollView, Image, ActivityIndicator,
-  StyleSheet, RefreshControl, TouchableOpacity, Animated, Modal,
+  StyleSheet, RefreshControl, TouchableOpacity, Animated, Modal, Platform,
 } from 'react-native'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { BlurView } from 'expo-blur'
 import { useRouter } from 'expo-router'
 import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
+import { useSidebarStore } from '../../store/sidebarStore'
 import { offersService } from '../../services/offersService'
 import OfferCard from '../../components/OfferCard'
 import OfferCardGrid from '../../components/OfferCardGrid'
@@ -58,6 +59,7 @@ const CATEGORIES = [
 export default function HomeScreen() {
   const { t }  = useTranslation()
   const router = useRouter()
+  const openSidebar = useSidebarStore(s => s.openSidebar)
   const insets = useSafeAreaInsets()
   const { language, activeStores, cardLayout, activeCategories, setActiveCategories } = useSettingsStore()
   const HEADER_TITLE_H = 58
@@ -240,6 +242,11 @@ export default function HomeScreen() {
         {/* Title row */}
         <Animated.View style={[styles.titleRow, { paddingTop: titlePadTop }]}>
           <View style={styles.titleLeft}>
+            {Platform.OS === 'web' && (
+              <TouchableOpacity onPress={openSidebar} style={{ marginRight: 8, padding: 4 }} hitSlop={8}>
+                <Ionicons name="menu" size={26} color={Colors.textDark} />
+              </TouchableOpacity>
+            )}
             <Image source={require('../../assets/images/trasnparehte.png')} style={styles.titleLogo} resizeMode="contain" />
             <View style={{ flex: 1 }}>
               <Animated.Text style={[styles.title, { fontSize: titleSize }]}>{t('home.title')}</Animated.Text>
