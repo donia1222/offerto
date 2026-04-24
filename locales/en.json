@@ -31,6 +31,12 @@
     "expiresIn": "{{days}} days left",
     "expiresToday": "Last day today!"
   },
+  "favorites": {
+    "title": "Favourites",
+    "empty": "No favourites yet",
+    "emptyHint": "Tap the heart on any offer",
+    "count": "{{count}} offers saved"
+  },
   "offer": {
     "salePrice": "Sale price",
     "originalPrice": "Regular price",
@@ -49,7 +55,8 @@
     "notFound": "Offer not found",
     "noImage": "No image available",
     "lastDay": "Last day today!",
-    "daysLeft": "{{days}} days left"
+    "daysLeft": "{{days}} days left",
+    "viewOriginal": "View original offer"
   },
   "search": {
     "placeholder": "Search product...",
@@ -83,7 +90,11 @@
   "kataloge": {
     "title": "Catalogues",
     "empty": "No catalogues available",
-    "loading": "Loading catalogue..."
+    "loading": "Loading catalogue...",
+    "thisWeek": "This week",
+    "nextWeekLabel": "Offers {{kw}} · {{store}}",
+    "open": "Open",
+    "source": "Source"
   },
   "settings": {
     "title": "Settings",

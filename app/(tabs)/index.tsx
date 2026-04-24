@@ -26,8 +26,7 @@ const STORE_LABELS: Record<string, string> = {
 const STORE_COLORS: Record<string, string> = {
   aligro: '#FF6600', topcc: '#0050AA', transgourmet: '#E2001A',
 }
-// TODO: activar cuando Transgourmet proporcione API de imágenes — quitar 'transgourmet' de este set
-const DISABLED_STORES = new Set(['transgourmet'])
+const DISABLED_STORES = new Set<string>()
 
 const CATEGORY_IMAGES: Record<string, any> = {
   fleisch:    require('../../assets/images/categorias/carne.png'),
@@ -189,7 +188,7 @@ export default function HomeScreen() {
         renderItem={({ item }) => (
           cardLayout === 'grid'
             ? <View style={styles.cardWrapperGrid}><OfferCardGrid offer={item} /></View>
-            : <View style={[styles.cardWrapper, cardLayout === 'compact' && { marginTop: 40 }]}><OfferCard offer={item} compact={cardLayout === 'compact'} /></View>
+            : <View style={styles.cardWrapper}><OfferCard offer={item} compact={cardLayout === 'compact'} /></View>
         )}
         extraData={cardLayout}
         contentContainerStyle={[styles.listContent, cardLayout === 'grid' && { paddingHorizontal: Spacing.sm }]}
@@ -202,6 +201,17 @@ export default function HomeScreen() {
         windowSize={10}
         onScroll={onScrollHandler}
         scrollEventThrottle={16}
+        ListEmptyComponent={
+          <View style={styles.emptyState}>
+            <Ionicons name="storefront-outline" size={56} color={Colors.textLight} />
+            <Text style={styles.emptyTitle}>{t('common.noResults')}</Text>
+            {(activeCategories.length > 0 || activeStore !== 'all') && (
+              <TouchableOpacity style={styles.retryBtn} onPress={() => { setActiveCategories([]); setActiveStore('all'); load('all', [], 1) }}>
+                <Text style={styles.retryText}>{t('home.filter')} zurücksetzen</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        }
         ListFooterComponent={loadingMore ? <ActivityIndicator color={Colors.primary} style={{ marginVertical: 16 }} /> : null}
         ListHeaderComponent={
           <View style={styles.listHeader}>
@@ -597,6 +607,7 @@ const styles = StyleSheet.create({
   errorText:    { color: Colors.error, fontSize: 17, textAlign: 'center', paddingHorizontal: 32 },
   retryBtn:     { backgroundColor: Colors.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: Radius.full },
   retryText:    { color: Colors.textInverse, fontFamily: 'Inter-Medium', fontSize: 16 },
-  emptyTitle:   { fontFamily: 'PlusJakartaSans-Bold', fontSize: 20, color: Colors.textDark, marginTop: 16 },
+  emptyState:   { alignItems: 'center', justifyContent: 'center', paddingVertical: 60, gap: 12 },
+  emptyTitle:   { fontFamily: 'PlusJakartaSans-Bold', fontSize: 20, color: Colors.textDark, marginTop: 8 },
   emptySub:     { fontFamily: 'Inter-Regular', fontSize: 15, color: Colors.textMedium, textAlign: 'center', paddingHorizontal: 32, lineHeight: 22 },
 })

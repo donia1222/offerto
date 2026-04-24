@@ -49,3 +49,8 @@ foreach ($scrapers as $name => $file) {
 }
 
 cronLog('=== Scraping semanal finalizado ===');
+
+// Asignar imágenes automáticamente a los productos nuevos
+cronLog('--- Iniciando asignación de imágenes ---');
+require_once __DIR__ . '/assign_images.php';
+cronLog('--- Asignación de imágenes completada ---');

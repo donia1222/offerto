@@ -30,7 +30,7 @@ export const useSettingsStore = create<SettingsState>()(
     (set, get) => ({
       language:          'de',
       canton:            'Alle',
-      activeStores:      ['aligro', 'topcc'],
+      activeStores:      ['aligro', 'topcc', 'transgourmet'],
       visibleCategories: ['fleisch','fisch','gemuese','milch','bakery','getraenke','snacks','haushalt','hygiene','tierfutter'],
       activeCategories:  [],
       compactMode:       false,
@@ -58,11 +58,10 @@ export const useSettingsStore = create<SettingsState>()(
     {
       name:    'offerto-settings',
       storage: createJSONStorage(() => AsyncStorage),
-      version: 5,
+      version: 6,
       migrate: (state: any, version: number) => {
         if (version < 2) {
-          state.activeStores = (state.activeStores ?? ['aligro', 'topcc'])
-            .filter((s: string) => s !== 'transgourmet')
+          state.activeStores = ['aligro', 'topcc']
         }
         if (version < 3) {
           state.cardLayout = 'grid'
@@ -70,9 +69,10 @@ export const useSettingsStore = create<SettingsState>()(
         if (version < 4) {
           state.activeCategories = state.activeCategories ?? []
         }
-        if (version < 5) {
-          state.activeStores = (state.activeStores ?? ['aligro', 'topcc'])
-            .filter((s: string) => s !== 'transgourmet')
+        if (version < 6) {
+          if (!state.activeStores?.includes('transgourmet')) {
+            state.activeStores = [...(state.activeStores ?? ['aligro', 'topcc']), 'transgourmet']
+          }
         }
         return state
       },

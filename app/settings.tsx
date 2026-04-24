@@ -53,18 +53,14 @@ export default function SettingsScreen() {
   const { t }  = useTranslation()
 
   const {
-    language, canton, activeStores, visibleCategories, compactMode, showMwst, cardLayout,
-    setLanguage, setCanton, toggleStore, toggleVisibleCategory, setCompactMode, setShowMwst, setCardLayout,
+    language, activeStores, visibleCategories, compactMode, showMwst, cardLayout,
+    setLanguage, toggleStore, toggleVisibleCategory, setCompactMode, setShowMwst, setCardLayout,
   } = useSettingsStore()
-
-  const [cantonOpen, setCantonOpen] = React.useState(false)
 
   const onLangChange = (code: AppLang) => {
     setLanguage(code)
     i18n.changeLanguage(code)
   }
-
-  const cantonLabel = canton === 'all' ? t('common.all') : canton
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>

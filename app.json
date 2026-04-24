@@ -49,6 +49,11 @@
       "expo-localization",
       "expo-web-browser"
     ],
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/images/icon.png"
+    },
     "scheme": "offerto",
     "extra": {
       "eas": {

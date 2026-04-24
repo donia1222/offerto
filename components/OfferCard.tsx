@@ -6,6 +6,19 @@ import { useTranslation } from 'react-i18next'
 import { Colors } from '../constants/colors'
 import { Spacing, Radius } from '../constants/spacing'
 import { StoreLogos } from '../constants/stores'
+
+const CATEGORY_IMAGES: Record<string, any> = {
+  fleisch:    require('../assets/images/categorias/carne.png'),
+  fisch:      require('../assets/images/categorias/pescado.png'),
+  gemuese:    require('../assets/images/categorias/frutaverdura.png'),
+  milch:      require('../assets/images/categorias/leche-queso.png'),
+  bakery:     require('../assets/images/categorias/panaderia.png'),
+  getraenke:  require('../assets/images/categorias/bebidas.png'),
+  snacks:     require('../assets/images/categorias/snacks.png'),
+  haushalt:   require('../assets/images/categorias/prodeuctsocasa.png'),
+  hygiene:    require('../assets/images/categorias/korperpflege.png'),
+  tierfutter: require('../assets/images/categorias/comida-animales.png'),
+}
 import type { Offer } from '../types'
 import { formatDate } from '../utils/formatters'
 import { useListStore } from '../store/listStore'
@@ -27,7 +40,7 @@ export default function OfferCard({ offer, compact: compactProp, fixedHeight, hi
   const { enabled: notifsEnabled, watchlist, addWatch, removeWatch } = useNotificationsStore()
   const inList    = isInList(offer.id)
   const name      = getOfferName(offer, language)
-  const watchTerm = (offer.nombre ?? '').trim().toLowerCase()
+  const watchTerm = getOfferName(offer, language).trim().toLowerCase()
   const watched   = watchlist.includes(watchTerm)
 
   const discount       = Number(offer.descuento) || 0
@@ -70,8 +83,10 @@ export default function OfferCard({ offer, compact: compactProp, fixedHeight, hi
               onLoad={() => { if (timeoutRef.current) clearTimeout(timeoutRef.current) }}
               onError={() => setImgError(true)}
             />
-          ) : StoreLogos[offer.tienda?.slug] ? (
+          ) : (offer.tienda?.slug === 'transgourmet' || offer.tienda?.slug === 'topcc') && StoreLogos[offer.tienda.slug] ? (
             <Image source={StoreLogos[offer.tienda.slug]} style={styles.logoFallback} resizeMode="contain" />
+          ) : CATEGORY_IMAGES[offer.categoria?.slug ?? ''] ? (
+            <Image source={CATEGORY_IMAGES[offer.categoria!.slug]} style={[styles.catFallback, { width: imgSize, height: imgSize }]} resizeMode="cover" />
           ) : (
             <Text style={styles.emoji}>🛒</Text>
           )}
@@ -152,6 +167,7 @@ const styles = StyleSheet.create({
   imgBox: { alignSelf: 'stretch', alignItems: 'center', justifyContent: 'center' },
   img:    { width: 94, height: 94 },
   logoFallback: { width: 100, height: 48, opacity: 0.5 },
+  catFallback:  { opacity: 0.82 },
   emoji:  { fontSize: 32 },
 
   badge: { position: 'absolute', top: 7, left: 7, borderRadius: Radius.full, paddingHorizontal: 7, paddingVertical: 3 },

@@ -18,17 +18,12 @@ const LANGUAGES = [
   { code: 'en', label: 'English',  flag: '🇬🇧' },
 ]
 
-const CANTONS = [
-  'all', 'AG', 'BE', 'BL', 'BS', 'FR', 'GE', 'GL', 'GR',
-  'JU', 'LU', 'NE', 'NW', 'OW', 'SG', 'SH', 'SO', 'SZ',
-  'TG', 'TI', 'UR', 'VD', 'VS', 'ZG', 'ZH',
-]
 
 const STORES = [
   { slug: 'aligro',       color: '#FF6600', enabled: true },
   { slug: 'topcc',        color: '#0050AA', enabled: true },
   // TODO: activar cuando Transgourmet proporcione API de imágenes — cambiar enabled: false → true
-  { slug: 'transgourmet', color: '#E2001A', enabled: false },
+  { slug: 'transgourmet', color: '#E2001A', enabled: true },
 ]
 
 export default function SettingsScreen() {
@@ -36,19 +31,16 @@ export default function SettingsScreen() {
   const { t }  = useTranslation()
 
   const {
-    language, canton, activeStores, compactMode, showMwst, cardLayout,
-    setLanguage, setCanton, toggleStore, setCompactMode, setShowMwst, setCardLayout,
+    language, activeStores, compactMode, showMwst, cardLayout,
+    setLanguage, toggleStore, setCompactMode, setShowMwst, setCardLayout,
   } = useSettingsStore()
 
   const { enabled: notifsEnabled, setEnabled: setNotifsEnabled } = useNotificationsStore()
-  const [cantonOpen, setCantonOpen] = React.useState(false)
 
   const onLangChange = (code: AppLang) => {
     setLanguage(code)
     i18n.changeLanguage(code)
   }
-
-  const cantonLabel = canton === 'all' ? t('common.all') : canton
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -263,7 +255,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md, paddingVertical: 12,
     borderRadius: Radius.md, borderWidth: 1.5, borderColor: Colors.border, position: 'relative',
   },
-  langBtnActive:   { borderColor: Colors.border, backgroundColor: Colors.surface },
+  langBtnActive:   { borderColor: Colors.primary, backgroundColor: Colors.primaryLight },
   langFlag:        { fontSize: 20 },
   langLabel:       { fontFamily: 'Inter-Medium', fontSize: 14, color: Colors.textMedium },
   langLabelActive: { color: Colors.textDark, fontFamily: 'Inter-SemiBold' },

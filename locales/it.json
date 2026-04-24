@@ -32,6 +32,12 @@
     "expiresIn": "Ancora {{days}} giorni",
     "expiresToday": "Ultimo giorno!"
   },
+  "favorites": {
+    "title": "Preferiti",
+    "empty": "Ancora nessun preferito",
+    "emptyHint": "Tocca il cuore su un'offerta",
+    "count": "{{count}} offerte salvate"
+  },
   "offer": {
     "salePrice": "Prezzo promozionale",
     "originalPrice": "Prezzo normale",
@@ -50,7 +56,8 @@
     "notFound": "Offerta non trovata",
     "noImage": "Nessuna immagine disponibile",
     "lastDay": "Ultimo giorno!",
-    "daysLeft": "Ancora {{days}} giorni"
+    "daysLeft": "Ancora {{days}} giorni",
+    "viewOriginal": "Vedi offerta originale"
   },
   "search": {
     "placeholder": "Cerca prodotto...",
@@ -90,7 +97,8 @@
     "thisWeek": "Questa settimana",
     "nextWeek": "Prossima settimana",
     "nextWeekLabel": "Offerte {{kw}} · {{store}}",
-    "open": "Apri"
+    "open": "Apri",
+    "source": "Fonte"
   },
   "settings": {
     "title": "Impostazioni",

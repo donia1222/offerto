@@ -26,6 +26,7 @@ export interface Offer {
   valido_hasta:    string
   dias_restantes:  number
   canton:          string
+  fuente_url:      string | null | undefined
 }
 
 export interface ShoppingListItem {

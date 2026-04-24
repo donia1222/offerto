@@ -1,16 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import {
   View, Text, StyleSheet, TouchableOpacity,
-  Image, ActivityIndicator, Modal, ScrollView,
-  useWindowDimensions,
+  Image, ActivityIndicator, ScrollView,
+  useWindowDimensions, Linking,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { WebView } from 'react-native-webview'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
 
 import { api } from '../../services/api'
-import { formatDate } from '../../utils/formatters'
 import SearchButton from '../../components/SearchButton'
 import ListButton from '../../components/ListButton'
 import { Colors } from '../../constants/colors'
@@ -44,10 +42,9 @@ export default function KatalogeScreen() {
   const { width } = useWindowDimensions()
   const cardSize   = width - Spacing.lg * 2
 
-  const [items, setItems]           = useState<FolletoData[]>([])
-  const [loading, setLoading]       = useState(true)
-  const [active, setActive]         = useState<FolletoData | null>(null)
-  const [webLoading, setWebLoading] = useState(true)
+  const [items, setItems]         = useState<FolletoData[]>([])
+  const [loading, setLoading]     = useState(true)
+  const [filterStore, setFilter]  = useState('all')
 
   const load = () => {
     setLoading(true)
@@ -62,7 +59,18 @@ export default function KatalogeScreen() {
 
   useEffect(() => { load() }, [])
 
-  const open = (item: FolletoData) => { setWebLoading(true); setActive(item) }
+  const openInBrowser = (item: FolletoData) => {
+    if (item.pdf_url) Linking.openURL(item.pdf_url)
+  }
+
+  const visibleItems = items
+    .filter(item => {
+      const minDate = items.reduce((a, b) => a.valido_desde < b.valido_desde ? a : b).valido_desde
+      return item.valido_desde === minDate
+    })
+    .filter(item => filterStore === 'all' || item.tienda === filterStore)
+
+  const storeChips = ['all', ...Array.from(new Set(items.map(i => i.tienda)))]
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -77,12 +85,39 @@ export default function KatalogeScreen() {
         </View> */}
       </View>
 
+      {/* Store chips */}
+      {items.length > 0 && (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.chipBar} style={styles.chipScroll}>
+          {storeChips.map(slug => {
+            const active = filterStore === slug
+            const color  = STORE_COLORS[slug] ?? Colors.primary
+            return (
+              <TouchableOpacity
+                key={slug}
+                style={[styles.chip, active && { backgroundColor: color, borderColor: color }]}
+                onPress={() => setFilter(slug)}
+                activeOpacity={0.8}
+              >
+                {slug === 'all'
+                  ? <Ionicons name="apps" size={18} color={active ? '#fff' : Colors.textMedium} />
+                  : StoreLogos[slug] && <Image source={StoreLogos[slug]} style={[styles.chipLogo, active && { tintColor: undefined }]} resizeMode="contain" />
+                }
+                <Text style={[styles.chipText, active && { color: '#fff' }]}>
+                  {slug === 'all' ? t('common.all') : STORE_CHIPS.find(s => s.slug === slug)?.slug ?? slug}
+                </Text>
+              </TouchableOpacity>
+            )
+          })}
+        </ScrollView>
+      )}
+
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} contentInsetAdjustmentBehavior="never">
         {loading ? (
           <View style={styles.centerBox}>
             <ActivityIndicator color={Colors.primary} />
           </View>
-        ) : items.length === 0 ? (
+        ) : visibleItems.length === 0 ? (
           <View style={styles.centerBox}>
             <Ionicons name="document-text-outline" size={40} color={Colors.textLight} />
             <Text style={styles.emptyText}>{t('kataloge.empty')}</Text>
@@ -92,24 +127,21 @@ export default function KatalogeScreen() {
           </View>
         ) : (
           <View style={styles.grid}>
-            {items.filter(item => {
-              // Sólo la semana vigente (menor valido_desde)
-              const minDate = items.reduce((a, b) => a.valido_desde < b.valido_desde ? a : b).valido_desde
-              return item.valido_desde === minDate
-            }).map(item => (
+            {visibleItems.map(item => (
               <TouchableOpacity
                 key={item.tienda + item.semana}
                 style={[styles.card, { width: cardSize, height: cardSize * 0.5, backgroundColor: Colors.surface }]}
                 activeOpacity={0.88}
-                onPress={() => open(item)}
+                onPress={() => openInBrowser(item)}
               >
                 <View style={styles.nextCard}>
                   <Image source={StoreLogos[item.tienda]} style={styles.nextCardLogo} resizeMode="contain" />
                   <View style={styles.nextCardBody}>
                     <Text style={styles.nextCardText}>{t('kataloge.nextWeekLabel', { store: item.nombre, kw: item.semana })}</Text>
+                    <Text style={styles.sourceText}>{t('kataloge.source')}: {item.nombre}</Text>
                     <View style={styles.nextCardCta}>
                       <Text style={styles.nextCardCtaText}>{t('kataloge.open')}</Text>
-                      <Ionicons name="chevron-forward" size={16} color={Colors.primary} />
+                      <Ionicons name="open-outline" size={14} color={Colors.primary} />
                     </View>
                   </View>
                 </View>
@@ -119,45 +151,6 @@ export default function KatalogeScreen() {
         )}
         <View style={{ height: 80 }} />
       </ScrollView>
-
-      {/* Modal viewer */}
-      <Modal
-        visible={!!active}
-        animationType="slide"
-        presentationStyle="pageSheet"
-        onRequestClose={() => setActive(null)}
-      >
-        <SafeAreaView style={styles.modalContainer}>
-          <View style={[styles.modalHeader, { borderBottomColor: STORE_COLORS[active?.tienda ?? ''] ?? Colors.primary }]}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.modalTitle}>{active?.nombre}</Text>
-              <Text style={styles.modalSub}>
-                {active?.semana} · {formatDate(active?.valido_desde ?? '')} – {formatDate(active?.valido_hasta ?? '')}
-              </Text>
-            </View>
-            <TouchableOpacity onPress={() => setActive(null)} style={styles.closeBtn}>
-              <Ionicons name="close" size={22} color={Colors.textDark} />
-            </TouchableOpacity>
-          </View>
-
-          {active?.pdf_url && (
-            <WebView
-              key={active.pdf_url}
-              source={{ uri: active.pdf_url }}
-              style={styles.webview}
-              onLoadStart={() => setWebLoading(true)}
-              onLoadEnd={() => setWebLoading(false)}
-            />
-          )}
-
-          {webLoading && (
-            <View style={styles.webviewLoading}>
-              <ActivityIndicator size="large" color={Colors.primary} />
-              <Text style={styles.webviewLoadingText}>{t('kataloge.loading')}</Text>
-            </View>
-          )}
-        </SafeAreaView>
-      </Modal>
     </SafeAreaView>
   )
 }
@@ -173,7 +166,7 @@ const styles = StyleSheet.create({
   subtitle: { fontFamily: 'Inter-Medium', fontSize: 13, color: Colors.textMedium, marginTop: -2 },
 
   chipScroll: { flexGrow: 0 },
-  chipBar:    { paddingHorizontal: Spacing.lg, paddingBottom: Spacing.md, gap: 8 },
+  chipBar:    { paddingHorizontal: Spacing.lg, paddingBottom: Spacing.md, paddingTop: Spacing.sm, gap: 8 },
   chip: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     paddingHorizontal: 14, paddingVertical: 8,
@@ -183,8 +176,9 @@ const styles = StyleSheet.create({
     shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4,
     shadowOffset: { width: 0, height: 1 }, elevation: 1,
   },
-  chipLogo: { width: 36, height: 22, borderRadius: 3 },
-  chipText: { fontFamily: 'Inter-SemiBold', fontSize: 13, color: Colors.textMedium },
+  chipLogo:   { width: 36, height: 22, borderRadius: 3 },
+  chipText:   { fontFamily: 'Inter-SemiBold', fontSize: 13, color: Colors.textMedium },
+  sourceText: { fontFamily: 'Inter-Regular', fontSize: 11, color: Colors.textLight, marginBottom: 2 },
 
   content:   { flexGrow: 1, padding: Spacing.lg, gap: Spacing.lg, justifyContent: 'center' },
   centerBox: { alignItems: 'center', justifyContent: 'center', paddingVertical: 60, gap: 12 },
@@ -245,20 +239,4 @@ const styles = StyleSheet.create({
   retryBtn:  { backgroundColor: Colors.primary, paddingHorizontal: 24, paddingVertical: 10, borderRadius: Radius.full },
   retryText: { color: '#fff', fontFamily: 'Inter-Medium', fontSize: 16 },
 
-  modalContainer: { flex: 1, backgroundColor: Colors.background },
-  modalHeader: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingHorizontal: Spacing.lg, paddingVertical: Spacing.md,
-    borderBottomWidth: 2, backgroundColor: Colors.surface,
-  },
-  modalTitle: { fontFamily: 'PlusJakartaSans-SemiBold', fontSize: 18, color: Colors.textDark },
-  modalSub:   { fontFamily: 'Inter-Regular', fontSize: 13, color: Colors.textMedium, marginTop: 2 },
-  closeBtn:   { padding: Spacing.sm },
-  webview:    { flex: 1 },
-  webviewLoading: {
-    position: 'absolute', top: 60, left: 0, right: 0, bottom: 0,
-    alignItems: 'center', justifyContent: 'center',
-    backgroundColor: Colors.background, gap: 12,
-  },
-  webviewLoadingText: { fontFamily: 'Inter-Regular', fontSize: 15, color: Colors.textMedium },
 })

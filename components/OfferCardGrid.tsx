@@ -6,6 +6,19 @@ import { useTranslation } from 'react-i18next'
 import { Colors } from '../constants/colors'
 import { Spacing, Radius } from '../constants/spacing'
 import { StoreLogos } from '../constants/stores'
+
+const CATEGORY_IMAGES: Record<string, any> = {
+  fleisch:    require('../assets/images/categorias/carne.png'),
+  fisch:      require('../assets/images/categorias/pescado.png'),
+  gemuese:    require('../assets/images/categorias/frutaverdura.png'),
+  milch:      require('../assets/images/categorias/leche-queso.png'),
+  bakery:     require('../assets/images/categorias/panaderia.png'),
+  getraenke:  require('../assets/images/categorias/bebidas.png'),
+  snacks:     require('../assets/images/categorias/snacks.png'),
+  haushalt:   require('../assets/images/categorias/prodeuctsocasa.png'),
+  hygiene:    require('../assets/images/categorias/korperpflege.png'),
+  tierfutter: require('../assets/images/categorias/comida-animales.png'),
+}
 import type { Offer } from '../types'
 import { useListStore } from '../store/listStore'
 import { useSettingsStore } from '../store/settingsStore'
@@ -62,8 +75,10 @@ export default function OfferCardGrid({ offer }: Props) {
             onLoad={() => { if (timeoutRef.current) clearTimeout(timeoutRef.current) }}
             onError={() => setImgError(true)}
           />
-        ) : StoreLogos[offer.tienda?.slug] ? (
+        ) : (offer.tienda?.slug === 'transgourmet' || offer.tienda?.slug === 'topcc') && StoreLogos[offer.tienda.slug] ? (
           <Image source={StoreLogos[offer.tienda.slug]} style={styles.logoFallback} resizeMode="contain" />
+        ) : CATEGORY_IMAGES[offer.categoria?.slug ?? ''] ? (
+          <Image source={CATEGORY_IMAGES[offer.categoria!.slug]} style={styles.catFallback} resizeMode="cover" />
         ) : (
           <Text style={styles.emoji}>🛒</Text>
         )}
@@ -155,6 +170,7 @@ const styles = StyleSheet.create({
   },
   img:         { width: '80%', height: '80%' },
   logoFallback:{ width: 130, height: 64, opacity: 0.5 },
+  catFallback: { width: '100%', height: '100%', opacity: 0.82 },
   emoji:       { fontSize: 36 },
 
   badge: {

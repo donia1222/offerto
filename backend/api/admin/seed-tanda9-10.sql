@@ -1,0 +1,47 @@
+-- Tanda 9 & 10 — 40 imágenes nuevas
+-- Ejecutar en phpMyAdmin sobre la BD offerto_db
+
+INSERT IGNORE INTO imagen_banco (slug, nombre, categoria, keywords, activa) VALUES
+-- TANDA 9 — Snacks, dips, bebidas
+('chips',           'Chips',               'snacks',   'chips, kartoffelchips, crisps, snack, knabbergebäck', 1),
+('knaeckebrot',     'Knäckebrot',          'bakery',   'knäckebrot, crispbread, vollkorn, brot, kräcker', 1),
+('kekse',           'Kekse',               'snacks',   'kekse, cookies, biscuits, gebäck, süssgebäck', 1),
+('waffel',          'Waffel',              'snacks',   'waffel, waffle, waffeln, knusperwaffel', 1),
+('brezel',          'Brezel',              'snacks',   'brezel, bretzel, pretzel, laugenbrezel, salzgebäck', 1),
+('muesliriegel',    'Müsliriegel',         'snacks',   'müsliriegel, riegel, cerealriegel, energieriegel, snackbar', 1),
+('trockenfruechte', 'Trockenfrüchte',      'snacks',   'trockenfrüchte, getrocknete früchte, rosinen, aprikosen, pflaumen, dried fruit', 1),
+('mandeln',         'Mandeln',             'snacks',   'mandeln, almonds, nüsse, geröstete mandeln, mandelkerne', 1),
+('cashews',         'Cashews',             'snacks',   'cashews, cashewnüsse, nüsse, cashewkerne, knabbergebäck', 1),
+('hummus',          'Hummus',              'deli',     'hummus, kichererbsendip, dip, aufstrich, hummus naturell', 1),
+('guacamole',       'Guacamole',           'deli',     'guacamole, avocadodip, dip, avocado, mexikanisch', 1),
+('tzatziki',        'Tzatziki',            'deli',     'tzatziki, joghurtdip, gurke, dip, griechisch', 1),
+('kaffeekapsel',    'Kaffeekapseln',       'getraenke','kaffeekapseln, kapseln, nespresso, dolce gusto, kaffeepads', 1),
+('teebeutel',       'Teebeutel',           'getraenke','teebeutel, tee, herbal tea, schwarztee, grüntee, kräutertee', 1),
+('fruchtsaft',      'Fruchtsaft',          'getraenke','fruchtsaft, orangensaft, apfelsaft, saft, juice, fruchtnektar', 1),
+('reiswaffeln',     'Reiswaffeln',         'snacks',   'reiswaffeln, rice cakes, reiskuchen, leichtgebäck, knusprig', 1),
+('popcorn',         'Popcorn',             'snacks',   'popcorn, mais, snack, kino, gesalzen, süss', 1),
+('salzstangen',     'Salzstangen',         'snacks',   'salzstangen, grissini, breadsticks, laugengebäck, knabberei', 1),
+('gemuesesaft',     'Gemüsesaft',          'getraenke','gemüsesaft, tomatensaft, v8, gemüse drink, grüner saft', 1),
+('karottensaft',    'Karottensaft',        'getraenke','karottensaft, möhrensaft, karotte, saft, gemüsesaft, carrot juice', 1),
+
+-- TANDA 10 — Pescado fresco, carnes especiales, suizos
+('lachsfilet',          'Lachsfilet',          'fisch',   'lachsfilet, lachs, salmon, frischer lachs, atlantischer lachs', 1),
+('kabeljau',            'Kabeljau',             'fisch',   'kabeljau, cod, dorsch, weissfisch, fisch, kabeljaufilet', 1),
+('forelle',             'Forelle',              'fisch',   'forelle, trout, regenbogenforelle, bachforelle, fisch', 1),
+('scampi',              'Scampi',               'fisch',   'scampi, langostinos, garnelen, meeresfrüchte, kaisergranat', 1),
+('schweinskotelett',    'Schweinskotelette',    'fleisch', 'schweinskotelette, schweinekotelett, pork chop, kotelette, schwein', 1),
+('putenfilet',          'Putenfilet',           'fleisch', 'putenfilet, truthahnfilet, pute, turkey, geflügel', 1),
+('haehnchenbrustfilet', 'Hähnchenbrustfilet',  'fleisch', 'hähnchenbrustfilet, hühnerbrust, pouletbrust, chicken breast, geflügel', 1),
+('lammkeule',           'Lammkeule',            'fleisch', 'lammkeule, gigot, leg of lamb, lamm, lammfleisch', 1),
+('kaninchen',           'Kaninchen',            'fleisch', 'kaninchen, lapin, rabbit, kaninchenfleisch, hase', 1),
+('hirschfleisch',       'Hirschfleisch',        'fleisch', 'hirschfleisch, wild, venison, rehfleisch, wildfleisch, hirsch', 1),
+('buendnerfleisch',     'Bündnerfleisch',       'fleisch', 'bündnerfleisch, luftgetrocknetes fleisch, graubünden, trockenfleisch, swiss beef', 1),
+('roesti',              'Rösti',                'gemuese', 'rösti, rosti, kartoffelrösti, kartoffel, swiss rösti, bratkartoffeln', 1),
+('raclette',            'Raclette',             'kaese',   'raclette, raclettekäse, käse, schweizer käse, schmelzkäse', 1),
+('appenzeller',         'Appenzeller',          'kaese',   'appenzeller, appenzellerkäse, schweizer käse, hartkäse, käse', 1),
+('emmentaler',          'Emmentaler',           'kaese',   'emmentaler, emmental, schweizer käse, hartkäse, käse, emmentaler aoc', 1),
+('leberwurst',          'Leberwurst',           'wurst',   'leberwurst, liver sausage, wurst, aufschnitt, streichwurst', 1),
+('rindsgulasch',        'Rindsgulasch',         'fleisch', 'rindsgulasch, gulasch, rindfleisch, eintopf, schmorfleisch, beef stew', 1),
+('ossobuco',            'Ossobuco',             'fleisch', 'ossobuco, kalbshaxe, veal shank, geschmortes fleisch, italienisch', 1),
+('schnitzel',           'Schnitzel',            'fleisch', 'schnitzel, paniertes schnitzel, wiener schnitzel, kalb, schwein, escalope', 1),
+('salzgebaeck',         'Salzgebäck',           'snacks',  'salzgebäck, laugengebäck, brezeln, salzstangen, snack, aperitif', 1);

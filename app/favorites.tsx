@@ -3,6 +3,7 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter, Stack } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
+import { useTranslation } from 'react-i18next'
 import { useFavoritesStore } from '../store/favoritesStore'
 import OfferCard from '../components/OfferCard'
 import { Colors } from '../constants/colors'
@@ -10,6 +11,7 @@ import { Spacing } from '../constants/spacing'
 
 export default function FavoritesScreen() {
   const router    = useRouter()
+  const { t }     = useTranslation()
   const favorites = useFavoritesStore(s => s.favorites)
 
   return (
@@ -17,7 +19,7 @@ export default function FavoritesScreen() {
       <Stack.Screen
         options={{
           headerTitle: () => (
-            <Text style={styles.headerTitle}>Favoriten</Text>
+            <Text style={styles.headerTitle}>{t('favorites.title')}</Text>
           ),
           headerLeft: () => (
             <TouchableOpacity onPress={() => router.back()} style={{ padding: 8, marginLeft: -4 }}>
@@ -30,8 +32,8 @@ export default function FavoritesScreen() {
       {favorites.length === 0 ? (
         <View style={styles.empty}>
           <Ionicons name="heart-outline" size={64} color={Colors.textLight} />
-          <Text style={styles.emptyTitle}>Noch keine Favoriten</Text>
-          <Text style={styles.emptySub}>Tippe auf das Herz{'\n'}bei einem Angebot</Text>
+          <Text style={styles.emptyTitle}>{t('favorites.empty')}</Text>
+          <Text style={styles.emptySub}>{t('favorites.emptyHint')}</Text>
         </View>
       ) : (
         <FlatList
@@ -44,7 +46,7 @@ export default function FavoritesScreen() {
             </View>
           )}
           ListHeaderComponent={
-            <Text style={styles.count}>{favorites.length} Angebote gespeichert</Text>
+            <Text style={styles.count}>{t('favorites.count', { count: favorites.length })}</Text>
           }
         />
       )}

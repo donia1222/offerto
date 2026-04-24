@@ -55,9 +55,207 @@ NAMES_2 = [
     "bauernbrot",        # pan rústico
 ]
 
+# ── Imagen 3 — Bebidas (20 productos) ───────────────────────────────────────
+NAMES_3 = [
+    "cola",            # cola can
+    "orangenlimonade", # orange soft drink
+    "bier_flasche",    # beer bottle
+    "mineralwasser",   # sparkling water
+    "energydrink",     # energy drink
+    "rotwein",         # red wine
+    "weisswein",       # white wine
+    "prosecco",        # prosecco/champagne
+    "apfelsaft",       # apple juice
+    "tomatensaft",     # tomato juice
+    "gruener_tee",     # green tea
+    "kaffee_bohnen",   # coffee beans
+    "kakao",           # hot chocolate
+    "limonade",        # lemonade
+    "sportgetraenk",   # sports drink
+    "kokoswasser",     # coconut water
+    "bier_dose",       # beer can
+    "cider",           # cider
+    "eistee",          # iced tea
+    "smoothie",        # smoothie
+]
+
+# ── Imagen 4 — Carnes extra + embutidos (20 productos) ──────────────────────
+NAMES_4 = [
+    "entrecote",        # entrecôte steak
+    "schweinsfilet",    # pork tenderloin
+    "speck",            # bacon
+    "salami",           # salami
+    "aufschnitt",       # cold cuts
+    "kalbfleisch",      # veal
+    "entenbrust",       # duck breast
+    "truthahn",         # turkey
+    "bratwurst",        # bratwurst
+    "chorizo",          # chorizo
+    "prosciutto",       # prosciutto
+    "burger_patty",     # burger patty
+    "lammkotelett",     # lamb rack
+    "hahnchenfluegel",  # chicken wings
+    "spareribs",        # pork ribs
+    "leber",            # liver
+    "rauchwurst",       # smoked sausage
+    "merguez",          # merguez
+    "zunge",            # tongue
+    "hahnchenschenkel", # drumsticks
+]
+
+# ── Imagen 5 — Verduras, frutas y despensa (20 productos) ───────────────────
+NAMES_5 = [
+    "kartoffel",       # potatoes
+    "zwiebel",         # onions
+    "paprika",         # bell pepper
+    "karotte",         # carrot
+    "knoblauch",       # garlic
+    "apfel",           # apple
+    "banane",          # banana
+    "zitrone",         # lemon
+    "orange",          # orange
+    "weintrauben",     # grapes
+    "avocado",         # avocado
+    "speiseoel",       # cooking oil
+    "reis",            # rice
+    "mehl",            # flour
+    "dosentomaten",    # canned tomatoes
+    "tomatensauce",    # pasta sauce
+    "pommes_frites",   # frozen fries
+    "glacee",          # ice cream
+    "schokolade",      # chocolate
+    "nuesse",          # nuts
+]
+
+# ── Imagen 6 — Limpieza + congelados (20 productos) ─────────────────────────
+NAMES_6 = [
+    "spuelmittel",         # dish soap
+    "allzweckreiniger",    # all-purpose cleaner
+    "desinfektionsmittel", # disinfectant
+    "bleichmittel",        # bleach
+    "kuechenrolle",        # paper towels
+    "toilettenpapier",     # toilet paper
+    "muellbeutel",         # trash bags
+    "handschuhe",          # gloves
+    "alufolie",            # aluminum foil
+    "frischhaltefolie",    # cling film
+    "einwegbehaelter",     # food containers
+    "backpapier",          # baking paper
+    "schwaemme",           # sponges
+    "spuelmaschinentabs",  # dishwasher tabs
+    "waschmittel",         # laundry detergent
+    "tiefkuehlpommes",     # frozen fries catering
+    "tiefkuehlpizza",      # frozen pizza
+    "tiefkuehlfisch",      # frozen fish
+    "eiscreme_gross",      # ice cream catering
+    "tiefkuehlbeeren",     # frozen berries
+]
+
+# ── Imagen 7 — Salsas, quesos, conservas (20 productos) ─────────────────────
+NAMES_7 = [
+    "ketchup",          # ketchup
+    "senf",             # mustard
+    "mayonnaise",       # mayonnaise
+    "sojasosse",        # soy sauce
+    "olivenoel",        # olive oil
+    "balsamico",        # balsamic vinegar
+    "chilisauce",       # hot sauce
+    "bbqsauce",         # BBQ sauce
+    "parmesan",         # parmesan
+    "frischkaese",      # cream cheese
+    "gruyere",          # gruyère
+    "brie",             # brie/camembert
+    "gorgonzola",       # blue cheese
+    "ricotta",          # ricotta
+    "thunfisch",        # tuna can
+    "sardinen",         # sardines can
+    "anchovis",         # anchovies
+    "kichererbsen",     # chickpeas can
+    "tomatenmark",      # tomato paste
+    "kokosmilch",       # coconut milk can
+]
+
+# ── Imagen 8 — Especias, desayuno, repostería (20 productos) ─────────────────
+NAMES_8 = [
+    "salz",             # salt
+    "pfeffer",          # pepper
+    "kraeutermischung", # mixed herbs
+    "curry",            # curry powder
+    "paprikapulver",    # paprika powder
+    "zimt",             # cinnamon
+    "konfituere",       # jam
+    "honig",            # honey
+    "cornflakes",       # cereal
+    "granola",          # granola
+    "croissant",        # croissant
+    "muesli",           # muesli
+    "ahornsirup",       # maple syrup
+    "erdnussbutter",    # peanut butter
+    "linsen",           # lentils
+    "weisse_bohnen",    # white beans
+    "schokomousse",     # chocolate mousse
+    "tiramisu",         # tiramisu
+    "schlagsahne",      # whipped cream
+    "vanille",          # vanilla
+]
+
+NAMES_9 = [
+    "chips",            # potato chips
+    "knaeckebrot",      # crispbread
+    "kekse",            # cookies/biscuits
+    "waffel",           # waffles
+    "brezel",           # pretzel
+    "muesliriegel",     # muesli bar
+    "trockenfruechte",  # dried fruits
+    "mandeln",          # almonds
+    "cashews",          # cashews
+    "hummus",           # hummus
+    "guacamole",        # guacamole
+    "tzatziki",         # tzatziki
+    "kaffeekapsel",     # coffee pods
+    "teebeutel",        # tea bags
+    "fruchtsaft",       # fruit juice carton
+    "reiswaffeln",      # rice cakes
+    "popcorn",          # popcorn
+    "salzstangen",      # breadsticks
+    "gemuesesaft",      # vegetable juice
+    "karottensaft",     # carrot juice
+]
+
+NAMES_10 = [
+    "lachsfilet",           # salmon fillet
+    "kabeljau",             # cod
+    "forelle",              # trout
+    "scampi",               # scampi
+    "schweinskotelett",     # pork chop
+    "putenfilet",           # turkey fillet
+    "haehnchenbrustfilet",  # chicken breast
+    "lammkeule",            # leg of lamb
+    "kaninchen",            # rabbit
+    "hirschfleisch",        # venison
+    "buendnerfleisch",      # air-dried beef
+    "roesti",               # rösti
+    "raclette",             # raclette
+    "appenzeller",          # appenzeller cheese
+    "emmentaler",           # emmental
+    "leberwurst",           # liver sausage
+    "rindsgulasch",         # beef goulash
+    "ossobuco",             # ossobuco
+    "schnitzel",            # schnitzel
+    "salzgebaeck",          # salty pastry
+]
+
 IMAGES = [
     ("/Users/roberto/Desktop/fd9829f3-9c50-4a96-9253-ccc88a236eed.png", NAMES_1),
     ("/Users/roberto/Desktop/b5fd0215-397e-4284-bfb2-7142b34c15b7.png", NAMES_2),
+    ("/Users/roberto/Desktop/tanda3.png", NAMES_3),
+    ("/Users/roberto/Desktop/tahda4.png", NAMES_4),
+    ("/Users/roberto/Desktop/tanda5.png", NAMES_5),
+    ("/Users/roberto/Desktop/tanda6.png", NAMES_6),
+    ("/Users/roberto/Desktop/tanda7.png", NAMES_7),
+    ("/Users/roberto/Desktop/tanda8.png", NAMES_8),
+    ("/Users/roberto/Desktop/tanda9.png",  NAMES_9),
+    ("/Users/roberto/Desktop/tanda10.png", NAMES_10),
 ]
 
 COLS = 5

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import {
   View, Text, Image, ScrollView, TouchableOpacity,
-  StyleSheet, ActivityIndicator, Share,
+  StyleSheet, ActivityIndicator, Share, Linking,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router'
@@ -186,7 +186,7 @@ export default function OfferDetailScreen() {
 
             {/* Notificación watchlist */}
             {notifsEnabled && (() => {
-              const term    = (offer.nombre ?? '').trim().toLowerCase()
+              const term    = getOfferName(offer, language).trim().toLowerCase()
               const watched = watchlist.includes(term)
               return (
                 <TouchableOpacity
@@ -236,6 +236,18 @@ export default function OfferDetailScreen() {
               </View>
             </View>
           </View>
+
+          {/* Link fuente original */}
+          {offer.fuente_url && (
+            <TouchableOpacity
+              style={styles.sourceBtn}
+              onPress={() => Linking.openURL(offer.fuente_url!)}
+              activeOpacity={0.75}
+            >
+              <Ionicons name="open-outline" size={16} color={Colors.primary} />
+              <Text style={styles.sourceBtnText}>{t('offer.viewOriginal')}</Text>
+            </TouchableOpacity>
+          )}
 
           {/* Tienda info */}
           <View style={styles.section}>
@@ -399,4 +411,11 @@ const styles = StyleSheet.create({
   storeCardLogo: { width: 64, height: 40, borderRadius: 6 },
   storeCardName: { fontFamily: 'PlusJakartaSans-SemiBold', fontSize: 18, color: Colors.textDark },
   storeCardType: { fontFamily: 'Inter-Regular', fontSize: 14, color: Colors.textMedium, marginTop: 2 },
+  sourceBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    paddingVertical: 12, paddingHorizontal: 16,
+    borderRadius: Radius.md, borderWidth: 1, borderColor: Colors.border,
+    backgroundColor: Colors.surface,
+  },
+  sourceBtnText: { fontFamily: 'Inter-Medium', fontSize: 14, color: Colors.primary },
 })

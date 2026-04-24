@@ -13,7 +13,7 @@ try {
                 c.slug AS categoria_slug, c.icon AS categoria_icon,
                 o.nombre_de, o.nombre_fr, o.nombre_it,
                 o.precio_original, o.precio_oferta, o.descuento_pct AS descuento,
-                o.unidad, o.imagen_url, o.valido_desde, o.valido_hasta,
+                o.unidad, o.imagen_url, o.imagen_local, o.valido_desde, o.valido_hasta,
                 DATEDIFF(o.valido_hasta, CURDATE()) AS dias_restantes, o.canton
             FROM ofertas o
             LEFT JOIN tiendas    t ON t.id = o.tienda_id
@@ -101,6 +101,7 @@ try {
             o.descuento_pct  AS descuento,
             o.unidad,
             o.imagen_url,
+            o.imagen_local,
             o.valido_desde,
             o.valido_hasta,
             DATEDIFF(o.valido_hasta, CURDATE()) AS dias_restantes,
@@ -134,7 +135,11 @@ function proxyImg(?string $url): ?string {
 }
 
 function formatOferta(array $row): array {
-    $img = proxyImg($row['imagen_url']);
+    // imagen_local tiene prioridad; si no, usa imagen_url externa
+    $imgLocal = $row['imagen_local']
+        ? APP_URL . '/assets/images/products/' . $row['imagen_local']
+        : null;
+    $img  = $imgLocal ?? proxyImg($row['imagen_url']);
     $logo = proxyImg($row['tienda_logo']);
     return [
         'id'       => (int) $row['id'],
