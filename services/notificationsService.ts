@@ -1,19 +1,28 @@
-import * as Notifications from 'expo-notifications'
-import * as Device from 'expo-device'
+import { Platform } from 'react-native'
 import Constants from 'expo-constants'
 import { api } from './api'
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert:  true,
-    shouldShowBanner: true,
-    shouldShowList:   true,
-    shouldPlaySound:  true,
-    shouldSetBadge:   false,
-  }),
-})
+const isNative = Platform.OS !== 'web'
+
+let Notifications: typeof import('expo-notifications') | null = null
+let Device: typeof import('expo-device') | null = null
+
+if (isNative) {
+  Notifications = require('expo-notifications')
+  Device = require('expo-device')
+  Notifications!.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert:  true,
+      shouldShowBanner: true,
+      shouldShowList:   true,
+      shouldPlaySound:  true,
+      shouldSetBadge:   false,
+    }),
+  })
+}
 
 export async function requestPermissions(): Promise<boolean> {
+  if (!isNative || !Notifications || !Device) return false
   if (!Device.isDevice) return true
   const { status: existing } = await Notifications.getPermissionsAsync()
   if (existing === 'granted') return true
@@ -22,7 +31,7 @@ export async function requestPermissions(): Promise<boolean> {
 }
 
 export async function registerToken(stores: string[], categories: string[], watchlist: string[]) {
-  if (!Device.isDevice) return
+  if (!isNative || !Notifications || !Device || !Device.isDevice) return
   let token = ''
   let tokenError = ''
   try {
@@ -32,10 +41,7 @@ export async function registerToken(stores: string[], categories: string[], watc
   } catch (e: any) {
     tokenError = e?.message ?? String(e)
   }
-
-  // Debug: verificar que el app llega al servidor
   await api.post('/debug_token.php', { token, tokenError, stores, categories, watchlist }).catch(() => {})
-
   if (!token) return
   await api.post('/register-token.php', {
     token,
@@ -46,10 +52,12 @@ export async function registerToken(stores: string[], categories: string[], watc
 }
 
 export async function cancelAll() {
+  if (!isNative || !Notifications) return
   await Notifications.cancelAllScheduledNotificationsAsync()
 }
 
 export async function scheduleWeekly(title: string, body: string) {
+  if (!isNative || !Notifications) return
   await Notifications.cancelScheduledNotificationAsync('weekly-offers')
   await Notifications.scheduleNotificationAsync({
     identifier: 'weekly-offers',
@@ -64,10 +72,12 @@ export async function scheduleWeekly(title: string, body: string) {
 }
 
 export async function cancelWeekly() {
+  if (!isNative || !Notifications) return
   await Notifications.cancelScheduledNotificationAsync('weekly-offers')
 }
 
 export async function scheduleExpiringReminder(title: string, body: string) {
+  if (!isNative || !Notifications) return
   await Notifications.cancelScheduledNotificationAsync('expiring-reminder')
   await Notifications.scheduleNotificationAsync({
     identifier: 'expiring-reminder',
@@ -81,6 +91,7 @@ export async function scheduleExpiringReminder(title: string, body: string) {
 }
 
 export async function cancelExpiringReminder() {
+  if (!isNative || !Notifications) return
   await Notifications.cancelScheduledNotificationAsync('expiring-reminder')
 }
 
@@ -89,7 +100,7 @@ export async function checkStores(
   notifTitle: string,
   notifBody: (stores: string[]) => string,
 ) {
-  if (stores.length === 0) return
+  if (!isNative || !Notifications || stores.length === 0) return
   try {
     const results = await Promise.all(
       stores.map(slug =>
@@ -112,7 +123,7 @@ export async function checkWatchlist(
   notifTitle: string,
   notifBody: (matches: string[]) => string,
 ) {
-  if (terms.length === 0) return
+  if (!isNative || !Notifications || terms.length === 0) return
   try {
     const results = await Promise.all(
       terms.map(q =>

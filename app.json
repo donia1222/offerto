@@ -45,8 +45,7 @@
         }
       ],
       "expo-font",
-      "expo-sqlite",
-      "expo-localization",
+"expo-localization",
       "expo-web-browser"
     ],
     "web": {

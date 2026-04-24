@@ -75,7 +75,7 @@ export default function RootLayout() {
         }
       } catch {}
     }
-    if (!__DEV__) checkForUpdates()
+    if (!__DEV__ && Platform.OS !== 'web') checkForUpdates()
   }, [])
 
   useEffect(() => {
