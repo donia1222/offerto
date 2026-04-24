@@ -149,8 +149,8 @@ export default function RootLayout() {
 
   if (!fontsLoaded) return null
 
-  // Loader: fuentes listas pero loader animado aún, o estado de onboarding desconocido
-  if (!loaderDone || onboardingDone === null) {
+  // Loader: solo en nativo
+  if (Platform.OS !== 'web' && (!loaderDone || onboardingDone === null)) {
     return (
       <>
         <StatusBar style="light" />
@@ -159,8 +159,8 @@ export default function RootLayout() {
     )
   }
 
-  // Onboarding: primera vez — nunca se ve Home
-  if (!onboardingDone) {
+  // Onboarding: primera vez — solo en nativo
+  if (!onboardingDone && Platform.OS !== 'web') {
     return (
       <>
         <StatusBar style="light" />
