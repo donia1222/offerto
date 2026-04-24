@@ -24,9 +24,10 @@ import AppLoader from '../components/AppLoader'
 import Onboarding from '../components/Onboarding'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { requestPermissions, registerToken, scheduleWeekly, scheduleExpiringReminder, checkWatchlist, checkStores } from '../services/notificationsService'
-import * as Updates from 'expo-updates'
 
-SplashScreen.preventAutoHideAsync()
+if (Platform.OS !== 'web') {
+  SplashScreen.preventAutoHideAsync()
+}
 
 const deviceLocale: string =
   (Platform.OS === 'ios'
@@ -66,8 +67,10 @@ export default function RootLayout() {
   }, [])
 
   useEffect(() => {
+    if (__DEV__ || Platform.OS === 'web') return
     async function checkForUpdates() {
       try {
+        const Updates = await import('expo-updates')
         const update = await Updates.checkForUpdateAsync()
         if (update.isAvailable) {
           await Updates.fetchUpdateAsync()
@@ -75,7 +78,7 @@ export default function RootLayout() {
         }
       } catch {}
     }
-    if (!__DEV__ && Platform.OS !== 'web') checkForUpdates()
+    checkForUpdates()
   }, [])
 
   useEffect(() => {
