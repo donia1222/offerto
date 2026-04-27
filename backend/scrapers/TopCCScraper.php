@@ -11,6 +11,14 @@ class TopCCScraper extends BaseScraper {
     public function run(): int {
         $this->log('Iniciando scraping TopCC...');
 
+        // Desactivar todos los registros anteriores de TopCC antes de scrapear.
+        // Las URLs cambian cada semana (contienen KW/número de semana), por lo que el
+        // ON DUPLICATE KEY no actualiza los registros viejos — quedan activos con fechas
+        // erróneas. Al desactivarlos aquí, el upsert solo reactiva los de esta semana.
+        $deact = $this->pdo->prepare("UPDATE ofertas SET activa = 0 WHERE tienda_id = ?");
+        $deact->execute([$this->tiendaId]);
+        $this->log('Registros anteriores desactivados: ' . $deact->rowCount());
+
         $urls = $this->getOfferUrls();
         $this->log('URLs encontradas: ' . count($urls));
 

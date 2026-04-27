@@ -46,6 +46,7 @@ abstract class BaseScraper {
                 descuento_pct   = VALUES(descuento_pct),
                 unidad          = VALUES(unidad),
                 imagen_url      = VALUES(imagen_url),
+                valido_desde    = VALUES(valido_desde),
                 valido_hasta    = VALUES(valido_hasta),
                 activa          = 1
         ";

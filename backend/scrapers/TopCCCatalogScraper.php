@@ -17,6 +17,12 @@ class TopCCCatalogScraper extends BaseScraper {
     public function run(): int {
         $this->log('Iniciando TopCC catalog scraper...');
 
+        // Desactivar registros anteriores antes de scrapear para evitar acumulación
+        // de productos de semanas previas con fechas incorrectas.
+        $deact = $this->pdo->prepare("UPDATE ofertas SET activa = 0 WHERE tienda_id = ?");
+        $deact->execute([$this->tiendaId]);
+        $this->log('Registros anteriores desactivados: ' . $deact->rowCount());
+
         // Use hardcoded categories — avoids homepage fetch that may trigger anti-bot
         $categories = $this->fallbackCategories();
         $this->log('Categories: ' . count($categories));
@@ -332,6 +338,9 @@ class TopCCCatalogScraper extends BaseScraper {
     }
 
     private function getCatalogDates(): array {
-        return [date('Y-m-d'), date('Y-m-d', strtotime('+30 days'))];
+        return [
+            date('Y-m-d', strtotime('monday this week')),
+            date('Y-m-d', strtotime('saturday this week')),
+        ];
     }
 }
