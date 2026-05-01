@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import {
   View, Text, Image, ScrollView, TouchableOpacity,
-  StyleSheet, ActivityIndicator, Share, Linking,
+  StyleSheet, ActivityIndicator, Share, Linking, Platform, useWindowDimensions,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router'
@@ -19,9 +19,11 @@ import type { Offer } from '../../types'
 import { formatDate } from '../../utils/formatters'
 
 export default function OfferDetailScreen() {
-  const { id }   = useLocalSearchParams<{ id: string }>()
-  const router   = useRouter()
-  const { t }    = useTranslation()
+  const { id }     = useLocalSearchParams<{ id: string }>()
+  const router     = useRouter()
+  const { t }      = useTranslation()
+  const { width }  = useWindowDimensions()
+  const isDesktop  = Platform.OS === 'web' && width >= 768
 
   const [offer, setOffer]       = useState<Offer | null>(null)
   const [loading, setLoading]   = useState(true)
@@ -68,9 +70,10 @@ export default function OfferDetailScreen() {
   const savings         = offer.precio_original ? offer.precio_original - offer.precio_oferta : null
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
+    <SafeAreaView style={[styles.container, isDesktop && styles.containerDesktop]} edges={['bottom']}>
       <Stack.Screen
         options={{
+          headerShown: !isDesktop,
           headerShadowVisible: false,
           headerStyle: { backgroundColor: Colors.background },
           headerTitle: () => (
@@ -105,6 +108,36 @@ export default function OfferDetailScreen() {
           ),
         }}
       />
+
+      {/* Header propio en desktop */}
+      {isDesktop && (
+        <View style={styles.desktopHeader}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.headerIconBtn} activeOpacity={0.75}>
+            <Ionicons name="chevron-back" size={26} color={Colors.textDark} />
+          </TouchableOpacity>
+          {StoreLogos[offer.tienda.slug] ? (
+            <Image
+              source={offer.tienda.slug === 'transgourmet'
+                ? require('../../assets/images/logos-shops/trasngoustettrasprete.png')
+                : offer.tienda.slug === 'topcc'
+                ? require('../../assets/images/logos-shops/topcctrasparehte.png')
+                : offer.tienda.slug === 'aligro'
+                ? require('../../assets/images/logos-shops/aligrotrasnparehte.png')
+                : StoreLogos[offer.tienda.slug]
+              }
+              style={offer.tienda.slug === 'transgourmet' ? { width: 170, height: 56 } : { width: 96, height: 32 }}
+              resizeMode="contain"
+            />
+          ) : (
+            <Text style={{ fontFamily: 'PlusJakartaSans-Bold', fontSize: 18, color: offer.tienda.color }}>
+              {offer.tienda.nombre}
+            </Text>
+          )}
+          <TouchableOpacity onPress={onShare} style={styles.headerIconBtn} activeOpacity={0.75}>
+            <Ionicons name="share-outline" size={24} color={Colors.textDark} />
+          </TouchableOpacity>
+        </View>
+      )}
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 48 }}>
 
         {/* Imagen */}
@@ -260,7 +293,14 @@ export default function OfferDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  container:   { flex: 1, backgroundColor: Colors.background },
+  container:        { flex: 1, backgroundColor: Colors.background },
+  containerDesktop: { width: '80%' as any, alignSelf: 'center' as any },
+  desktopHeader: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: Spacing.lg, paddingVertical: Spacing.sm,
+    backgroundColor: Colors.background,
+    borderBottomWidth: 1, borderBottomColor: Colors.border,
+  },
   headerIconBtn: {
     width: 40, height: 40, borderRadius: 20,
     alignItems: 'center', justifyContent: 'center',

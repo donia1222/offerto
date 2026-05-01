@@ -215,7 +215,7 @@ export default function ListScreen() {
 
 const styles = StyleSheet.create({
   container:        { flex: 1, backgroundColor: Colors.background },
-  containerDesktop: { maxWidth: 900, alignSelf: 'center' as any, width: '100%' as any },
+  containerDesktop: { flex: 1 },
 
   header: {
     flexDirection: 'row', alignItems: 'flex-start',

@@ -405,7 +405,7 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   container:        { flex: 1, backgroundColor: Colors.background },
-  containerDesktop: { maxWidth: 1280, alignSelf: 'center' as any, width: '100%' as any },
+  containerDesktop: { flex: 1 },
   cardWrapperDesktop: { flex: 1, margin: 6, minHeight: 320 },
   center:       { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.background, gap: 12 },
   listContent:  { paddingBottom: 110 },

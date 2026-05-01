@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Image, Platform, useWindowDimensions } from 'react-native'
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Image } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
@@ -29,9 +29,6 @@ const STORES = [
 export default function SettingsScreen() {
   const router = useRouter()
   const { t }  = useTranslation()
-  const { width } = useWindowDimensions()
-  const isDesktop  = Platform.OS === 'web' && width >= 768
-
   const {
     language, activeStores, compactMode, showMwst, cardLayout,
     setLanguage, toggleStore, setCompactMode, setShowMwst, setCardLayout,
@@ -46,7 +43,7 @@ export default function SettingsScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.container, isDesktop && { maxWidth: 760, alignSelf: 'center' as any, width: '100%' as any }]} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
         <View style={styles.titleLeft}>
           <View style={{ flex: 1 }}>

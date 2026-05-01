@@ -89,7 +89,7 @@ export default function KatalogeScreen() {
     .filter(item => filterStore === 'all' || item.tienda === filterStore)
 
   return (
-    <SafeAreaView style={[styles.container, isDesktop && { maxWidth: 1280, alignSelf: 'center' as any, width: '100%' as any }]} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <View style={[styles.header, { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }]}>
         <View>
           <Text style={styles.title}>{t('kataloge.title')}</Text>

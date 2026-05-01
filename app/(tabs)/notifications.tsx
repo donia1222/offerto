@@ -107,7 +107,7 @@ export default function NotificationsScreen() {
   )
 
   return (
-    <SafeAreaView style={[styles.container, Platform.OS === 'web' && { maxWidth: 760, alignSelf: 'center' as any, width: '100%' as any }]} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <View style={[styles.header, { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }]}>
         <View>
           <Text style={styles.title}>{t('notif.title')}</Text>

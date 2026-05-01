@@ -200,13 +200,15 @@ export default function WebLayout({ children }: { children: React.ReactNode }) {
 
   if (!unlocked) return <WebGate onUnlock={() => setUnlocked(true)} />
 
-  // Desktop: sticky website header on top, full-width content below
+  // Desktop: sticky website header on top, 80% centered content below
   if (isDesktop) {
     return (
       <View style={{ flex: 1, backgroundColor: Colors.background }}>
         <WebsiteHeader />
-        <View style={{ flex: 1, marginTop: WEBSITE_HEADER_H }}>
-          {children}
+        <View style={{ flex: 1, marginTop: WEBSITE_HEADER_H, alignItems: 'center' }}>
+          <View style={{ flex: 1, width: '80%' }}>
+            {children}
+          </View>
         </View>
       </View>
     )
