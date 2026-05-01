@@ -75,7 +75,7 @@ export default function OfferCard({ offer, compact: compactProp, fixedHeight, hi
       {/* ── Top: imagen + info ── */}
       <View style={styles.topRow}>
         <View style={[styles.imgBox, { width: imgSize, backgroundColor: '#fff' }]}>
-          {offer.imagen && !imgError ? (
+          {offer.imagen && !imgError && offer.tienda?.slug !== 'transgourmet' ? (
             <Image
               source={{ uri: offer.imagen }}
               style={{ width: innerSize, height: innerSize }}

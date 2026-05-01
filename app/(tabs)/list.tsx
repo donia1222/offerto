@@ -1,14 +1,13 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
-  Image, Share, Alert, Platform, useWindowDimensions,
+  Image, Share, Alert, Platform, useWindowDimensions, Modal,
 } from 'react-native'
 
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
 import { useRouter } from 'expo-router'
-import WebNavTabs from '../../components/WebNavTabs'
 import { useListStore } from '../../store/listStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { getOfferName } from '../../utils/getOfferName'
@@ -26,6 +25,12 @@ export default function ListScreen() {
   const isDesktop  = Platform.OS === 'web' && width >= 768
   const { language } = useSettingsStore()
   const { items, remove, toggleComprado, setCantidad, clearAll, clearComprado } = useListStore()
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [sortByStore, setSortByStore] = useState(false)
+
+  const displayItems = sortByStore
+    ? [...items].sort((a, b) => a.offer.tienda.nombre.localeCompare(b.offer.tienda.nombre))
+    : items
 
   const totalCost    = items.reduce((s, i) => s + i.offer.precio_oferta * i.cantidad, 0)
   const totalSavings = items.reduce((s, i) => {
@@ -44,45 +49,45 @@ export default function ListScreen() {
     await Share.share({ message: lines.join('\n') })
   }
 
-  const onClearAll = () =>
+  const onClearAll = () => {
+    setMenuOpen(false)
     Alert.alert(t('list.confirmClear'), t('list.confirmClearMsg'), [
       { text: t('common.cancel'), style: 'cancel' },
       { text: t('list.clearAll'), style: 'destructive', onPress: clearAll },
     ])
+  }
+
+  const onRemoveExpired = () => {
+    setMenuOpen(false)
+    const expired = items.filter(i => Number(i.offer.dias_restantes) < 0)
+    expired.forEach(i => remove(i.offer.id))
+  }
+
+  const onSortByStore = () => {
+    setSortByStore(prev => !prev)
+    setMenuOpen(false)
+  }
 
   const Header = (
     <View style={styles.header}>
-      <Image source={require('../../assets/images/trasnparehte.png')} style={styles.titleLogo} resizeMode="contain" />
       <View style={{ flex: 1 }}>
         <Text style={styles.title}>{t('list.title')}</Text>
         <Text style={styles.subtitle}>{t('list.subtitle')}</Text>
       </View>
-      <View style={{ flexDirection: 'row', gap: 4 }}>
-        {doneCount > 0 && (
-          <TouchableOpacity style={styles.headerBtn} onPress={clearComprado}>
-            <Ionicons name="checkmark-done" size={18} color={Colors.success} />
-          </TouchableOpacity>
-        )}
-        <TouchableOpacity style={styles.headerBtn} onPress={onShare}>
-          <Ionicons name="share-outline" size={18} color={Colors.primary} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.headerBtn} onPress={onClearAll}>
-          <Ionicons name="trash-outline" size={18} color={Colors.error} />
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity style={styles.headerBtn} onPress={() => setMenuOpen(true)}>
+        <Ionicons name="ellipsis-vertical" size={20} color={Colors.textMedium} />
+      </TouchableOpacity>
     </View>
   )
 
   if (items.length === 0) return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={[styles.container, isDesktop && styles.containerDesktop]} edges={['top']}>
       <View style={styles.header}>
-        <Image source={require('../../assets/images/trasnparehte.png')} style={styles.titleLogo} resizeMode="contain" />
         <View style={{ flex: 1 }}>
           <Text style={styles.title}>{t('list.title')}</Text>
           <Text style={styles.subtitle}>{t('list.subtitle')}</Text>
         </View>
       </View>
-      {isDesktop && <WebNavTabs />}
       <View style={styles.empty}>
         <Ionicons name="cart-outline" size={64} color={Colors.textLight} />
         <Text style={styles.emptyTitle}>{t('list.empty')}</Text>
@@ -113,9 +118,17 @@ export default function ListScreen() {
         </View>
 
         <View style={styles.info}>
-          <View style={[styles.storePill, { backgroundColor: storeColor + '15' }]}>
-            <Text style={[styles.storeText, { color: storeColor }]}>{offer.tienda.nombre}</Text>
-          </View>
+          {StoreLogos[offer.tienda?.slug] ? (
+            <Image
+              source={StoreLogos[offer.tienda.slug]}
+              style={[styles.storeLogo, offer.tienda.slug === 'transgourmet' && styles.storeLogoLarge]}
+              resizeMode="contain"
+            />
+          ) : (
+            <View style={[styles.storePill, { backgroundColor: storeColor + '15' }]}>
+              <Text style={[styles.storeText, { color: storeColor }]}>{offer.tienda.nombre}</Text>
+            </View>
+          )}
           <Text style={[styles.name, comprado && styles.nameStrike]} numberOfLines={2}>{getOfferName(offer, language)}</Text>
           <Text style={styles.price}>CHF {fmt(offer.precio_oferta * cantidad)}</Text>
         </View>
@@ -139,11 +152,43 @@ export default function ListScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={[styles.container, isDesktop && styles.containerDesktop]} edges={['top']}>
       {Header}
-      {isDesktop && <WebNavTabs />}
+
+      <Modal visible={menuOpen} transparent animationType="fade" onRequestClose={() => setMenuOpen(false)}>
+        <TouchableOpacity style={styles.menuOverlay} activeOpacity={1} onPress={() => setMenuOpen(false)}>
+          <View style={styles.menuBox}>
+            <TouchableOpacity style={styles.menuRow} onPress={onSortByStore} activeOpacity={0.75}>
+              <Ionicons name="storefront-outline" size={20} color={Colors.textMedium} />
+              <Text style={styles.menuRowText}>Nach Geschäft sortieren</Text>
+              {sortByStore && <Ionicons name="checkmark" size={20} color={Colors.primary} />}
+            </TouchableOpacity>
+            <View style={styles.menuDivider} />
+            <TouchableOpacity style={styles.menuRow} onPress={() => { setMenuOpen(false); onShare() }} activeOpacity={0.75}>
+              <Ionicons name="share-outline" size={20} color={Colors.textMedium} />
+              <Text style={styles.menuRowText}>Liste teilen</Text>
+            </TouchableOpacity>
+            <View style={styles.menuDivider} />
+            <TouchableOpacity style={styles.menuRow} onPress={() => { setMenuOpen(false); clearComprado() }} activeOpacity={0.75}>
+              <Ionicons name="checkmark-done-outline" size={20} color={Colors.textMedium} />
+              <Text style={styles.menuRowText}>Gekaufte Artikel entfernen</Text>
+            </TouchableOpacity>
+            <View style={styles.menuDivider} />
+            <TouchableOpacity style={styles.menuRow} onPress={onRemoveExpired} activeOpacity={0.75}>
+              <Ionicons name="time-outline" size={20} color={Colors.textMedium} />
+              <Text style={styles.menuRowText}>Abgelaufene Angebote entfernen</Text>
+            </TouchableOpacity>
+            <View style={styles.menuDivider} />
+            <TouchableOpacity style={styles.menuRow} onPress={onClearAll} activeOpacity={0.75}>
+              <Ionicons name="trash-outline" size={20} color={Colors.error} />
+              <Text style={[styles.menuRowText, { color: Colors.error }]}>Alle Produkte entfernen</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
       <FlatList
-        data={items}
+        data={displayItems}
         keyExtractor={i => String(i.offer.id)}
         renderItem={renderItem}
         contentContainerStyle={styles.list}
@@ -169,10 +214,11 @@ export default function ListScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.background },
+  container:        { flex: 1, backgroundColor: Colors.background },
+  containerDesktop: { maxWidth: 900, alignSelf: 'center' as any, width: '100%' as any },
 
   header: {
-    flexDirection: 'row', alignItems: 'center',
+    flexDirection: 'row', alignItems: 'flex-start',
     paddingHorizontal: Spacing.lg, paddingTop: Spacing.md, paddingBottom: Spacing.sm,
     gap: Spacing.sm,
   },
@@ -183,9 +229,9 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surfaceAlt,
   },
   title:    { fontFamily: 'PlusJakartaSans-Bold', fontSize: 26, color: Colors.textDark },
-  subtitle: { fontFamily: 'Inter-Medium', fontSize: 13, color: Colors.textMedium, marginTop: -2 },
+  subtitle: { fontFamily: 'Inter-Medium', fontSize: 13, color: '#E2001A', marginTop: 3 },
   headerBtn: {
-    width: 36, height: 36, borderRadius: 18,
+    width: 36, height: 36, borderRadius: 18, marginTop: 4,
     backgroundColor: Colors.surface, alignItems: 'center', justifyContent: 'center',
     shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 4,
     shadowOffset: { width: 0, height: 1 }, elevation: 1,
@@ -195,7 +241,7 @@ const styles = StyleSheet.create({
   emptyTitle: { fontFamily: 'PlusJakartaSans-SemiBold', fontSize: 20, color: Colors.textDark },
   emptySub:   { fontFamily: 'Inter-Regular', fontSize: 15, color: Colors.textMedium, textAlign: 'center', lineHeight: 22 },
 
-  list: { paddingHorizontal: Spacing.lg, paddingTop: Spacing.sm },
+  list: { paddingHorizontal: Spacing.lg, paddingTop: Spacing.lg },
 
   item: {
     flexDirection: 'row', alignItems: 'center',
@@ -213,11 +259,13 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
 
-  imgBox:     { width: 72, height: 72, alignItems: 'center', justifyContent: 'center', backgroundColor: '#fff' },
-  img:        { width: 58, height: 58 },
-  imgFallback:{ width: 44, height: 44, opacity: 0.4 },
+  imgBox:     { width: 88, height: 88, alignItems: 'center', justifyContent: 'center', backgroundColor: '#fff' },
+  img:        { width: 74, height: 74 },
+  imgFallback:{ width: 56, height: 56, opacity: 0.4 },
 
   info: { flex: 1, paddingVertical: Spacing.sm, paddingLeft: Spacing.sm },
+  storeLogo:      { width: 60, height: 22, marginBottom: 4 },
+  storeLogoLarge: { width: 120, height: 44 },
   storePill: {
     alignSelf: 'flex-start', paddingHorizontal: 7, paddingVertical: 2,
     borderRadius: Radius.full, marginBottom: 3,
@@ -249,4 +297,24 @@ const styles = StyleSheet.create({
   totalRow:   { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: Spacing.md },
   totalLabel: { fontFamily: 'Inter-Medium', fontSize: 15, color: Colors.textMedium },
   totalPrice: { fontFamily: 'PlusJakartaSans-Bold', fontSize: 24, color: Colors.textDark },
+
+  menuOverlay: {
+    flex: 1, backgroundColor: 'rgba(0,0,0,0.25)',
+    justifyContent: 'flex-start', alignItems: 'flex-end',
+    paddingTop: 100, paddingRight: Spacing.lg,
+  },
+  menuBox: {
+    backgroundColor: Colors.surface,
+    borderRadius: Radius.xl,
+    minWidth: 300,
+    shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 16,
+    shadowOffset: { width: 0, height: 6 }, elevation: 10,
+    overflow: 'hidden',
+  },
+  menuRow: {
+    flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: Spacing.lg, paddingVertical: 15, gap: 14,
+  },
+  menuRowText: { fontFamily: 'Inter-Medium', fontSize: 16, color: Colors.textDark, flex: 1 },
+  menuDivider: { height: 1, backgroundColor: Colors.divider, marginHorizontal: Spacing.lg },
 })

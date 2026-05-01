@@ -3,6 +3,7 @@ require_once __DIR__ . '/BaseScraper.php';
 
 /**
  * Transgourmet / Prodega — extrae ofertas del PDF semanal de acciones.
+ * 
  * Requiere pdftotext (poppler-utils) instalado en el servidor.
  *
  * Formato del PDF:
@@ -44,17 +45,39 @@ class TransgourmetScraper extends BaseScraper {
         // 3a. Extraer texto con pdftotext
         $text = shell_exec('pdftotext -layout ' . escapeshellarg($tmpFile) . ' - 2>/dev/null');
 
-        unlink($tmpFile);
+        // 3b. Extraer imágenes del PDF y emparejarlas con los productos por página
+        $artToImageUrl = [];
+        $ptImgPath = trim((string) shell_exec('which pdfimages 2>/dev/null'));
+        if (!$ptImgPath) {
+            foreach (['/usr/bin/pdfimages', '/usr/local/bin/pdfimages', '/opt/homebrew/bin/pdfimages'] as $p) {
+                if (file_exists($p)) { $ptImgPath = $p; break; }
+            }
+        }
+        if ($ptImgPath) {
+            $listOutput = shell_exec($ptImgPath . ' -list ' . escapeshellarg($tmpFile) . ' 2>/dev/null') ?? '';
+            $tmpImgDir  = sys_get_temp_dir() . '/tg_imgs_' . time() . '_' . getmypid();
+            @mkdir($tmpImgDir, 0755, true);
+            $imgBase = $tmpImgDir . '/img';
+            shell_exec($ptImgPath . ' -j ' . escapeshellarg($tmpFile) . ' ' . escapeshellarg($imgBase) . ' 2>/dev/null');
+            $imgMeta        = $this->parsePdfImagesList($listOutput, $imgBase);
+            $artToImageFile = $this->matchByPage($text, $imgMeta);
 
-        // TODO (API Transgourmet): cuando tengas credenciales de su API, descomentar:
-        // $listOutput = shell_exec('pdfimages -list ' . escapeshellarg($tmpFile) . ' 2>/dev/null') ?? '';
-        // $tmpImgDir  = sys_get_temp_dir() . '/tg_imgs_' . time() . '_' . getmypid();
-        // @mkdir($tmpImgDir, 0755, true);
-        // $imgBase = $tmpImgDir . '/img';
-        // shell_exec('pdfimages -j ' . escapeshellarg($tmpFile) . ' ' . escapeshellarg($imgBase) . ' 2>/dev/null');
-        // $imgMeta   = $this->parsePdfImagesList($listOutput, $imgBase);
-        // $artToImage = $this->matchByPage($text, $imgMeta);
-        // → sustituir por: $imagenUrl = $this->fetchImageFromApi($product['art_nr'], $apiToken);
+            // Guardar en backend/images/transgourmet/ → accesible en APP_URL/images/transgourmet/
+            $imgDir = __DIR__ . '/../images/transgourmet/';
+            @mkdir($imgDir, 0755, true);
+            foreach ($artToImageFile as $artNr => $imgFile) {
+                $dest = $imgDir . $artNr . '.jpg';
+                if (copy($imgFile, $dest)) {
+                    $artToImageUrl[$artNr] = APP_URL . '/images/transgourmet/' . $artNr . '.jpg';
+                }
+            }
+            $this->log('pdfimages: ' . count($artToImageUrl) . ' imágenes guardadas');
+            $this->cleanupImgDir($tmpImgDir);
+        } else {
+            $this->log('pdfimages no disponible — sin imágenes');
+        }
+
+        unlink($tmpFile);
 
         if (!$text || strlen($text) < 100) {
             $this->log('ERROR: pdftotext no devolvió texto suficiente');
@@ -76,10 +99,6 @@ class TransgourmetScraper extends BaseScraper {
             $catSlug     = $this->guessCategoryFromName($product['nombre']);
             $categoriaId = $this->getCategoriaId($catSlug);
 
-            // TODO (API Transgourmet): reemplazar null por:
-            // $this->fetchImageFromApi($product['art_nr'], $apiToken)
-            $imagenUrl = null;
-
             $ok = $this->upsertOferta([
                 ':tienda_id'       => $this->tiendaId,
                 ':categoria_id'    => $categoriaId,
@@ -90,7 +109,7 @@ class TransgourmetScraper extends BaseScraper {
                 ':precio_oferta'   => $product['precio_oferta'],
                 ':descuento_pct'   => $product['descuento'],
                 ':unidad'          => $product['unidad'],
-                ':imagen_url'      => $imagenUrl,
+                ':imagen_url'      => $artToImageUrl[$product['art_nr']] ?? null,
                 ':valido_desde'    => $validoDesde,
                 ':valido_hasta'    => $validoHasta,
                 ':canton'          => 'all',

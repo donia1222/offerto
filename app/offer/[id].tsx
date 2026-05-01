@@ -99,19 +99,9 @@ export default function OfferDetailScreen() {
             </TouchableOpacity>
           ),
           headerRight: () => (
-            <View style={{ flexDirection: 'row', gap: 8 }}>
-              <TouchableOpacity onPress={() => router.push('/list')} style={styles.headerIconBtn} activeOpacity={0.75}>
-                <Ionicons name="cart-outline" size={22} color={Colors.textDark} />
-                {listItems.length > 0 && (
-                  <View style={styles.headerBadge}>
-                    <Text style={styles.headerBadgeText}>{listItems.length > 99 ? '99' : listItems.length}</Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-              <TouchableOpacity onPress={onShare} style={styles.headerIconBtn} activeOpacity={0.75}>
-                <Ionicons name="share-outline" size={24} color={Colors.textDark} />
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity onPress={onShare} style={styles.headerIconBtn} activeOpacity={0.75}>
+              <Ionicons name="share-outline" size={24} color={Colors.textDark} />
+            </TouchableOpacity>
           ),
         }}
       />
@@ -119,7 +109,7 @@ export default function OfferDetailScreen() {
 
         {/* Imagen */}
         <View style={[styles.imageWrap, { backgroundColor: '#fff', marginTop: 20 }]}>
-          {offer.imagen && !imgError ? (
+          {offer.imagen && !imgError && offer.tienda?.slug !== 'transgourmet' ? (
             <Image
               source={{ uri: offer.imagen }}
               style={styles.image}

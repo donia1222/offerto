@@ -9,7 +9,6 @@ import { BlurView } from 'expo-blur'
 import { useRouter } from 'expo-router'
 import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
-import WebNavTabs from '../../components/WebNavTabs'
 import { offersService } from '../../services/offersService'
 import OfferCard from '../../components/OfferCard'
 import OfferCardGrid from '../../components/OfferCardGrid'
@@ -57,7 +56,6 @@ const CATEGORIES = [
   { slug: 'tierfutter', labelKey: 'categories.tierfutter' },
 ]
 
-const NAV_TABS_H = 45
 
 export default function HomeScreen() {
   const { t }  = useTranslation()
@@ -69,16 +67,15 @@ export default function HomeScreen() {
   const HEADER_TITLE_H = 58
   const BANNERS_H      = 74
   const CHIPS_H        = activeCategories.length > 0 ? 52 : 0
-  const NAV_H          = isDesktop ? NAV_TABS_H : 0
-  const headerCollapsed = insets.top + HEADER_TITLE_H + CHIPS_H + NAV_H
-  const headerExpanded  = insets.top + HEADER_TITLE_H + CHIPS_H + BANNERS_H + NAV_H
+  const headerCollapsed = insets.top + HEADER_TITLE_H + CHIPS_H
+  const headerExpanded  = insets.top + HEADER_TITLE_H + CHIPS_H + BANNERS_H
 
   const [featured, setFeatured]       = useState<Offer[]>([])
   const [offers, setOffers]           = useState<Offer[]>([])
   const [loading, setLoading]         = useState(true)
   const [refreshing, setRefreshing]   = useState(false)
   const [error, setError]             = useState<string | null>(null)
-  const [activeStore, setActiveStore]       = useState<string>('all')
+  const [selectedStores, setSelectedStores] = useState<string[]>([])
   const [page, setPage]                     = useState(1)
   const [total, setTotal]                   = useState(0)
   const [loadingMore, setLoadingMore]       = useState(false)
@@ -114,19 +111,11 @@ export default function HomeScreen() {
     }
   )
 
-  const load = useCallback(async (store: string, cats: string[], pg: number, append = false) => {
+  const load = useCallback(async (stores: string[], cats: string[], pg: number, append = false) => {
     try {
-      let storeFilter: string[]
-      if (store !== 'all') {
-        storeFilter = [store]
-      } else if (activeStores.length < 3) {
-        storeFilter = activeStores
-      } else {
-        storeFilter = []
-      }
       const filters: Record<string, any> = {}
-      if (storeFilter.length) filters.stores     = storeFilter
-      if (cats.length)        filters.categories = cats
+      if (stores.length > 0) filters.stores = stores
+      if (cats.length) filters.categories = cats
       const [feat, result] = await Promise.all([
         pg === 1 ? offersService.getFeatured() : Promise.resolve(featured),
         offersService.getOffers(filters, pg),
@@ -140,15 +129,20 @@ export default function HomeScreen() {
   }, [featured])
 
   useEffect(() => {
-    setActiveStore('all')
+    setSelectedStores([])
     setLoading(true)
-    load('all', activeCategories, 1).finally(() => setLoading(false))
+    load([], activeCategories, 1).finally(() => setLoading(false))
   }, [activeStores.join(',')])
 
-  const onRefresh = async () => { setRefreshing(true); await load(activeStore, activeCategories, 1); setRefreshing(false) }
-  const onStoreFilter = (slug: string) => {
-    setActiveStore(slug)
-    load(slug, activeCategories, 1)
+  const onRefresh = async () => { setRefreshing(true); await load(selectedStores, activeCategories, 1); setRefreshing(false) }
+
+  const onToggleStore = (slug: string) => {
+    const isSelected = selectedStores.includes(slug)
+    const next = isSelected
+      ? selectedStores.filter(s => s !== slug)
+      : [...selectedStores, slug]
+    setSelectedStores(next)
+    load(next, activeCategories, 1)
   }
   const toggleDraftCategory = (cat: string) => {
     setDraftCategories(prev => prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat])
@@ -161,11 +155,11 @@ export default function HomeScreen() {
     setFilterOpen(false)
     if (draftCategories.join(',') === activeCategories.join(',')) return
     setActiveCategories(draftCategories)
-    load(activeStore, draftCategories, 1)
+    load(selectedStores, draftCategories, 1)
   }
   const onLoadMore = async () => {
     if (loadingMore || offers.length >= total) return
-    setLoadingMore(true); await load(activeStore, activeCategories, page + 1, true); setLoadingMore(false)
+    setLoadingMore(true); await load(selectedStores, activeCategories, page + 1, true); setLoadingMore(false)
   }
 
   if (loading) return (
@@ -178,7 +172,7 @@ export default function HomeScreen() {
   if (error) return (
     <SafeAreaView style={styles.center} edges={['top']}>
       <Text style={styles.errorText}>{error}</Text>
-      <TouchableOpacity style={styles.retryBtn} onPress={() => { setLoading(true); load('all', activeCategories, 1).finally(() => setLoading(false)) }}>
+      <TouchableOpacity style={styles.retryBtn} onPress={() => { setLoading(true); load([], activeCategories, 1).finally(() => setLoading(false)) }}>
         <Text style={styles.retryText}>{t('common.retry')}</Text>
       </TouchableOpacity>
     </SafeAreaView>
@@ -186,19 +180,21 @@ export default function HomeScreen() {
 
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isDesktop && styles.containerDesktop]}>
       <Animated.FlatList
         data={offers}
         keyExtractor={o => String(o.id)}
-        key={cardLayout}
-        numColumns={cardLayout === 'grid' ? 2 : 1}
+        key={cardLayout + (isDesktop ? '_desktop' : '')}
+        numColumns={isDesktop ? 3 : (cardLayout === 'grid' ? 2 : 1)}
         renderItem={({ item }) => (
-          cardLayout === 'grid'
-            ? <View style={styles.cardWrapperGrid}><OfferCardGrid offer={item} /></View>
-            : <View style={styles.cardWrapper}><OfferCard offer={item} compact={cardLayout === 'compact'} /></View>
+          isDesktop
+            ? <View style={styles.cardWrapperDesktop}><OfferCard offer={item} /></View>
+            : cardLayout === 'grid'
+              ? <View style={styles.cardWrapperGrid}><OfferCardGrid offer={item} /></View>
+              : <View style={styles.cardWrapper}><OfferCard offer={item} compact={cardLayout === 'compact'} /></View>
         )}
         extraData={cardLayout}
-        contentContainerStyle={[styles.listContent, cardLayout === 'grid' && { paddingHorizontal: Spacing.sm }]}
+        contentContainerStyle={[styles.listContent, (cardLayout === 'grid' || isDesktop) && { paddingHorizontal: Spacing.sm }]}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />}
         onEndReached={onLoadMore}
         onEndReachedThreshold={0.3}
@@ -212,8 +208,8 @@ export default function HomeScreen() {
           <View style={styles.emptyState}>
             <Ionicons name="storefront-outline" size={56} color={Colors.textLight} />
             <Text style={styles.emptyTitle}>{t('common.noResults')}</Text>
-            {(activeCategories.length > 0 || activeStore !== 'all') && (
-              <TouchableOpacity style={styles.retryBtn} onPress={() => { setActiveCategories([]); setActiveStore('all'); load('all', [], 1) }}>
+            {(activeCategories.length > 0 || selectedStores.length > 0) && (
+              <TouchableOpacity style={styles.retryBtn} onPress={() => { setActiveCategories([]); setSelectedStores([]); load([], [], 1) }}>
                 <Text style={styles.retryText}>{t('home.filter')} zurücksetzen</Text>
               </TouchableOpacity>
             )}
@@ -228,7 +224,7 @@ export default function HomeScreen() {
             {/* Count */}
             <View style={styles.sectionRow2}>
               <Text style={styles.sectionTitle}>
-                {activeStore === 'all' ? t('home.allOffers') : STORE_LABELS[activeStore]}
+                {selectedStores.length === 0 ? t('home.allOffers') : selectedStores.map(s => STORE_LABELS[s]).join(' · ')}
               </Text>
               <View style={styles.countPill}>
                 <Text style={styles.countText}>{total}</Text>
@@ -245,28 +241,23 @@ export default function HomeScreen() {
 
       <SafeAreaView style={styles.headerSafe} edges={['top']} pointerEvents="box-none">
         {/* Title row */}
-        <Animated.View style={[styles.titleRow, { paddingTop: Platform.OS === 'web' ? 12 : titlePadTop }, Platform.OS === 'web' && { paddingRight: 60 }]}>
+        <Animated.View style={[styles.titleRow, { paddingTop: Platform.OS === 'web' ? 12 : titlePadTop }]}>
           <View style={styles.titleLeft}>
-            <Image source={require('../../assets/images/trasnparehte.png')} style={styles.titleLogo} resizeMode="contain" />
             <View style={{ flex: 1 }}>
               <Animated.Text style={[styles.title, { fontSize: titleSize }]}>{t('home.title')}</Animated.Text>
               <Text style={styles.subtitle}>{t('home.subtitle')}</Text>
             </View>
           </View>
           <TouchableOpacity
-            style={Platform.OS === 'web' ? styles.addFilterBtnWeb : styles.addFilterBtn}
+            style={styles.addFilterBtn}
             onPress={openFilter}
             activeOpacity={0.75}
           >
-            {Platform.OS === 'web' ? (
-              <Ionicons name="add" size={20} color="#fff" />
-            ) : (
-              <>
-                <View style={styles.addFilterCircle}>
-                  <Ionicons name="add" size={16} color="#fff" />
-                </View>
-                <Text style={styles.addFilterText}>{t('home.filter')}</Text>
-              </>
+            <Ionicons name="filter-outline" size={21} color={activeCategories.length > 0 ? '#E2001A' : Colors.textMedium} />
+            {activeCategories.length > 0 && (
+              <View style={styles.addFilterBadge}>
+                <Text style={styles.addFilterBadgeText}>{activeCategories.length}</Text>
+              </View>
             )}
           </TouchableOpacity>
         </Animated.View>
@@ -289,7 +280,7 @@ export default function HomeScreen() {
                   onPress={() => {
                     const next = activeCategories.filter(c => c !== slug)
                     setActiveCategories(next)
-                    load(activeStore, next, 1)
+                    load(selectedStores, next, 1)
                   }}
                   activeOpacity={0.75}
                 >
@@ -304,82 +295,48 @@ export default function HomeScreen() {
           </ScrollView>
         )}
 
-        {/* Desktop web nav tabs — inside existing header, above store banners */}
-        {isDesktop && <WebNavTabs />}
-
         {/* Filter banners */}
-        <Animated.View style={{ height: bannerHeight, overflow: 'hidden', marginTop: 0 }}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.filterBar}
-          style={styles.filterScroll}
-        >
-          {/* All banner */}
-          <TouchableOpacity
-            style={[
-              styles.filterBanner,
-              {
-                backgroundColor: Colors.surface,
-                borderColor: activeStore === 'all' ? '#E2001A' : Colors.border,
-                borderWidth: 1,
-                gap: 2,
-              },
-            ]}
-            onPress={() => onStoreFilter('all')}
-            activeOpacity={0.82}
-          >
-            <Ionicons
-              name={activeStores.length > 0 ? 'flame' : 'storefront-outline'}
-              size={26}
-              color={activeStore === 'all' ? '#E2001A' : Colors.textLight}
-            />
-            <Text style={{ fontFamily: 'Inter-SemiBold', fontSize: 10, color: activeStore === 'all' ? '#E2001A' : Colors.textLight }}>
-              {activeStores.length > 0 ? 'Top Angebote' : t('home.allOffers')}
-            </Text>
-          </TouchableOpacity>
-
-          {/* Store banners */}
-          {STORES.filter(slug => activeStores.includes(slug) || DISABLED_STORES.has(slug)).map(slug => {
-            const isDisabled = DISABLED_STORES.has(slug)
-            const isActive   = !isDisabled && activeStore === slug
-            const color      = STORE_COLORS[slug] ?? Colors.primary
-            return (
-              <TouchableOpacity
-                key={slug}
-                style={[
-                  styles.filterBanner,
-                  {
-                    backgroundColor: Colors.surface,
-                    borderColor: isActive ? color : Colors.border,
-                    borderWidth: 1,
-                  },
-                ]}
-                onPress={() => !isDisabled && onStoreFilter(slug)}
-                activeOpacity={isDisabled ? 1 : 0.82}
-                disabled={isDisabled}
-              >
-                {StoreLogos[slug] && (
-                  <Image
-                    source={StoreLogos[slug]}
-                    style={[
-                      styles.bannerLogo,
-                      slug === 'transgourmet' && styles.bannerLogoLarge,
-                      isDisabled && { opacity: 0.3 },
-                    ]}
-                    resizeMode="contain"
-                  />
-                )}
-                {isDisabled && (
-                  <View style={styles.baldChip}>
-                    <Ionicons name="time-outline" size={11} color="#fff" />
-                    <Text style={styles.baldChipText}>Bald</Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-            )
-          })}
-        </ScrollView>
+        <Animated.View style={{ height: bannerHeight, overflow: 'hidden' }}>
+          <View style={styles.filterBar}>
+            {STORES.filter(slug => activeStores.includes(slug) || DISABLED_STORES.has(slug)).map(slug => {
+              const isDisabled = DISABLED_STORES.has(slug)
+              const isSelected = selectedStores.includes(slug)
+              return (
+                <TouchableOpacity
+                  key={slug}
+                  style={[
+                    styles.filterBanner,
+                    {
+                      backgroundColor: Colors.surface,
+                      borderColor: isSelected ? '#E2001A' : Colors.border,
+                      borderWidth: 1,
+                    },
+                  ]}
+                  onPress={() => !isDisabled && onToggleStore(slug)}
+                  activeOpacity={isDisabled ? 1 : 0.82}
+                  disabled={isDisabled}
+                >
+                  {StoreLogos[slug] && (
+                    <Image
+                      source={StoreLogos[slug]}
+                      style={[
+                        styles.bannerLogo,
+                        slug === 'transgourmet' && styles.bannerLogoLarge,
+                        isDisabled && { opacity: 0.3 },
+                      ]}
+                      resizeMode="contain"
+                    />
+                  )}
+                  {isDisabled && (
+                    <View style={styles.baldChip}>
+                      <Ionicons name="time-outline" size={11} color="#fff" />
+                      <Text style={styles.baldChipText}>Bald</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              )
+            })}
+          </View>
         </Animated.View>
 
       </SafeAreaView>
@@ -447,7 +404,9 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container:    { flex: 1, backgroundColor: Colors.background },
+  container:        { flex: 1, backgroundColor: Colors.background },
+  containerDesktop: { maxWidth: 1280, alignSelf: 'center' as any, width: '100%' as any },
+  cardWrapperDesktop: { flex: 1, margin: 6, minHeight: 320 },
   center:       { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.background, gap: 12 },
   listContent:  { paddingBottom: 110 },
   cardWrapper:      { paddingHorizontal: Spacing.lg },
@@ -461,21 +420,24 @@ const styles = StyleSheet.create({
   titleLeft:   { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 },
   titleLogo:   { width: 44, height: 44 },
   title:       { fontFamily: 'PlusJakartaSans-Bold', fontSize: 26, color: Colors.textDark },
-  subtitle:    { fontFamily: 'Inter-Medium', fontSize: 13, color: Colors.textMedium, marginTop: -2 },
+  subtitle:    { fontFamily: 'Inter-Medium', fontSize: 13, color: '#E2001A', marginTop: 3 },
 
   // Filter bar
 
   filterScroll: { flexGrow: 0 },
-  filterBar:    { paddingHorizontal: Spacing.lg, paddingBottom: 40, gap: 10 , marginTop: 10 },
+  filterBar: {
+    flexDirection: 'row', justifyContent: 'center',
+    paddingHorizontal: Spacing.lg, paddingBottom: 40, gap: 10, marginTop: 10,
+  },
   filterBanner: {
+    flex: 1,
     flexDirection:   'column',
     alignItems:      'center',
     justifyContent:  'center',
     gap:             6,
-    width:           110,
     height:          64,
     borderRadius:    Radius.md,
-    borderWidth:     1.5,
+    borderWidth:     1,
     shadowColor:     '#000',
     shadowOpacity:   0.06,
     shadowRadius:    6,
@@ -486,6 +448,7 @@ const styles = StyleSheet.create({
   filterBannerTextActive: { color: '#fff' },
   bannerLogo:             { width: 68, height: 38, borderRadius: 4 },
   bannerLogoLarge:        { width: 80, height: 48 },
+  bannerCheck:            { position: 'absolute', top: 4, right: 4, width: 14, height: 14, borderRadius: 7, alignItems: 'center', justifyContent: 'center' },
   baldLabel:              { fontFamily: 'Inter-Medium', fontSize: 10, color: Colors.textLight, marginTop: 2 },
   baldChip:               { position: 'absolute', bottom: 5, right: 5, flexDirection: 'row', alignItems: 'center', gap: 2, backgroundColor: Colors.textLight, borderRadius: Radius.full, paddingHorizontal: 5, paddingVertical: 2 },
   baldChipText:           { fontFamily: 'Inter-Medium', fontSize: 9, color: '#fff' },
@@ -562,8 +525,12 @@ const styles = StyleSheet.create({
 
   // Add filter btn + active chips
   addFilterBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 7,
-    paddingHorizontal: 6, paddingVertical: 4,
+    width: 36, height: 36, borderRadius: 18,
+    backgroundColor: Colors.surface,
+    alignItems: 'center', justifyContent: 'center',
+    shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 }, elevation: 1,
+    position: 'relative', marginTop: -8,
   },
   addFilterBtnWeb: {
     width: 38, height: 38, borderRadius: 19,
@@ -576,12 +543,18 @@ const styles = StyleSheet.create({
     width: 24, height: 24, borderRadius: 12,
     backgroundColor: Colors.primary,
     alignItems: 'center', justifyContent: 'center',
-    shadowColor: Colors.primary, shadowOpacity: 0.3, shadowRadius: 5,
-    shadowOffset: { width: 0, height: 2 }, elevation: 2,
   },
   addFilterText: {
-    fontFamily: 'Inter-SemiBold', fontSize: 16, color: Colors.primary,
+    fontFamily: 'Inter-SemiBold', fontSize: 14, color: Colors.textMedium,
   },
+  addFilterTextActive: { color: Colors.primary },
+  addFilterBadge: {
+    position: 'absolute', top: -4, right: -4,
+    width: 16, height: 16, borderRadius: 8,
+    backgroundColor: '#E2001A',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  addFilterBadgeText: { fontFamily: 'Inter-Bold', fontSize: 10, color: '#fff' },
   chipsScroll:  { flexGrow: 0, marginTop: 4 },
   chipsBar:     { paddingHorizontal: Spacing.lg, gap: 8, paddingVertical: 4 },
   activeChip: {

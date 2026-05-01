@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  Switch, TextInput, Image, KeyboardAvoidingView, Platform,
+  Switch, TextInput, Image, KeyboardAvoidingView, Platform, Modal,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
@@ -28,11 +28,6 @@ const CATEGORY_ICONS: Record<string, string> = {
   tierfutter: 'paw-outline',
 }
 
-const STORE_COLORS: Record<string, string> = {
-  aligro:       '#FF6600',
-  topcc:        '#0050AA',
-  transgourmet: '#E2001A',
-}
 
 export default function NotificationsScreen() {
   const { t } = useTranslation()
@@ -45,9 +40,10 @@ export default function NotificationsScreen() {
     addWatch, removeWatch,
   } = useNotificationsStore()
 
-  const [input,    setInput]    = useState('')
-  const [sending,  setSending]  = useState(false)
-  const [expanded, setExpanded] = useState(false)
+  const [input,        setInput]       = useState('')
+  const [sending,      setSending]     = useState(false)
+  const [expanded,     setExpanded]    = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const [watchMatches, setWatchMatches] = useState<Record<string, Offer | null>>({})
 
   const visibleStores = ['aligro', 'topcc', 'transgourmet'].filter(s => activeStores.includes(s))
@@ -111,14 +107,69 @@ export default function NotificationsScreen() {
   )
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <Image source={require('../../assets/images/trasnparehte.png')} style={styles.headerLogo} resizeMode="contain" />
-        <View style={{ flex: 1 }}>
+    <SafeAreaView style={[styles.container, Platform.OS === 'web' && { maxWidth: 760, alignSelf: 'center' as any, width: '100%' as any }]} edges={['top']}>
+      <View style={[styles.header, { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }]}>
+        <View>
           <Text style={styles.title}>{t('notif.title')}</Text>
           <Text style={styles.subtitle}>{t('notif.subtitle')}</Text>
         </View>
+        <TouchableOpacity style={styles.headerBtn} onPress={() => setSettingsOpen(true)}>
+          <Ionicons name="options-outline" size={22} color={Colors.textMedium} />
+        </TouchableOpacity>
       </View>
+
+      <Modal visible={settingsOpen} transparent animationType="fade" onRequestClose={() => setSettingsOpen(false)}>
+        <TouchableOpacity style={styles.menuOverlay} activeOpacity={1} onPress={() => setSettingsOpen(false)}>
+          <View style={styles.menuBox}>
+            {/* AUTOMATISCH */}
+            <Text style={styles.menuSection}>AUTOMATISCH</Text>
+            <View style={styles.menuSettingRow}>
+              <Text style={styles.menuRowText}>{t('notif.weekly')}</Text>
+              <Switch value={weekly && enabled} onValueChange={setWeekly} disabled={!enabled}
+                trackColor={{ false: Colors.border, true: '#E2001A' }} thumbColor="#fff"
+                style={{ transform: [{ scaleX: 0.9 }, { scaleY: 0.9 }] }} />
+            </View>
+            <View style={styles.menuDivider} />
+            <View style={styles.menuSettingRow}>
+              <Text style={styles.menuRowText}>{t('notif.expiring')}</Text>
+              <Switch value={expiring && enabled} onValueChange={setExpiring} disabled={!enabled}
+                trackColor={{ false: Colors.border, true: '#E2001A' }} thumbColor="#fff"
+                style={{ transform: [{ scaleX: 0.9 }, { scaleY: 0.9 }] }} />
+            </View>
+
+            <View style={styles.menuSectionDivider} />
+
+            {/* NACH LADEN */}
+            <Text style={styles.menuSection}>NACH LADEN</Text>
+            {visibleStores.map((slug, idx) => (
+              <View key={slug}>
+                {idx > 0 && <View style={styles.menuDivider} />}
+                <View style={styles.menuSettingRow}>
+                  {StoreLogos[slug] ? (
+                    <Image source={StoreLogos[slug]}
+                      style={[styles.menuStoreLogo, slug === 'transgourmet' && { width: 100, height: 26 }]}
+                      resizeMode="contain" />
+                  ) : (
+                    <Text style={styles.menuRowText}>{slug}</Text>
+                  )}
+                  <Switch value={stores.includes(slug) && enabled} onValueChange={() => toggleStore(slug)}
+                    disabled={!enabled}
+                    trackColor={{ false: Colors.border, true: '#E2001A' }} thumbColor="#fff"
+                    style={{ transform: [{ scaleX: 0.9 }, { scaleY: 0.9 }] }} />
+                </View>
+              </View>
+            ))}
+
+            <View style={styles.menuSectionDivider} />
+
+            {/* Test */}
+            <TouchableOpacity style={styles.menuRow} onPress={() => { setSettingsOpen(false); sendTest() }} activeOpacity={0.75}>
+              <Ionicons name="paper-plane-outline" size={16} color={Colors.textMedium} />
+              <Text style={styles.menuRowText}>{sending ? t('notif.testSending') : t('notif.testBtn')}</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
 
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
@@ -169,11 +220,17 @@ export default function NotificationsScreen() {
                     )}
                   </View>
                   <View style={styles.watchItemInfo}>
-                    {offer?.tienda?.nombre && (
+                    {storeSlug && StoreLogos[storeSlug] ? (
+                      <Image
+                        source={StoreLogos[storeSlug]}
+                        style={[styles.watchStoreLogo, storeSlug === 'transgourmet' && styles.watchStoreLogoLarge]}
+                        resizeMode="contain"
+                      />
+                    ) : offer?.tienda?.nombre ? (
                       <View style={[styles.watchStorePill, { backgroundColor: storeColor + '15' }]}>
                         <Text style={[styles.watchStoreText, { color: storeColor }]}>{offer.tienda.nombre}</Text>
                       </View>
-                    )}
+                    ) : null}
                     <Text style={styles.watchItemName} numberOfLines={2}>{term}</Text>
                     <Text style={styles.watchItemPrice}>
                       {offer
@@ -192,57 +249,8 @@ export default function NotificationsScreen() {
               )
             })}
           </View>
-        ) : (
-          <View style={[styles.card, { padding: Spacing.md }]}>
-            <Text style={styles.watchEmpty}>{t('notif.watchEmpty')}</Text>
-          </View>
-        )}
+        ) : null}
 
-        {/* Acordeón más opciones */}
-        {/* Automático */}
-        <Text style={styles.sectionHeader}>{t('notif.sectionAuto')}</Text>
-        <View style={[styles.card, !enabled && styles.cardDisabled]}>
-          <Row icon="calendar-outline" label={t('notif.weekly')}   value={weekly}   onChange={setWeekly} />
-          <Row icon="time-outline"     label={t('notif.expiring')} value={expiring} onChange={setExpiring} last />
-        </View>
-
-        {/* Por tienda */}
-        <Text style={styles.sectionHeader}>{t('notif.sectionStores')}</Text>
-            <View style={[styles.card, !enabled && styles.cardDisabled]}>
-              {visibleStores.map((slug, idx) => (
-                <View key={slug} style={[styles.row, idx === visibleStores.length - 1 && styles.rowLast]}>
-                  <View style={styles.rowLeft}>
-                    {StoreLogos[slug] ? (
-                      <Image source={StoreLogos[slug]} style={styles.storeLogo} resizeMode="contain" />
-                    ) : (
-                      <View style={[styles.rowIcon, { backgroundColor: STORE_COLORS[slug] + '20' }]}>
-                        <Ionicons name="storefront-outline" size={18} color={STORE_COLORS[slug]} />
-                      </View>
-                    )}
-                    <Text style={styles.rowLabel}>
-                      {slug === 'aligro' ? 'Aligro' : slug === 'topcc' ? 'TopCC' : 'Transgourmet'}
-                    </Text>
-                  </View>
-                  <Switch
-                    value={stores.includes(slug) && enabled}
-                    onValueChange={() => toggleStore(slug)}
-                    disabled={!enabled}
-                    trackColor={{ false: Colors.border, true: STORE_COLORS[slug] }}
-                    thumbColor="#fff"
-                  />
-                </View>
-              ))}
-              {visibleStores.length === 0 && (
-                <View style={[styles.row, styles.rowLast]}>
-                  <Text style={styles.emptyHint}>{t('notif.noStores')}</Text>
-                </View>
-              )}
-        </View>
-
-          <TouchableOpacity onPress={sendTest} disabled={sending} activeOpacity={0.75} style={styles.testBtn}>
-            <Ionicons name="paper-plane-outline" size={16} color={Colors.textMedium} />
-            <Text style={styles.testBtnText}>{sending ? t('notif.testSending') : t('notif.testBtn')}</Text>
-          </TouchableOpacity>
           </>
         )}
 
@@ -256,13 +264,13 @@ export default function NotificationsScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   header: {
-    flexDirection: 'row', alignItems: 'center', gap: 10,
+    flexDirection: 'column',
     paddingHorizontal: Spacing.lg, paddingTop: Spacing.md, paddingBottom: Spacing.sm,
   },
   headerLogo: { width: 44, height: 44 },
   title:      { fontFamily: 'PlusJakartaSans-Bold', fontSize: 26, color: Colors.textDark },
-  subtitle:   { fontFamily: 'Inter-Medium', fontSize: 13, color: Colors.textMedium, marginTop: -2 },
-  scroll:     { paddingHorizontal: Spacing.lg, paddingTop: Spacing.sm, marginTop:40 },
+  subtitle:   { fontFamily: 'Inter-Medium', fontSize: 13, color: '#E2001A', marginTop: 3 },
+  scroll:     { paddingHorizontal: Spacing.lg, paddingTop: Spacing.sm, marginTop: 8 },
 
   masterCard: {
     backgroundColor: Colors.surface, borderRadius: Radius.lg,
@@ -342,6 +350,8 @@ const styles = StyleSheet.create({
   watchItemInfo: {
     flex: 1, paddingVertical: Spacing.sm, paddingLeft: Spacing.sm,
   },
+  watchStoreLogo:      { width: 60, height: 22, marginBottom: 4 },
+  watchStoreLogoLarge: { width: 120, height: 44 },
   watchStorePill: {
     alignSelf: 'flex-start', paddingHorizontal: 7, paddingVertical: 2,
     borderRadius: Radius.full, marginBottom: 3,
@@ -360,6 +370,41 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.sm,
   },
   watchEmpty: { fontFamily: 'Inter-Regular', fontSize: 14, color: Colors.textLight },
+
+  headerBtn: {
+    width: 36, height: 36, borderRadius: 18,
+    backgroundColor: Colors.surface, alignItems: 'center', justifyContent: 'center',
+    shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 }, elevation: 1, marginTop: 4,
+  },
+  menuOverlay: {
+    flex: 1, backgroundColor: 'rgba(0,0,0,0.25)',
+    justifyContent: 'flex-start', alignItems: 'flex-end',
+    paddingTop: 100, paddingRight: Spacing.lg,
+  },
+  menuBox: {
+    backgroundColor: Colors.surface, borderRadius: Radius.xl,
+    minWidth: 300,
+    shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 16,
+    shadowOffset: { width: 0, height: 6 }, elevation: 10,
+    overflow: 'hidden',
+  },
+  menuSection: {
+    fontFamily: 'Inter-SemiBold', fontSize: 12, color: Colors.textLight,
+    letterSpacing: 0.8, paddingHorizontal: Spacing.lg, paddingTop: 14, paddingBottom: 6,
+  },
+  menuSectionDivider: { height: 8, backgroundColor: Colors.background },
+  menuSettingRow: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: Spacing.lg, paddingVertical: 12,
+  },
+  menuStoreLogo: { width: 75, height: 28 },
+  menuRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    paddingHorizontal: Spacing.lg, paddingVertical: 14,
+  },
+  menuRowText: { fontFamily: 'Inter-Medium', fontSize: 16, color: Colors.textDark, flex: 1 },
+  menuDivider: { height: 1, backgroundColor: Colors.divider, marginHorizontal: Spacing.lg },
 
   chipCard: { overflow: 'visible' },
   chipRow:  { paddingHorizontal: Spacing.md, paddingVertical: Spacing.md, gap: 8 },

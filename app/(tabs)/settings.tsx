@@ -1,11 +1,10 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Image, Platform, useWindowDimensions } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import { useTranslation } from 'react-i18next'
 import i18n from 'i18next'
-import WebNavTabs from '../../components/WebNavTabs'
 import { Colors } from '../../constants/colors'
 import { Spacing, Radius } from '../../constants/spacing'
 import { StoreLogos } from '../../constants/stores'
@@ -39,6 +38,7 @@ export default function SettingsScreen() {
   } = useSettingsStore()
 
   const { enabled: notifsEnabled, setEnabled: setNotifsEnabled } = useNotificationsStore()
+  const [infoOpen, setInfoOpen] = useState(false)
 
   const onLangChange = (code: AppLang) => {
     setLanguage(code)
@@ -46,18 +46,18 @@ export default function SettingsScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={[styles.container, isDesktop && { maxWidth: 760, alignSelf: 'center' as any, width: '100%' as any }]} edges={['top']}>
       <View style={styles.header}>
         <View style={styles.titleLeft}>
-          <Image source={require('../../assets/images/trasnparehte.png')} style={styles.headerLogo} resizeMode="contain" />
           <View style={{ flex: 1 }}>
             <Text style={styles.title}>{t('settings.title')}</Text>
             <Text style={styles.subtitle}>{t('settings.subtitle')}</Text>
           </View>
         </View>
+        <TouchableOpacity style={styles.headerBtn} onPress={() => setInfoOpen(true)}>
+          <Ionicons name="information-circle-outline" size={24} color={Colors.textDark} />
+        </TouchableOpacity>
       </View>
-      {isDesktop && <WebNavTabs />}
-
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
 
         {/* Notificaciones master toggle */}
@@ -154,20 +154,6 @@ export default function SettingsScreen() {
           ))}
         </ScrollView>
 
-        {/* Darstellung */}
-        <Text style={styles.sectionHeader}>{t('settings.displaySection')}</Text>
-        <View style={styles.card}>
-          <View style={[styles.row, styles.rowLast]}>
-            <View style={styles.rowLeft}>
-              <View style={styles.rowIcon}>
-                <Ionicons name="pricetag-outline" size={18} color={Colors.primary} />
-              </View>
-              <Text style={styles.rowLabel}>{t('settings.showMwst')}</Text>
-            </View>
-            <Switch value={showMwst} onValueChange={setShowMwst}
-              trackColor={{ false: Colors.border, true: Colors.primary }} thumbColor="#fff" />
-          </View>
-        </View>
 
         {/* Über */}
         <Text style={styles.sectionHeader}>{t('settings.aboutSection')}</Text>
@@ -196,7 +182,7 @@ export default function SettingsScreen() {
           ))}
         </View>
 
-        <View style={{ height: 40 }} />
+        <View style={{ height: 120 }} />
       </ScrollView>
     </SafeAreaView>
   )
@@ -205,13 +191,23 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between',
     paddingHorizontal: Spacing.lg, paddingTop: Spacing.md, paddingBottom: Spacing.sm,
+  },
+  headerBtn: {
+    width: 36, height: 36, borderRadius: 18,
+    backgroundColor: Colors.surface, alignItems: 'center', justifyContent: 'center',
+    shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 }, elevation: 1, marginTop: 4,
+  },
+  infoIcon: {
+    fontFamily: 'PlusJakartaSans-Bold', fontSize: 20, color: Colors.primary,
+    fontStyle: 'italic', lineHeight: 22,
   },
   title:      { fontFamily: 'PlusJakartaSans-Bold', fontSize: 26, color: Colors.textDark },
   titleLeft:  { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 },
   headerLogo: { width: 44, height: 44 },
-  subtitle:   { fontFamily: 'Inter-Medium', fontSize: 13, color: Colors.textMedium, marginTop: -2 },
+  subtitle:   { fontFamily: 'Inter-Medium', fontSize: 13, color: '#E2001A', marginTop: 3 },
   closeBtn:   { padding: Spacing.sm },
   scroll:   { paddingHorizontal: Spacing.lg, paddingTop: Spacing.sm },
 

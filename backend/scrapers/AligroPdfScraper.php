@@ -128,13 +128,19 @@ class AligroPdfScraper extends BaseScraper {
         [$validoDesde, $validoHasta] = $this->getValidityDates($rawText);
         $this->log("Período: $validoDesde → $validoHasta");
 
+        // Translate product names FR → DE in batch
+        $translator = new DeepLTranslator($this->pdo);
+        $frNames    = array_column($products, 'nombre_fr');
+        $deNames    = $translator->translateBatch($frNames, 'FR', 'DE');
+        $this->log('Traducciones FR→DE: ' . count($deNames));
+
         $count = 0;
         foreach ($products as $idx => $p) {
             $row = [
                 ':tienda_id'       => $this->tiendaId,
                 ':categoria_id'    => $this->getCategoriaId($p['categoria']),
-                ':nombre_de'       => mb_substr($p['nombre_fr'], 0, 255),
-                ':nombre_fr'       => null,
+                ':nombre_de'       => mb_substr($deNames[$idx] ?? $p['nombre_fr'], 0, 255),
+                ':nombre_fr'       => mb_substr($p['nombre_fr'], 0, 255),
                 ':nombre_it'       => null,
                 ':precio_original' => null,
                 ':precio_oferta'   => $p['precio'],
@@ -223,29 +229,32 @@ class AligroPdfScraper extends BaseScraper {
                 }
             }
 
-            // Backward scan: product name
-            $name = null;
+            // Backward scan: collect ALL valid name lines, then join them.
+            // The PDF has: [product name] [description line(s)] [article number]
+            // By collecting all lines and reversing, we get "Kabeljau ohne Haut, aus dem Atlantik"
+            // instead of just the description fragment closest to the article number.
+            $nameParts = [];
             for ($k = $i - 1; $k >= max(0, $i - 7); $k--) {
                 $l   = $lines[$k];
                 $ls2 = trim($l);
                 if (str_starts_with($l, "\x03")) continue;
                 if (!$ls2 || strlen($ls2) < 3) continue;
-                if (preg_match($artRe, $ls2) || preg_match($priceOneRe, $ls2) || preg_match($priceIntRe, $ls2)) continue;
+                if (preg_match($artRe, $ls2) || preg_match($priceOneRe, $ls2) || preg_match($priceIntRe, $ls2)) break;
                 if (preg_match($discRe, $ls2)) continue;
-                if ($this->detectCategory($ls2)) continue;
+                if ($this->detectCategory($ls2)) break;
                 // Skip quantity/description fragments
                 if (preg_match('/^(ca\.|S\.\s*\d|Genève|Chavan|Sion |Matr|PRO$|www\.|p\.\s|\()/i', $ls2)) continue;
-                if (preg_match('/^\d+\+?\s*(Jahre|Monate|Wochen|Stück|x\b)/i', $ls2)) continue; // "1+ Jahre", "3 x"
-                if (preg_match('/^(ca|ab|bis|aus|ohne|mit|für|und|vom|von|oder)\b/i', $ls2)) continue;
+                if (preg_match('/^\d+\+?\s*(Jahre|Monate|Wochen|Stück|x\b)/i', $ls2)) continue;
                 if (preg_match('/^\d+[\.,]\d+\s*[a-z]/i', $ls2)) continue; // "2.5 kg" etc
-                // Skip wine/food classification codes: "DOC 2021, 6 x", "DOP 2019", "IGT", "AOC"
+                // Skip wine/food classification codes
                 if (preg_match('/^(DOC|DOP|IGT|AOC|AOP|PDO|PGI|DAC)\b/i', $ls2)) continue;
-                // Skip lines ending with quantity "... 6 x" or "... 3 x"
+                // Skip lines ending with quantity "... 6 x"
                 if (preg_match('/,\s*\d+\s*x\s*$/i', $ls2)) continue;
-                if (strlen($ls2) < 5) continue;
-                $name = $ls2;
-                break;
+                if (strlen($ls2) < 3) continue;
+                $nameParts[] = $ls2;
             }
+            // nameParts is nearest-first; reverse so product name (furthest) comes first
+            $name = !empty($nameParts) ? implode(' ', array_reverse($nameParts)) : null;
 
             if (!$art || !$price || $price <= 0 || !$name || !$discount) continue;
             if ($discount < 5 || $discount > 80) continue;
