@@ -14,12 +14,14 @@ require_once __DIR__ . '/../scrapers/AligroPdfScraper.php';
 require_once __DIR__ . '/../scrapers/TopCCScraper.php';
 require_once __DIR__ . '/../scrapers/TopCCCatalogScraper.php';
 require_once __DIR__ . '/../scrapers/TransgourmetScraper.php';
+require_once __DIR__ . '/../scrapers/ProspekteScraper.php';
 
 // ?scraper=aligro_pdf    → PDF scraper de Aligro (prospecto semanal) [default]
 // ?scraper=aligro_api    → API scraper de Aligro (solo manual)
 // ?scraper=topcc         → TopCC weekly offers
 // ?scraper=topcc_catalog → TopCC full product catalog (shop.topcc.ch)
 // ?scraper=transgourmet  → Transgourmet/Prodega PDF semanal (con imágenes)
+// ?scraper=prospekte     → Catálogos PDF/web → tabla prospekte (Aligro+TG+TopCC)
 // ?scraper=all           → todos
 $scraper = $_GET['scraper'] ?? 'aligro_pdf';
 
@@ -46,6 +48,11 @@ try {
     if ($scraper === 'all' || $scraper === 'transgourmet') {
         $s = new TransgourmetScraper($db);
         $results['transgourmet'] = $s->run();
+    }
+    if ($scraper === 'prospekte') {
+        $s = new ProspekteScraper($db);
+        $results['prospekte'] = $s->run();
+        $results['logs']      = $s->getLogs();
     }
 
     jsonOk($results);

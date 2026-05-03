@@ -213,6 +213,10 @@ export default function RootLayout() {
             },
           }}
         />
+        <Stack.Screen
+          name="prospekte/[slug]"
+          options={{ headerShown: false, presentation: 'card' }}
+        />
       </Stack>
     </>
   )
